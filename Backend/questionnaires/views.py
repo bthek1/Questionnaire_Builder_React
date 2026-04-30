@@ -7,7 +7,7 @@ from .serializers import QuestionnaireResponseSerializer, QuestionnaireSerialize
 class QuestionnaireViewSet(viewsets.ModelViewSet):
     serializer_class = QuestionnaireSerializer
     permission_classes = [permissions.AllowAny]
-    http_method_names = ['get', 'post', 'patch', 'delete', 'head', 'options']
+    http_method_names = ["get", "post", "patch", "delete", "head", "options"]
 
     def get_queryset(self):
         return Questionnaire.objects.all()
@@ -21,8 +21,8 @@ class ResponseListCreateView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         return QuestionnaireResponse.objects.filter(
-            questionnaire_id=self.kwargs['questionnaire_pk']
+            questionnaire_id=self.kwargs["questionnaire_pk"]
         )
 
     def perform_create(self, serializer):
-        serializer.save(questionnaire_id=self.kwargs['questionnaire_pk'])
+        serializer.save(questionnaire_id=self.kwargs["questionnaire_pk"])

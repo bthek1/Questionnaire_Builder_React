@@ -102,7 +102,7 @@ collectstatic:
 # Run Django tests
 [group('django')]
 backend-test:
-    {{manage}} test
+    {{python}} -m pytest {{backend_dir}}
 
 # ── Database ──────────────────────────────────────────────────────────────────
 

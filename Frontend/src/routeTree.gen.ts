@@ -16,7 +16,6 @@ import { Route as QuestionnairesShareRouteImport } from './routes/questionnaires
 import { Route as QuestionnairesNewRouteImport } from './routes/questionnaires/new'
 import { Route as QuestionnairesIdResultsRouteImport } from './routes/questionnaires/$id/results'
 import { Route as QuestionnairesIdJsonRouteImport } from './routes/questionnaires/$id/json'
-import { Route as QuestionnairesIdEditRouteImport } from './routes/questionnaires/$id/edit'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -53,11 +52,6 @@ const QuestionnairesIdJsonRoute = QuestionnairesIdJsonRouteImport.update({
   path: '/questionnaires/$id/json',
   getParentRoute: () => rootRouteImport,
 } as any)
-const QuestionnairesIdEditRoute = QuestionnairesIdEditRouteImport.update({
-  id: '/questionnaires/$id/edit',
-  path: '/questionnaires/$id/edit',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -65,7 +59,6 @@ export interface FileRoutesByFullPath {
   '/questionnaires/share': typeof QuestionnairesShareRoute
   '/take/$id': typeof TakeIdRoute
   '/questionnaires/': typeof QuestionnairesIndexRoute
-  '/questionnaires/$id/edit': typeof QuestionnairesIdEditRoute
   '/questionnaires/$id/json': typeof QuestionnairesIdJsonRoute
   '/questionnaires/$id/results': typeof QuestionnairesIdResultsRoute
 }
@@ -75,7 +68,6 @@ export interface FileRoutesByTo {
   '/questionnaires/share': typeof QuestionnairesShareRoute
   '/take/$id': typeof TakeIdRoute
   '/questionnaires': typeof QuestionnairesIndexRoute
-  '/questionnaires/$id/edit': typeof QuestionnairesIdEditRoute
   '/questionnaires/$id/json': typeof QuestionnairesIdJsonRoute
   '/questionnaires/$id/results': typeof QuestionnairesIdResultsRoute
 }
@@ -86,7 +78,6 @@ export interface FileRoutesById {
   '/questionnaires/share': typeof QuestionnairesShareRoute
   '/take/$id': typeof TakeIdRoute
   '/questionnaires/': typeof QuestionnairesIndexRoute
-  '/questionnaires/$id/edit': typeof QuestionnairesIdEditRoute
   '/questionnaires/$id/json': typeof QuestionnairesIdJsonRoute
   '/questionnaires/$id/results': typeof QuestionnairesIdResultsRoute
 }
@@ -98,7 +89,6 @@ export interface FileRouteTypes {
     | '/questionnaires/share'
     | '/take/$id'
     | '/questionnaires/'
-    | '/questionnaires/$id/edit'
     | '/questionnaires/$id/json'
     | '/questionnaires/$id/results'
   fileRoutesByTo: FileRoutesByTo
@@ -108,7 +98,6 @@ export interface FileRouteTypes {
     | '/questionnaires/share'
     | '/take/$id'
     | '/questionnaires'
-    | '/questionnaires/$id/edit'
     | '/questionnaires/$id/json'
     | '/questionnaires/$id/results'
   id:
@@ -118,7 +107,6 @@ export interface FileRouteTypes {
     | '/questionnaires/share'
     | '/take/$id'
     | '/questionnaires/'
-    | '/questionnaires/$id/edit'
     | '/questionnaires/$id/json'
     | '/questionnaires/$id/results'
   fileRoutesById: FileRoutesById
@@ -129,7 +117,6 @@ export interface RootRouteChildren {
   QuestionnairesShareRoute: typeof QuestionnairesShareRoute
   TakeIdRoute: typeof TakeIdRoute
   QuestionnairesIndexRoute: typeof QuestionnairesIndexRoute
-  QuestionnairesIdEditRoute: typeof QuestionnairesIdEditRoute
   QuestionnairesIdJsonRoute: typeof QuestionnairesIdJsonRoute
   QuestionnairesIdResultsRoute: typeof QuestionnairesIdResultsRoute
 }
@@ -185,13 +172,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof QuestionnairesIdJsonRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/questionnaires/$id/edit': {
-      id: '/questionnaires/$id/edit'
-      path: '/questionnaires/$id/edit'
-      fullPath: '/questionnaires/$id/edit'
-      preLoaderRoute: typeof QuestionnairesIdEditRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -201,7 +181,6 @@ const rootRouteChildren: RootRouteChildren = {
   QuestionnairesShareRoute: QuestionnairesShareRoute,
   TakeIdRoute: TakeIdRoute,
   QuestionnairesIndexRoute: QuestionnairesIndexRoute,
-  QuestionnairesIdEditRoute: QuestionnairesIdEditRoute,
   QuestionnairesIdJsonRoute: QuestionnairesIdJsonRoute,
   QuestionnairesIdResultsRoute: QuestionnairesIdResultsRoute,
 }

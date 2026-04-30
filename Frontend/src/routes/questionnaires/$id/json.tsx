@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useQuestionnaire, useUpdateQuestionnaire } from '@/hooks/useQuestionnaires'
 import { Button } from '@/components/ui/Button'
 import { Textarea } from '@/components/ui/Textarea'
+import { SurveyRenderer } from '@/components/survey/SurveyRenderer'
 import type { Questionnaire } from '@/types'
 
 export const Route = createFileRoute('/questionnaires/$id/json')({
@@ -33,18 +34,22 @@ interface JsonEditorProps {
 
 function JsonEditor({ questionnaire, id }: JsonEditorProps) {
   const updateQuestionnaire = useUpdateQuestionnaire(id)
-  const [text, setText] = useState(() =>
-    JSON.stringify(questionnaire?.surveyJson ?? {}, null, 2),
-  )
+  const initialJson = questionnaire?.surveyJson ?? {}
+  const [text, setText] = useState(() => JSON.stringify(initialJson, null, 2))
   const [parseError, setParseError] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
+  const [previewJson, setPreviewJson] = useState<object>(initialJson)
+
+  // no-op: preview is read-only, responses should not be submitted
+  const handlePreviewComplete = useCallback(() => {}, [])
 
   function handleChange(value: string) {
     setText(value)
     setSaved(false)
     try {
-      JSON.parse(value)
+      const parsed = JSON.parse(value)
       setParseError(null)
+      setPreviewJson(parsed)
     } catch {
       setParseError('Invalid JSON')
     }
@@ -92,13 +97,25 @@ function JsonEditor({ questionnaire, id }: JsonEditorProps) {
         </div>
       )}
 
-      <Textarea
-        value={text}
-        onChange={(e) => handleChange(e.target.value)}
-        rows={30}
-        className="font-mono text-xs"
-        spellCheck={false}
-      />
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <Textarea
+          value={text}
+          onChange={(e) => handleChange(e.target.value)}
+          rows={30}
+          className="font-mono text-xs"
+          spellCheck={false}
+        />
+
+        <div className="space-y-2">
+          <h2 className="text-sm font-semibold text-gray-600">Preview</h2>
+          <div
+            data-testid="survey-preview"
+            className="rounded-lg border bg-white p-4"
+          >
+            <SurveyRenderer surveyJson={previewJson} onComplete={handlePreviewComplete} />
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

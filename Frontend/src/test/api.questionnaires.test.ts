@@ -67,7 +67,7 @@ describe('createQuestionnaire()', () => {
     const payload = { title: 'New Survey', description: 'Desc' }
     mockPost.mockResolvedValueOnce({ data: { ...mockQuestionnaire, ...payload } })
     const result = await createQuestionnaire(payload)
-    expect(mockPost).toHaveBeenCalledWith('/questionnaires', payload)
+    expect(mockPost).toHaveBeenCalledWith('/questionnaires/', payload)
     expect(result.title).toBe('New Survey')
   })
 })

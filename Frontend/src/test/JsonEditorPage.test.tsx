@@ -8,6 +8,11 @@ import type { Questionnaire } from '@/types'
 vi.mock('@/components/survey/SurveyDashboard', () => ({
   SurveyDashboard: () => <div data-testid="survey-dashboard">Survey Dashboard</div>,
 }))
+vi.mock('@/components/survey/SurveyRenderer', () => ({
+  SurveyRenderer: ({ surveyJson }: { surveyJson: object }) => (
+    <div data-testid="survey-renderer">{JSON.stringify(surveyJson)}</div>
+  ),
+}))
 vi.mock('survey-pdf', () => ({ SurveyPDF: vi.fn() }))
 
 vi.mock('@/hooks/useQuestionnaires', () => ({
@@ -94,5 +99,34 @@ describe('JsonEditorPage', () => {
       { surveyJson: { pages: [] } },
       expect.any(Object),
     )
+  })
+
+  it('renders the preview panel on load with the saved surveyJson', async () => {
+    renderAt('/questionnaires/q1/json')
+    const preview = await screen.findByTestId('survey-renderer')
+    expect(preview).toBeInTheDocument()
+    expect(preview.textContent).toContain('pages')
+  })
+
+  it('updates the preview when valid JSON is typed', async () => {
+    renderAt('/questionnaires/q1/json')
+    const textarea = await screen.findByRole('textbox')
+    const newJson = JSON.stringify({ pages: [{ name: 'p1' }] }, null, 2)
+    fireEvent.change(textarea, { target: { value: newJson } })
+    const preview = screen.getByTestId('survey-renderer')
+    expect(preview.textContent).toContain('p1')
+  })
+
+  it('retains the last valid preview when invalid JSON is typed', async () => {
+    renderAt('/questionnaires/q1/json')
+    const textarea = await screen.findByRole('textbox')
+    // First set a valid JSON so we have a known preview
+    const validJson = JSON.stringify({ pages: [{ name: 'before' }] }, null, 2)
+    fireEvent.change(textarea, { target: { value: validJson } })
+    // Now type invalid JSON
+    fireEvent.change(textarea, { target: { value: 'not json' } })
+    const preview = screen.getByTestId('survey-renderer')
+    // Preview should still show the last valid JSON
+    expect(preview.textContent).toContain('before')
   })
 })

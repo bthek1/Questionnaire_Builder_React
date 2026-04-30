@@ -4,13 +4,13 @@ from rest_framework.routers import DefaultRouter
 from .views import QuestionnaireViewSet, ResponseListCreateView
 
 router = DefaultRouter()
-router.register('', QuestionnaireViewSet, basename='questionnaire')
+router.register("", QuestionnaireViewSet, basename="questionnaire")
 
 urlpatterns = [
-    path('', include(router.urls)),
+    path("", include(router.urls)),
     path(
-        '<uuid:questionnaire_pk>/responses/',
+        "<uuid:questionnaire_pk>/responses/",
         ResponseListCreateView.as_view(),
-        name='questionnaire-responses',
+        name="questionnaire-responses",
     ),
 ]

@@ -70,12 +70,11 @@ Frontend/src/routes/
   __root.tsx                         # layout (nav bar)
   index.tsx                          # redirect → /questionnaires
   questionnaires/
-    index.tsx                        # list: title, shareable link, results link
+    index.tsx                        # list: title, single Edit button (→ /json), shareable link, results link
     new.tsx                          # create new questionnaire → redirects to /json
     share.tsx                        # /questionnaires/share — copy shareable URLs for all questionnaires
     $id/
-      edit.tsx                       # redirects to /questionnaires/:id/json
-      json.tsx                       # /questionnaires/:id/json — raw JSON editor for surveyJson
+      json.tsx                       # /questionnaires/:id/json — split-view: JSON editor (left) + live SurveyRenderer preview (right)
       results.tsx                    # SurveyJS Dashboard + PDF export + Raw Responses table
   take/
     $id.tsx                          # Public respondent view (no auth required)

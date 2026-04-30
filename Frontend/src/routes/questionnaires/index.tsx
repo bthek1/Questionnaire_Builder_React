@@ -70,13 +70,8 @@ function QuestionnairesPage() {
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-2">
                       <Button asChild size="sm" variant="outline">
-                        <Link to="/questionnaires/$id/edit" params={{ id: q.id }}>
-                          Edit
-                        </Link>
-                      </Button>
-                      <Button asChild size="sm" variant="outline">
                         <Link to="/questionnaires/$id/json" params={{ id: q.id }}>
-                          JSON
+                          Edit
                         </Link>
                       </Button>
                       <CopyButton id={q.id} label="Share" />

@@ -116,4 +116,21 @@ describe('QuestionnairesPage', () => {
     renderAt('/questionnaires')
     expect(await screen.findByRole('link', { name: /new questionnaire/i })).toBeInTheDocument()
   })
+
+  it('has a single Edit link per questionnaire pointing to /json', async () => {
+    mockUseQuestionnaires.mockReturnValue({ data: sampleQuestionnaires, isLoading: false })
+    renderAt('/questionnaires')
+    const editLinks = await screen.findAllByRole('link', { name: /^edit$/i })
+    expect(editLinks).toHaveLength(sampleQuestionnaires.length)
+    editLinks.forEach((link, i) => {
+      expect(link).toHaveAttribute('href', `/questionnaires/${sampleQuestionnaires[i].id}/json`)
+    })
+  })
+
+  it('does not render a JSON button separately', async () => {
+    mockUseQuestionnaires.mockReturnValue({ data: sampleQuestionnaires, isLoading: false })
+    renderAt('/questionnaires')
+    await screen.findAllByRole('link', { name: /^edit$/i })
+    expect(screen.queryByRole('link', { name: /^json$/i })).not.toBeInTheDocument()
+  })
 })

@@ -10,7 +10,7 @@ export interface Questionnaire {
 export interface QuestionnaireResponse {
   id: string
   questionnaireId: string
-  answers: Answer[]
+  answers: object
   submittedAt: string
 }
 

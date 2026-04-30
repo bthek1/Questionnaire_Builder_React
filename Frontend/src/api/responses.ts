@@ -6,7 +6,7 @@ export async function submitResponse(
   answers: object,
 ): Promise<QuestionnaireResponse> {
   const { data } = await apiClient.post<QuestionnaireResponse>(
-    `/questionnaires/${questionnaireId}/responses`,
+    `/questionnaires/${questionnaireId}/responses/`,
     { answers },
   )
   return data
@@ -14,7 +14,7 @@ export async function submitResponse(
 
 export async function getResponses(questionnaireId: string): Promise<QuestionnaireResponse[]> {
   const { data } = await apiClient.get<QuestionnaireResponse[]>(
-    `/questionnaires/${questionnaireId}/responses`,
+    `/questionnaires/${questionnaireId}/responses/`,
   )
   return data
 }
