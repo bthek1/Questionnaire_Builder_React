@@ -1,73 +1,62 @@
-# React + TypeScript + Vite
+# Questionnaire Builder
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A React 19 + TypeScript SPA for building, sharing, and analysing questionnaires using **SurveyJS**.
 
-Currently, two official plugins are available:
+## Tech Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+| Concern | Tool |
+|---------|------|
+| Framework | React 19 + TypeScript (Vite) |
+| Routing | TanStack Router (file-based) |
+| Server state | TanStack React Query |
+| Forms | TanStack React Form |
+| HTTP | Axios |
+| Styling | Tailwind CSS v4 + Radix UI |
+| Form builder UI | `survey-creator-react` |
+| Survey renderer | `survey-react-ui` |
+| Response analytics | `survey-analytics` |
+| PDF export | `survey-pdf` |
+| Unit/integration tests | Vitest + Testing Library |
+| E2E tests | Playwright |
 
-## React Compiler
+## Getting Started
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+pnpm install
+pnpm dev        # http://localhost:5173
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Commands
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+pnpm dev          # Vite dev server
+pnpm build        # tsc -b && vite build
+pnpm lint         # ESLint on src/
+pnpm lint:fix     # ESLint --fix
+pnpm format       # Prettier on src/
+pnpm test         # Vitest (unit + integration)
+pnpm coverage     # Vitest with coverage
+pnpm test:e2e     # Playwright
 ```
+
+## Feature Overview
+
+Three user flows:
+
+1. **Builder** — `/questionnaires/:id/edit`: drag-and-drop Survey Creator UI, saves `surveyJson` to backend.
+2. **Respondent** — `/take/:id`: shareable public URL, renders the survey and submits responses.
+3. **Owner** — `/questionnaires/:id/results`: visualises responses as charts; optional PDF export.
+
+## Project Structure
+
+```
+src/
+  api/            # Axios API functions
+  components/     # UI primitives (ui/) and feature components
+  hooks/          # React Query hooks
+  lib/            # axios, form, queryClient, utils
+  routes/         # TanStack Router file-based routes
+  types/          # Central TypeScript interfaces
+```
+
+See [AGENTS.md](AGENTS.md) for full architecture and conventions.
