@@ -9,10 +9,10 @@ Render a public, unauthenticated page at `/take/:id` where respondents answer th
 
 | File | Action |
 |------|--------|
-| `src/routes/take/$id.tsx` | New — public respondent route |
-| `src/components/survey/SurveyRenderer.tsx` | New — wraps `survey-react-ui` |
-| `src/api/responses.ts` | Already exists — `submitResponse(id, data)` |
-| `src/hooks/useResponses.ts` | Already exists — add `useSubmitResponse` if not present |
+| `Frontend/src/routes/take/$id.tsx` | New — public respondent route |
+| `Frontend/src/components/survey/SurveyRenderer.tsx` | New — wraps `survey-react-ui` |
+| `Frontend/src/api/responses.ts` | Already exists — `submitResponse(id, data)` |
+| `Frontend/src/hooks/useResponses.ts` | Already exists — add `useSubmitResponse` if not present |
 
 ---
 
@@ -20,10 +20,11 @@ Render a public, unauthenticated page at `/take/:id` where respondents answer th
 
 ### 1. Install `survey-react-ui` (if not already installed)
 ```bash
+cd Frontend/
 pnpm add survey-react-ui survey-core
 ```
 
-### 2. Build `SurveyRenderer` (`src/components/survey/SurveyRenderer.tsx`)
+### 2. Build `SurveyRenderer` (`Frontend/src/components/survey/SurveyRenderer.tsx`)
 ```tsx
 import 'survey-core/survey.min.css'
 import { Model } from 'survey-core'
@@ -34,7 +35,7 @@ import { Survey } from 'survey-react-ui'
 - Wire `model.onComplete.add((sender) => onComplete(sender.data))`.
 - Render `<Survey model={model} />`.
 
-### 3. Respondent route (`src/routes/take/$id.tsx`)
+### 3. Respondent route (`Frontend/src/routes/take/$id.tsx`)
 - Load questionnaire via `useQuestionnaire(id)` — **no auth header needed** (public GET).
 - Pass `questionnaire.surveyJson` to `<SurveyRenderer>`.
 - `onComplete` calls `useSubmitResponse`:
@@ -47,7 +48,7 @@ import { Survey } from 'survey-react-ui'
 - No nav bar auth links — page should be clean and public-facing.
 
 ### 4. Ensure `useSubmitResponse` hook exists
-In `src/hooks/useResponses.ts`:
+In `Frontend/src/hooks/useResponses.ts`:
 ```ts
 export function useSubmitResponse(questionnaireId: string) {
   return useMutation({
@@ -70,5 +71,5 @@ export function useSubmitResponse(questionnaireId: string) {
 
 ## Dependencies
 - `survey-react-ui` package.
-- `submitResponse` in `src/api/responses.ts` — already exists.
-- The `/take/:id` route must be excluded from any auth guard applied in `__root.tsx`.
+- `submitResponse` in `Frontend/src/api/responses.ts` — already exists.
+- The `/take/:id` route must be excluded from any auth guard applied in `Frontend/src/routes/__root.tsx`.

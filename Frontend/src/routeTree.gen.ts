@@ -10,33 +10,89 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as QuestionnairesIndexRouteImport } from './routes/questionnaires/index'
+import { Route as QuestionnairesNewRouteImport } from './routes/questionnaires/new'
+import { Route as QuestionnairesIdResultsRouteImport } from './routes/questionnaires/$id/results'
+import { Route as QuestionnairesIdEditRouteImport } from './routes/questionnaires/$id/edit'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const QuestionnairesIndexRoute = QuestionnairesIndexRouteImport.update({
+  id: '/questionnaires/',
+  path: '/questionnaires/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const QuestionnairesNewRoute = QuestionnairesNewRouteImport.update({
+  id: '/questionnaires/new',
+  path: '/questionnaires/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const QuestionnairesIdResultsRoute = QuestionnairesIdResultsRouteImport.update({
+  id: '/questionnaires/$id/results',
+  path: '/questionnaires/$id/results',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const QuestionnairesIdEditRoute = QuestionnairesIdEditRouteImport.update({
+  id: '/questionnaires/$id/edit',
+  path: '/questionnaires/$id/edit',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/questionnaires/new': typeof QuestionnairesNewRoute
+  '/questionnaires/': typeof QuestionnairesIndexRoute
+  '/questionnaires/$id/edit': typeof QuestionnairesIdEditRoute
+  '/questionnaires/$id/results': typeof QuestionnairesIdResultsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/questionnaires/new': typeof QuestionnairesNewRoute
+  '/questionnaires': typeof QuestionnairesIndexRoute
+  '/questionnaires/$id/edit': typeof QuestionnairesIdEditRoute
+  '/questionnaires/$id/results': typeof QuestionnairesIdResultsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/questionnaires/new': typeof QuestionnairesNewRoute
+  '/questionnaires/': typeof QuestionnairesIndexRoute
+  '/questionnaires/$id/edit': typeof QuestionnairesIdEditRoute
+  '/questionnaires/$id/results': typeof QuestionnairesIdResultsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/questionnaires/new'
+    | '/questionnaires/'
+    | '/questionnaires/$id/edit'
+    | '/questionnaires/$id/results'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/questionnaires/new'
+    | '/questionnaires'
+    | '/questionnaires/$id/edit'
+    | '/questionnaires/$id/results'
+  id:
+    | '__root__'
+    | '/'
+    | '/questionnaires/new'
+    | '/questionnaires/'
+    | '/questionnaires/$id/edit'
+    | '/questionnaires/$id/results'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  QuestionnairesNewRoute: typeof QuestionnairesNewRoute
+  QuestionnairesIndexRoute: typeof QuestionnairesIndexRoute
+  QuestionnairesIdEditRoute: typeof QuestionnairesIdEditRoute
+  QuestionnairesIdResultsRoute: typeof QuestionnairesIdResultsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +104,43 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/questionnaires/': {
+      id: '/questionnaires/'
+      path: '/questionnaires'
+      fullPath: '/questionnaires/'
+      preLoaderRoute: typeof QuestionnairesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/questionnaires/new': {
+      id: '/questionnaires/new'
+      path: '/questionnaires/new'
+      fullPath: '/questionnaires/new'
+      preLoaderRoute: typeof QuestionnairesNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/questionnaires/$id/results': {
+      id: '/questionnaires/$id/results'
+      path: '/questionnaires/$id/results'
+      fullPath: '/questionnaires/$id/results'
+      preLoaderRoute: typeof QuestionnairesIdResultsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/questionnaires/$id/edit': {
+      id: '/questionnaires/$id/edit'
+      path: '/questionnaires/$id/edit'
+      fullPath: '/questionnaires/$id/edit'
+      preLoaderRoute: typeof QuestionnairesIdEditRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  QuestionnairesNewRoute: QuestionnairesNewRoute,
+  QuestionnairesIndexRoute: QuestionnairesIndexRoute,
+  QuestionnairesIdEditRoute: QuestionnairesIdEditRoute,
+  QuestionnairesIdResultsRoute: QuestionnairesIdResultsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

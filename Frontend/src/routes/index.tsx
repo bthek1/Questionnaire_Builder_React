@@ -1,15 +1,7 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { QuestionnaireForm } from '@/components/questionnaire/QuestionnaireForm'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/')({
-  component: Index,
+  beforeLoad: () => {
+    throw redirect({ to: '/questionnaires' })
+  },
 })
-
-function Index() {
-  return (
-    <main className="mx-auto max-w-2xl p-8">
-      <h1 className="mb-6 text-2xl font-semibold">Questionnaire Builder</h1>
-      <QuestionnaireForm />
-    </main>
-  )
-}

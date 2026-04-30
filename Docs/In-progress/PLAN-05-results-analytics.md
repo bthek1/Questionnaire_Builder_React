@@ -9,10 +9,10 @@ Let questionnaire owners view aggregated response data as charts and export resu
 
 | File | Action |
 |------|--------|
-| `src/routes/questionnaires/$id.results.tsx` | New — results route |
-| `src/components/survey/SurveyDashboard.tsx` | New — wraps `survey-analytics` VisualizationPanel |
-| `src/api/responses.ts` | Already exists — `getResponses(id)` |
-| `src/hooks/useResponses.ts` | Already exists — add `useResponses` query if not present |
+| `Frontend/src/routes/questionnaires/$id.results.tsx` | New — results route |
+| `Frontend/src/components/survey/SurveyDashboard.tsx` | New — wraps `survey-analytics` VisualizationPanel |
+| `Frontend/src/api/responses.ts` | Already exists — `getResponses(id)` |
+| `Frontend/src/hooks/useResponses.ts` | Already exists — add `useResponses` query if not present |
 
 ---
 
@@ -20,10 +20,11 @@ Let questionnaire owners view aggregated response data as charts and export resu
 
 ### 1. Install analytics & PDF packages (if not already installed)
 ```bash
+cd Frontend/
 pnpm add survey-analytics survey-pdf survey-core
 ```
 
-### 2. Build `SurveyDashboard` (`src/components/survey/SurveyDashboard.tsx`)
+### 2. Build `SurveyDashboard` (`Frontend/src/components/survey/SurveyDashboard.tsx`)
 ```tsx
 import 'survey-analytics/survey.analytics.min.css'
 import { VisualizationPanel } from 'survey-analytics'
@@ -37,7 +38,7 @@ import { VisualizationPanel } from 'survey-analytics'
   ```
 - Re-render when `responses` length changes.
 
-### 3. Results route (`questionnaires/$id.results.tsx`)
+### 3. Results route (`Frontend/src/routes/questionnaires/$id.results.tsx`)
 - Fetch questionnaire → `useQuestionnaire(id)`.
 - Fetch responses → `useResponses(id)` (calls `GET /questionnaires/:id/responses`).
 - Layout:
@@ -57,7 +58,7 @@ import { SurveyPDF } from 'survey-pdf'
 - Button label: "Export PDF", variant `outline`.
 
 ### 5. Ensure `useResponses` hook exists
-In `src/hooks/useResponses.ts`:
+In `Frontend/src/hooks/useResponses.ts`:
 ```ts
 export const responseKeys = {
   all: (qId: string) => ['responses', qId] as const,

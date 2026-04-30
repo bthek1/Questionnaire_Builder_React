@@ -37,22 +37,27 @@ function FieldError({ error }: { error?: string }) {
   return <p className="mt-1 text-xs text-red-500">{error}</p>
 }
 
-export function QuestionnaireForm() {
+interface QuestionnaireFormProps {
+  onSuccess?: (id: string) => void
+}
+
+export function QuestionnaireForm({ onSuccess }: QuestionnaireFormProps) {
   const queryClient = useQueryClient()
 
   const mutation = useMutation({
     mutationFn: createQuestionnaire,
-    onSuccess: () => {
+    onSuccess: (created) => {
       queryClient.invalidateQueries({ queryKey: ['questionnaires'] })
+      onSuccess?.(created.id)
     },
   })
 
-  const form = useForm<FormValues>({
+  const form = useForm({
     defaultValues: {
       title: '',
       description: '',
       questions: [],
-    },
+    } as FormValues,
     onSubmit: async ({ value }) => {
       await mutation.mutateAsync({
         title: value.title,
@@ -92,7 +97,7 @@ export function QuestionnaireForm() {
                 onChange={(e) => field.handleChange(e.target.value)}
                 placeholder="e.g. Customer Satisfaction Survey"
               />
-              <FieldError error={field.state.meta.errors[0]?.toString()} />
+              <FieldError error={field.state.meta.errors[0] != null ? String(field.state.meta.errors[0]) : undefined} />
             </>
           )}
         </form.Field>
@@ -177,7 +182,7 @@ export function QuestionnaireForm() {
                           onChange={(e) => field.handleChange(e.target.value)}
                           placeholder="Enter your question"
                         />
-                        <FieldError error={field.state.meta.errors[0]?.toString()} />
+                        <FieldError error={field.state.meta.errors[0] != null ? String(field.state.meta.errors[0]) : undefined} />
                       </>
                     )}
                   </form.Field>
@@ -283,7 +288,7 @@ export function QuestionnaireForm() {
                                         placeholder={`Option ${optionIndex + 1}`}
                                       />
                                       <FieldError
-                                        error={field.state.meta.errors[0]?.toString()}
+                                        error={field.state.meta.errors[0] != null ? String(field.state.meta.errors[0]) : undefined}
                                       />
                                     </div>
                                   )}

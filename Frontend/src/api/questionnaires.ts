@@ -2,8 +2,8 @@ import { apiClient } from '@/lib/axios'
 import type { Questionnaire } from '@/types'
 
 export async function getQuestionnaires(): Promise<Questionnaire[]> {
-  const { data } = await apiClient.get<Questionnaire[]>('/questionnaires')
-  return data
+  const { data } = await apiClient.get<Questionnaire[] | { results: Questionnaire[] }>('/questionnaires')
+  return Array.isArray(data) ? data : data.results
 }
 
 export async function getQuestionnaire(id: string): Promise<Questionnaire> {

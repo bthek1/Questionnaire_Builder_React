@@ -2,6 +2,7 @@ export interface Questionnaire {
   id: string
   title: string
   description?: string
+  surveyJson?: object
   questions: Question[]
   createdAt: string
   updatedAt: string
