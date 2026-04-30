@@ -15,12 +15,28 @@ class QuestionnaireTypeSerializer(serializers.ModelSerializer):
 
 
 class QuestionnaireSerializer(serializers.ModelSerializer):
-    questionnaireTypeId = serializers.UUIDField(
-        source="questionnaire_type_id", read_only=True
-    )  # noqa: N815
+    questionnaireTypeId = serializers.UUIDField(  # noqa: N815
+        source="questionnaire_type_id"
+    )
+    questionnaireType = QuestionnaireTypeSerializer(  # noqa: N815
+        source="questionnaire_type", read_only=True
+    )
+    shareToken = serializers.UUIDField(source="share_token", read_only=True)  # noqa: N815
     submittedAt = serializers.DateTimeField(source="submitted_at", read_only=True)  # noqa: N815
+    createdAt = serializers.DateTimeField(source="created_at", read_only=True)  # noqa: N815
+    updatedAt = serializers.DateTimeField(source="updated_at", read_only=True)  # noqa: N815
 
     class Meta:
         model = Questionnaire
-        fields = ["id", "questionnaireTypeId", "answers", "submittedAt"]
-        read_only_fields = ["id", "questionnaireTypeId", "submittedAt"]
+        fields = [
+            "id",
+            "questionnaireTypeId",
+            "questionnaireType",
+            "name",
+            "shareToken",
+            "answers",
+            "submittedAt",
+            "createdAt",
+            "updatedAt",
+        ]
+        read_only_fields = ["id", "questionnaireType", "shareToken", "submittedAt", "createdAt", "updatedAt"]

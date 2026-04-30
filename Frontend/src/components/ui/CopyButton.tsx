@@ -5,38 +5,39 @@ import { buildShareUrl } from '@/lib/utils'
 interface Props {
   id: string
   label?: string
+  shareUrl?: string
 }
 
-export function CopyButton({ id, label = 'Copy link' }: Props) {
+export function CopyButton({ id, label = 'Copy link', shareUrl }: Props) {
   const [copied, setCopied] = React.useState(false)
-  const [showFallback, setShowFallback] = React.useState(false)
-  const url = buildShareUrl(id)
+  const url = shareUrl ?? buildShareUrl(id)
 
   function handleClick() {
-    if (!navigator.clipboard) {
-      setShowFallback(true)
-      return
-    }
-    navigator.clipboard.writeText(url).then(() => {
+    const done = () => {
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
-    })
-  }
+    }
 
-  if (showFallback) {
-    return (
-      <div className="flex items-center gap-1">
-        <input
-          readOnly
-          value={url}
-          className="h-8 rounded border px-2 text-xs"
-          onFocus={(e) => e.currentTarget.select()}
-        />
-        <Button size="sm" variant="ghost" onClick={() => setShowFallback(false)}>
-          ✕
-        </Button>
-      </div>
-    )
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(url).then(done).catch(fallback)
+    } else {
+      fallback()
+    }
+
+    function fallback() {
+      const ta = document.createElement('textarea')
+      ta.value = url
+      ta.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0'
+      document.body.appendChild(ta)
+      ta.focus()
+      ta.select()
+      try {
+        document.execCommand('copy')
+        done()
+      } finally {
+        document.body.removeChild(ta)
+      }
+    }
   }
 
   return (

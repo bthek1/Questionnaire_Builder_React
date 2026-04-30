@@ -5,16 +5,17 @@ import { RouterProvider, createRouter, createMemoryHistory } from '@tanstack/rea
 import { routeTree } from '../routeTree.gen'
 import type { QuestionnaireType } from '@/types'
 
-vi.mock('@/hooks/useQuestionnaires', () => ({
+vi.mock('@/hooks/useQuestionnaireTypes', () => ({
   useQuestionnaireType: vi.fn(),
   useQuestionnaireTypes: vi.fn(),
   useCreateQuestionnaireType: vi.fn(),
   useDeleteQuestionnaireType: vi.fn(),
   useUpdateQuestionnaireType: vi.fn(),
 }))
-vi.mock('@/hooks/useResponses', () => ({
-  useSubmitResponse: vi.fn(),
-  useResponses: vi.fn(),
+vi.mock('@/hooks/useQuestionnaires', () => ({
+  useQuestionnaires: vi.fn(),
+  useDeleteQuestionnaire: vi.fn(),
+  useCreateQuestionnaire: vi.fn(),
 }))
 
 import {
@@ -23,16 +24,17 @@ import {
   useCreateQuestionnaireType,
   useDeleteQuestionnaireType,
   useUpdateQuestionnaireType,
-} from '@/hooks/useQuestionnaires'
-import { useSubmitResponse, useResponses } from '@/hooks/useResponses'
+} from '@/hooks/useQuestionnaireTypes'
+import { useQuestionnaires, useDeleteQuestionnaire, useCreateQuestionnaire } from '@/hooks/useQuestionnaires'
 
 const mockUseQuestionnaire = useQuestionnaireType as ReturnType<typeof vi.fn>
 const mockUseQuestionnaires = useQuestionnaireTypes as ReturnType<typeof vi.fn>
 const mockUseCreateQuestionnaire = useCreateQuestionnaireType as ReturnType<typeof vi.fn>
 const mockUseDeleteQuestionnaire = useDeleteQuestionnaireType as ReturnType<typeof vi.fn>
 const mockUseUpdateQuestionnaire = useUpdateQuestionnaireType as ReturnType<typeof vi.fn>
-const mockUseSubmitResponse = useSubmitResponse as ReturnType<typeof vi.fn>
-const mockUseResponses = useResponses as ReturnType<typeof vi.fn>
+const mockUseQuestionnairesInst = useQuestionnaires as ReturnType<typeof vi.fn>
+const mockUseDeleteQuestionnairesInst = useDeleteQuestionnaire as ReturnType<typeof vi.fn>
+const mockUseCreateQuestionnairesInst = useCreateQuestionnaire as ReturnType<typeof vi.fn>
 
 const questionnaires: QuestionnaireType[] = [
   {
@@ -64,26 +66,23 @@ beforeEach(() => {
   vi.clearAllMocks()
   mockUseQuestionnaire.mockReturnValue({ data: undefined, isLoading: false })
   mockUseQuestionnaires.mockReturnValue({ data: questionnaires, isLoading: false })
-  mockUseCreateQuestionnaire.mockReturnValue({
-    mutateAsync: vi.fn(),
-    isPending: false,
-    isError: false,
-  })
+  mockUseCreateQuestionnaire.mockReturnValue({ mutateAsync: vi.fn(), isPending: false, isError: false })
   mockUseDeleteQuestionnaire.mockReturnValue({ mutate: vi.fn(), isPending: false })
   mockUseUpdateQuestionnaire.mockReturnValue({ mutate: vi.fn(), isPending: false })
-  mockUseSubmitResponse.mockReturnValue({ mutateAsync: vi.fn(), isPending: false })
-  mockUseResponses.mockReturnValue({ data: [], isLoading: false })
+  mockUseQuestionnairesInst.mockReturnValue({ data: [], isLoading: false })
+  mockUseDeleteQuestionnairesInst.mockReturnValue({ mutate: vi.fn(), isPending: false })
+  mockUseCreateQuestionnairesInst.mockReturnValue({ mutate: vi.fn(), isPending: false, isError: false })
 })
 
 describe('ShareLinksPage', () => {
   it('renders a row per questionnaire', async () => {
-    renderAt('/questionnaires/share')
+    renderAt('/questionnaire-types/share')
     expect(await screen.findByText('Survey A')).toBeInTheDocument()
     expect(screen.getByText('Survey B')).toBeInTheDocument()
   })
 
   it('shows respondent URLs containing the questionnaire id', async () => {
-    renderAt('/questionnaires/share')
+    renderAt('/questionnaire-types/share')
     await screen.findByText('Survey A')
     expect(screen.getByText(/\/take\/abc123/)).toBeInTheDocument()
     expect(screen.getByText(/\/take\/def456/)).toBeInTheDocument()

@@ -10,12 +10,17 @@ vi.mock('@/components/survey/SurveyRenderer', () => ({
   SurveyRenderer: () => <div data-testid="survey-renderer">Survey Renderer</div>,
 }))
 
-vi.mock('@/hooks/useQuestionnaires', () => ({
+vi.mock('@/hooks/useQuestionnaireTypes', () => ({
   useCreateQuestionnaireType: vi.fn(),
   useQuestionnaireType: vi.fn(),
   useQuestionnaireTypes: vi.fn(),
   useDeleteQuestionnaireType: vi.fn(),
   useUpdateQuestionnaireType: vi.fn(),
+}))
+vi.mock('@/hooks/useQuestionnaires', () => ({
+  useQuestionnaires: vi.fn(),
+  useDeleteQuestionnaire: vi.fn(),
+  useCreateQuestionnaire: vi.fn(),
 }))
 
 import {
@@ -23,12 +28,16 @@ import {
   useQuestionnaireType,
   useQuestionnaireTypes,
   useDeleteQuestionnaireType,
-} from '@/hooks/useQuestionnaires'
+} from '@/hooks/useQuestionnaireTypes'
+import { useQuestionnaires, useDeleteQuestionnaire, useCreateQuestionnaire } from '@/hooks/useQuestionnaires'
 
 const mockUseCreateQuestionnaire = useCreateQuestionnaireType as ReturnType<typeof vi.fn>
 const mockUseQuestionnaire = useQuestionnaireType as ReturnType<typeof vi.fn>
 const mockUseQuestionnaires = useQuestionnaireTypes as ReturnType<typeof vi.fn>
 const mockUseDeleteQuestionnaire = useDeleteQuestionnaireType as ReturnType<typeof vi.fn>
+const mockUseQuestionnairesInst = useQuestionnaires as ReturnType<typeof vi.fn>
+const mockUseDeleteQuestionnairesInst = useDeleteQuestionnaire as ReturnType<typeof vi.fn>
+const mockUseCreateQuestionnairesInst = useCreateQuestionnaire as ReturnType<typeof vi.fn>
 
 const createdQuestionnaire: QuestionnaireType = {
   id: 'new-id',
@@ -52,11 +61,10 @@ beforeEach(() => {
   vi.clearAllMocks()
   mockUseQuestionnaires.mockReturnValue({ data: [], isLoading: false })
   mockUseDeleteQuestionnaire.mockReturnValue({ mutate: vi.fn(), isPending: false })
-  mockUseQuestionnaire.mockReturnValue({
-    data: createdQuestionnaire,
-    isLoading: false,
-    isError: false,
-  })
+  mockUseQuestionnaire.mockReturnValue({ data: createdQuestionnaire, isLoading: false, isError: false })
+  mockUseQuestionnairesInst.mockReturnValue({ data: [], isLoading: false })
+  mockUseDeleteQuestionnairesInst.mockReturnValue({ mutate: vi.fn(), isPending: false })
+  mockUseCreateQuestionnairesInst.mockReturnValue({ mutate: vi.fn(), isPending: false, isError: false })
 })
 
 describe('NewQuestionnairePage', () => {
@@ -66,7 +74,7 @@ describe('NewQuestionnairePage', () => {
       isPending: false,
       isError: false,
     })
-    renderAt('/questionnaires/new')
+    renderAt('/questionnaire-types/new')
     expect(await screen.findByRole('heading', { name: /new questionnaire/i })).toBeInTheDocument()
   })
 
@@ -76,7 +84,7 @@ describe('NewQuestionnairePage', () => {
       isPending: false,
       isError: false,
     })
-    renderAt('/questionnaires/new')
+    renderAt('/questionnaire-types/new')
     const submitButton = await screen.findByRole('button', { name: /create/i })
     fireEvent.click(submitButton)
     expect(await screen.findByText(/title is required/i)).toBeInTheDocument()
@@ -85,7 +93,7 @@ describe('NewQuestionnairePage', () => {
   it('does not call mutateAsync when title is empty', async () => {
     const mutateAsync = vi.fn()
     mockUseCreateQuestionnaire.mockReturnValue({ mutateAsync, isPending: false, isError: false })
-    renderAt('/questionnaires/new')
+    renderAt('/questionnaire-types/new')
     fireEvent.click(await screen.findByRole('button', { name: /create/i }))
     expect(mutateAsync).not.toHaveBeenCalled()
   })
@@ -93,7 +101,7 @@ describe('NewQuestionnairePage', () => {
   it('calls mutateAsync with title and description when form is submitted', async () => {
     const mutateAsync = vi.fn().mockResolvedValueOnce(createdQuestionnaire)
     mockUseCreateQuestionnaire.mockReturnValue({ mutateAsync, isPending: false, isError: false })
-    renderAt('/questionnaires/new')
+    renderAt('/questionnaire-types/new')
 
     await userEvent.type(await screen.findByLabelText(/title/i), 'My New Survey')
     await userEvent.type(screen.getByLabelText(/description/i), 'An optional description')
@@ -115,7 +123,7 @@ describe('NewQuestionnairePage', () => {
       isPending: true,
       isError: false,
     })
-    renderAt('/questionnaires/new')
+    renderAt('/questionnaire-types/new')
     expect(await screen.findByRole('button', { name: /creating/i })).toBeDisabled()
   })
 
@@ -126,7 +134,7 @@ describe('NewQuestionnairePage', () => {
       isError: true,
       error: new Error('Server error'),
     })
-    renderAt('/questionnaires/new')
+    renderAt('/questionnaire-types/new')
     expect(await screen.findByText(/failed to create questionnaire/i)).toBeInTheDocument()
   })
 })

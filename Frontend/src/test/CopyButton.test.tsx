@@ -48,31 +48,20 @@ describe('CopyButton', () => {
     vi.useRealTimers()
   })
 
-  it('shows fallback input when clipboard API is unavailable', () => {
-    // Remove clipboard API
+  it('uses execCommand fallback when clipboard API is unavailable', () => {
     Object.defineProperty(navigator, 'clipboard', {
       value: undefined,
+      configurable: true,
+    })
+    const execCommand = vi.fn().mockReturnValue(true)
+    Object.defineProperty(document, 'execCommand', {
+      value: execCommand,
       configurable: true,
     })
 
     render(<CopyButton id="no-clipboard" />)
     fireEvent.click(screen.getByRole('button', { name: /copy link/i }))
 
-    expect(screen.getByRole('textbox')).toBeInTheDocument()
-    expect((screen.getByRole('textbox') as HTMLInputElement).value).toContain('/take/no-clipboard')
-  })
-
-  it('hides fallback input when ✕ is clicked', () => {
-    Object.defineProperty(navigator, 'clipboard', {
-      value: undefined,
-      configurable: true,
-    })
-
-    render(<CopyButton id="no-clipboard" />)
-    fireEvent.click(screen.getByRole('button', { name: /copy link/i }))
-    fireEvent.click(screen.getByRole('button', { name: /✕/i }))
-
-    expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /copy link/i })).toBeInTheDocument()
+    expect(execCommand).toHaveBeenCalledWith('copy')
   })
 })

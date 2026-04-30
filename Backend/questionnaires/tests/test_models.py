@@ -68,21 +68,31 @@ class TestQuestionnaireResponseModel:
         )
         assert r.pk is not None
         assert r.answers == {"q1": "hello"}
-        assert r.submitted_at is not None
+        assert r.submitted_at is None
+        assert r.created_at is not None
+        assert r.updated_at is not None
 
     def test_id_is_uuid(self, response_for):
         import uuid
 
         assert isinstance(response_for.id, uuid.UUID)
 
+    def test_share_token_is_uuid_and_unique(self, questionnaire):
+        import uuid
+
+        r1 = Questionnaire.objects.create(questionnaire_type=questionnaire)
+        r2 = Questionnaire.objects.create(questionnaire_type=questionnaire)
+        assert isinstance(r1.share_token, uuid.UUID)
+        assert r1.share_token != r2.share_token
+
     def test_cascade_delete_with_questionnaire(self, questionnaire, response_for):
         qr_id = response_for.id
         questionnaire.delete()
         assert not Questionnaire.objects.filter(id=qr_id).exists()
 
-    def test_related_name_responses(self, questionnaire, response_for):
-        assert questionnaire.responses.count() == 1
+    def test_related_name_instances(self, questionnaire, response_for):
+        assert questionnaire.instances.count() == 1
 
-    def test_answers_default_is_list(self, questionnaire):
+    def test_answers_default_is_dict(self, questionnaire):
         r = Questionnaire.objects.create(questionnaire_type=questionnaire)
-        assert r.answers == []
+        assert r.answers == {}

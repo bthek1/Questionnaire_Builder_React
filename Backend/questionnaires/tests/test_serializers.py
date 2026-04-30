@@ -76,8 +76,13 @@ class TestQuestionnaireResponseSerializer:
         assert set(data.keys()) == {
             "id",
             "questionnaireTypeId",
+            "questionnaireType",
+            "name",
+            "shareToken",
             "answers",
             "submittedAt",
+            "createdAt",
+            "updatedAt",
         }
 
     def test_questionnaire_id_camel_case(self, response_for):
@@ -85,14 +90,22 @@ class TestQuestionnaireResponseSerializer:
         assert "questionnaireTypeId" in data
         assert str(response_for.questionnaire_type_id) == data["questionnaireTypeId"]
 
-    def test_submitted_at_camel_case(self, response_for):
+    def test_share_token_read_only(self, response_for):
         data = QuestionnaireSerializer(response_for).data
-        assert "submittedAt" in data
+        assert "shareToken" in data
+        assert data["shareToken"] is not None
 
-    def test_valid_create(self, questionnaire):
-        serializer = QuestionnaireSerializer(data={"answers": {"q1": "yes"}})
-        assert serializer.is_valid(), serializer.errors
+    def test_submitted_at_none_by_default(self, response_for):
+        data = QuestionnaireSerializer(response_for).data
+        assert data["submittedAt"] is None
 
-    def test_answers_defaults_to_empty_list(self, questionnaire):
-        serializer = QuestionnaireSerializer(data={})
-        assert serializer.is_valid(), serializer.errors
+    def test_nested_questionnaire_type(self, response_for, questionnaire):
+        data = QuestionnaireSerializer(response_for).data
+        assert data["questionnaireType"]["id"] == str(questionnaire.id)
+        assert data["questionnaireType"]["title"] == questionnaire.title
+
+    def test_answers_defaults_to_empty_dict(self, questionnaire):
+        from questionnaires.models import Questionnaire
+        r = Questionnaire.objects.create(questionnaire_type=questionnaire)
+        data = QuestionnaireSerializer(r).data
+        assert data["answers"] == {}

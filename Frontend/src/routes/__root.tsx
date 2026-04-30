@@ -8,19 +8,19 @@ export const Route = createRootRoute({
         <header className="sticky top-0 z-50 border-b border-[var(--color-border)] bg-[var(--color-navbar)] shadow-sm">
           <nav className="mx-auto flex max-w-5xl items-center gap-6 px-4 py-3">
             <Link
-              to="/questionnaires"
+              to="/questionnaire-types"
               className="text-lg font-bold tracking-tight text-[var(--color-primary)] transition-colors"
             >
               Recovery Metrics
             </Link>
             <Link
-              to="/questionnaires"
+              to="/questionnaire-types"
               className="text-sm text-[#5b6268] transition-colors hover:text-[#333333] [&.active]:font-medium [&.active]:text-[var(--color-primary)]"
             >
               Questionnaire Types
             </Link>
             <Link
-              to="/responses"
+              to="/questionnaires"
               className="text-sm text-[#5b6268] transition-colors hover:text-[#333333] [&.active]:font-medium [&.active]:text-[var(--color-primary)]"
             >
               Questionnaires

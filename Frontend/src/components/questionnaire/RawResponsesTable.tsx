@@ -59,7 +59,7 @@ export function RawResponsesTable({ responses }: Props) {
                   >
                     <td className="px-4 py-3 text-[var(--color-muted-foreground)]">{index + 1}</td>
                     <td className="px-4 py-3 whitespace-nowrap text-[var(--color-muted-foreground)]">
-                      {new Date(r.submittedAt).toLocaleString()}
+                      {r.submittedAt ? new Date(r.submittedAt).toLocaleString() : '—'}
                     </td>
                     <td className="px-4 py-3 font-mono text-xs text-[var(--color-foreground)] max-w-md">
                       <span>{preview}</span>

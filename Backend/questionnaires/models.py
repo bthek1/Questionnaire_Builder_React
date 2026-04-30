@@ -31,10 +31,17 @@ class QuestionnaireType(models.Model):
 class Questionnaire(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     questionnaire_type = models.ForeignKey(
-        QuestionnaireType, on_delete=models.CASCADE, related_name="responses"
+        QuestionnaireType, on_delete=models.CASCADE, related_name="instances"
     )
-    answers = models.JSONField(default=list)
-    submitted_at = models.DateTimeField(auto_now_add=True)
+    name = models.CharField(max_length=255, blank=True)
+    share_token = models.UUIDField(default=uuid.uuid4, unique=True, db_index=True)
+    answers = models.JSONField(default=dict, blank=True)
+    submitted_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
 
     def __str__(self) -> str:
-        return f"{self.questionnaire_type} - {self.submitted_at}"
+        return f"{self.questionnaire_type.title} – {self.name or self.share_token}"

@@ -1,251 +1,98 @@
+/* eslint-disable react-refresh/only-export-components */
 import { useState } from 'react'
-import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
-import { ClipboardList, Star, MessageSquare, HelpCircle, FileText } from 'lucide-react'
-import { useCreateQuestionnaireType } from '@/hooks/useQuestionnaires'
+import { createFileRoute, useNavigate, useSearch } from '@tanstack/react-router'
+import { z } from 'zod'
+import { useQuestionnaireTypes } from '@/hooks/useQuestionnaireTypes'
+import { useCreateQuestionnaire } from '@/hooks/useQuestionnaires'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
-import { Textarea } from '@/components/ui/Textarea'
+
+const searchSchema = z.object({
+  typeId: z.string().optional(),
+})
 
 export const Route = createFileRoute('/questionnaires/new')({
+  validateSearch: searchSchema,
   component: NewQuestionnairePage,
 })
 
-const TITLE_MAX = 120
-
-interface Template {
-  id: string
-  label: string
-  description: string
-  icon: React.ReactNode
-  surveyJson: object
-}
-
-const TEMPLATES: Template[] = [
-  {
-    id: 'blank',
-    label: 'Blank',
-    description: 'Start from scratch',
-    icon: <FileText className="h-5 w-5" />,
-    surveyJson: { pages: [{ name: 'page1', elements: [] }] },
-  },
-  {
-    id: 'satisfaction',
-    label: 'Customer Satisfaction',
-    description: 'NPS + open feedback',
-    icon: <Star className="h-5 w-5" />,
-    surveyJson: {
-      pages: [
-        {
-          name: 'page1',
-          elements: [
-            {
-              type: 'rating',
-              name: 'nps',
-              title: 'How likely are you to recommend us?',
-              rateMin: 0,
-              rateMax: 10,
-              minRateDescription: 'Not likely',
-              maxRateDescription: 'Extremely likely',
-            },
-            {
-              type: 'comment',
-              name: 'feedback',
-              title: 'What could we do better?',
-              isRequired: false,
-            },
-          ],
-        },
-      ],
-    },
-  },
-  {
-    id: 'feedback',
-    label: 'Event Feedback',
-    description: 'Rating + comments',
-    icon: <MessageSquare className="h-5 w-5" />,
-    surveyJson: {
-      pages: [
-        {
-          name: 'page1',
-          elements: [
-            {
-              type: 'rating',
-              name: 'overall',
-              title: 'How would you rate the overall event?',
-              rateValues: [1, 2, 3, 4, 5],
-            },
-            {
-              type: 'checkbox',
-              name: 'highlights',
-              title: 'What did you enjoy most?',
-              choices: ['Content', 'Networking', 'Speakers', 'Venue'],
-            },
-            { type: 'comment', name: 'suggestions', title: 'Any suggestions for next time?' },
-          ],
-        },
-      ],
-    },
-  },
-  {
-    id: 'quiz',
-    label: 'Quiz',
-    description: 'Multiple-choice questions',
-    icon: <HelpCircle className="h-5 w-5" />,
-    surveyJson: {
-      pages: [
-        {
-          name: 'page1',
-          elements: [
-            {
-              type: 'radiogroup',
-              name: 'q1',
-              title: 'Sample question — edit me',
-              choices: ['Option A', 'Option B', 'Option C'],
-              correctAnswer: 'Option A',
-            },
-          ],
-        },
-      ],
-      showProgressBar: 'top',
-    },
-  },
-]
-
 function NewQuestionnairePage() {
   const navigate = useNavigate()
-  const createQuestionnaire = useCreateQuestionnaireType()
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [selectedTemplate, setSelectedTemplate] = useState('blank')
-  const [titleTouched, setTitleTouched] = useState(false)
+  const { typeId: preselectedTypeId } = useSearch({ from: '/questionnaires/new' })
+  const { data: types, isLoading: typesLoading } = useQuestionnaireTypes()
+  const createQuestionnaire = useCreateQuestionnaire()
 
-  const titleError =
-    titleTouched && !title.trim()
-      ? 'Title is required'
-      : title.length > TITLE_MAX
-        ? `Title must be ${TITLE_MAX} characters or fewer`
-        : ''
+  const [typeId, setTypeId] = useState(preselectedTypeId ?? '')
+  const [name, setName] = useState('')
+  const [error, setError] = useState<string | null>(null)
 
-  async function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    setTitleTouched(true)
-    if (!title.trim() || title.length > TITLE_MAX) return
-
-    const template = TEMPLATES.find((t) => t.id === selectedTemplate)
-    const created = await createQuestionnaire.mutateAsync({
-      title: title.trim(),
-      description: description.trim() || undefined,
-      surveyJson: template?.surveyJson,
-    })
-    navigate({ to: '/questionnaires/$id/json', params: { id: created.id } })
+    if (!typeId) {
+      setError('Please select a questionnaire type.')
+      return
+    }
+    setError(null)
+    createQuestionnaire.mutate(
+      { questionnaireTypeId: typeId, name: name.trim() || undefined },
+      {
+        onSuccess: () => navigate({ to: '/questionnaires' }),
+      },
+    )
   }
 
   return (
-    <div className="mx-auto max-w-2xl space-y-8">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--color-primary)]/10 text-[var(--color-primary)]">
-          <ClipboardList className="h-5 w-5" />
+    <div className="mx-auto max-w-md space-y-6">
+      <h1 className="text-2xl font-semibold">New Deployment</h1>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="space-y-1.5">
+          <Label htmlFor="type">Questionnaire Type</Label>
+          {typesLoading ? (
+            <div className="h-9 animate-pulse rounded-md bg-[var(--color-muted)]" />
+          ) : (
+            <select
+              id="type"
+              value={typeId}
+              onChange={(e) => setTypeId(e.target.value)}
+              className="w-full rounded-md border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+            >
+              <option value="">Select a type…</option>
+              {types?.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.title}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
-        <div>
-          <h1 className="text-2xl font-semibold">New Questionnaire</h1>
-          <p className="text-sm text-[var(--color-muted-foreground)]">
-            Fill in the details and pick a starting template
-          </p>
+        <div className="space-y-1.5">
+          <Label htmlFor="name">Name (optional)</Label>
+          <Input
+            id="name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="e.g. John Doe – April 2026"
+          />
         </div>
-      </div>
-
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Details card */}
-        <div className="rounded-xl border bg-[var(--color-card)] p-6 shadow-sm space-y-5">
-          <h2 className="text-sm font-medium uppercase tracking-wide text-[var(--color-muted-foreground)]">
-            Details
-          </h2>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="title">
-              Title <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              id="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              onBlur={() => setTitleTouched(true)}
-              placeholder="e.g. Customer Satisfaction Survey"
-              className={titleError ? 'border-red-400 focus:ring-red-400' : ''}
-              maxLength={TITLE_MAX + 1}
-              autoFocus
-            />
-            <div className="flex items-center justify-between">
-              {titleError ? <p className="text-xs text-red-500">{titleError}</p> : <span />}
-              <p
-                className={`text-xs ${title.length > TITLE_MAX ? 'text-red-500' : 'text-[var(--color-muted-foreground)]'}`}
-              >
-                {title.length}/{TITLE_MAX}
-              </p>
-            </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="description">Description</Label>
-            <Textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Optional — briefly describe the purpose of this questionnaire"
-              rows={3}
-            />
-          </div>
-        </div>
-
-        {/* Template picker card */}
-        <div className="rounded-xl border bg-[var(--color-card)] p-6 shadow-sm space-y-4">
-          <h2 className="text-sm font-medium uppercase tracking-wide text-[var(--color-muted-foreground)]">
-            Starting Template
-          </h2>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {TEMPLATES.map((t) => (
-              <button
-                key={t.id}
-                type="button"
-                onClick={() => setSelectedTemplate(t.id)}
-                className={`flex flex-col items-start gap-2 rounded-lg border p-4 text-left transition-colors hover:bg-[var(--color-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] ${
-                  selectedTemplate === t.id
-                    ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/5 ring-1 ring-[var(--color-primary)]'
-                    : 'border-[var(--color-border)]'
-                }`}
-              >
-                <span
-                  className={`${selectedTemplate === t.id ? 'text-[var(--color-primary)]' : 'text-[var(--color-muted-foreground)]'}`}
-                >
-                  {t.icon}
-                </span>
-                <span className="text-sm font-medium">{t.label}</span>
-                <span className="text-xs text-[var(--color-muted-foreground)]">
-                  {t.description}
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Actions */}
-        <div className="flex items-center justify-between">
-          <Button asChild variant="outline">
-            <Link to="/questionnaires">Cancel</Link>
+        {error && <p className="text-xs text-red-500">{error}</p>}
+        {createQuestionnaire.isError && (
+          <p className="text-xs text-red-500">Failed to create. Please try again.</p>
+        )}
+        <div className="flex justify-end gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => navigate({ to: '/questionnaires' })}
+          >
+            Cancel
           </Button>
           <Button type="submit" disabled={createQuestionnaire.isPending}>
-            {createQuestionnaire.isPending ? 'Creating…' : 'Create & Open Editor'}
+            {createQuestionnaire.isPending ? 'Creating…' : 'Create'}
           </Button>
         </div>
-
-        {createQuestionnaire.isError && (
-          <p className="text-xs text-red-500 text-right">
-            Failed to create questionnaire. Please try again.
-          </p>
-        )}
       </form>
     </div>
   )
 }
+

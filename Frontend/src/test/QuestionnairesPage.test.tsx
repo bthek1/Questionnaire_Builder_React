@@ -3,38 +3,56 @@ import { vi, beforeEach } from 'vitest'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { RouterProvider, createRouter, createMemoryHistory } from '@tanstack/react-router'
 import { routeTree } from '../routeTree.gen'
-import type { QuestionnaireType } from '@/types'
+import type { Questionnaire } from '@/types'
 
-// Mock SurveyJS components that need real DOM/canvas
 vi.mock('@/components/survey/SurveyRenderer', () => ({
   SurveyRenderer: () => <div data-testid="survey-renderer">Survey Renderer</div>,
 }))
 
 vi.mock('@/hooks/useQuestionnaires', () => ({
-  useQuestionnaireTypes: vi.fn(),
-  useDeleteQuestionnaireType: vi.fn(),
+  useQuestionnaires: vi.fn(),
+  useDeleteQuestionnaire: vi.fn(),
+  useCreateQuestionnaire: vi.fn(),
 }))
 
-import { useQuestionnaireTypes, useDeleteQuestionnaireType } from '@/hooks/useQuestionnaires'
+vi.mock('@/hooks/useQuestionnaireTypes', () => ({
+  useQuestionnaireTypes: vi.fn().mockReturnValue({ data: [], isLoading: false }),
+  useCreateQuestionnaireType: vi.fn().mockReturnValue({ mutate: vi.fn(), isPending: false }),
+  useDeleteQuestionnaireType: vi.fn().mockReturnValue({ mutate: vi.fn(), isPending: false }),
+  useUpdateQuestionnaireType: vi.fn().mockReturnValue({ mutate: vi.fn(), isPending: false }),
+}))
 
-const mockUseQuestionnaires = useQuestionnaireTypes as ReturnType<typeof vi.fn>
-const mockUseDeleteQuestionnaire = useDeleteQuestionnaireType as ReturnType<typeof vi.fn>
+import { useQuestionnaires, useDeleteQuestionnaire, useCreateQuestionnaire } from '@/hooks/useQuestionnaires'
+
+const mockUseQuestionnaires = useQuestionnaires as ReturnType<typeof vi.fn>
+const mockUseDeleteQuestionnaire = useDeleteQuestionnaire as ReturnType<typeof vi.fn>
+const mockUseCreateQuestionnaire = useCreateQuestionnaire as ReturnType<typeof vi.fn>
 
 const mockMutate = vi.fn()
 const mockDeleteHook = { mutate: mockMutate, isPending: false }
 
-const sampleQuestionnaires: QuestionnaireType[] = [
+const sampleInstances: Questionnaire[] = [
   {
     id: '1',
-    title: 'Survey Alpha',
+    questionnaireTypeId: 'qt1',
+    questionnaireType: { id: 'qt1', title: 'Survey Alpha', createdAt: '2024-01-01T00:00:00Z', updatedAt: '2024-01-01T00:00:00Z' },
+    name: 'Alpha Deployment',
+    shareToken: 'token-1',
+    answers: {},
+    submittedAt: null,
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
   },
   {
     id: '2',
-    title: 'Survey Beta',
+    questionnaireTypeId: 'qt2',
+    questionnaireType: { id: 'qt2', title: 'Survey Beta', createdAt: '2024-02-01T00:00:00Z', updatedAt: '2024-02-01T00:00:00Z' },
+    name: '',
+    shareToken: 'token-2',
+    answers: { q1: 'yes' },
+    submittedAt: '2024-02-02T00:00:00Z',
     createdAt: '2024-02-01T00:00:00Z',
-    updatedAt: '2024-02-01T00:00:00Z',
+    updatedAt: '2024-02-02T00:00:00Z',
   },
 ]
 
@@ -52,81 +70,75 @@ function renderAt(path: string) {
 beforeEach(() => {
   vi.clearAllMocks()
   mockUseDeleteQuestionnaire.mockReturnValue(mockDeleteHook)
+  mockUseCreateQuestionnaire.mockReturnValue({ mutate: vi.fn(), isPending: false, isError: false })
 })
 
 describe('QuestionnairesPage', () => {
   it('shows loading skeletons while data is loading', async () => {
     mockUseQuestionnaires.mockReturnValue({ data: undefined, isLoading: true })
     renderAt('/questionnaires')
-    // Wait for router to render the route
     await waitFor(() => {
       const skeletons = document.querySelectorAll('.animate-pulse')
       expect(skeletons.length).toBeGreaterThan(0)
     })
   })
 
-  it('shows empty state when no questionnaires exist', async () => {
+  it('shows empty state when no instances exist', async () => {
     mockUseQuestionnaires.mockReturnValue({ data: [], isLoading: false })
     renderAt('/questionnaires')
-    expect(await screen.findByText(/no questionnaires yet/i)).toBeInTheDocument()
+    expect(await screen.findByText(/no questionnaires deployed yet/i)).toBeInTheDocument()
   })
 
-  it('renders questionnaire titles in the table', async () => {
-    mockUseQuestionnaires.mockReturnValue({ data: sampleQuestionnaires, isLoading: false })
+  it('renders questionnaire type titles in the table', async () => {
+    mockUseQuestionnaires.mockReturnValue({ data: sampleInstances, isLoading: false })
     renderAt('/questionnaires')
     expect(await screen.findByText('Survey Alpha')).toBeInTheDocument()
     expect(screen.getByText('Survey Beta')).toBeInTheDocument()
   })
 
+  it('shows Submitted status badge for submitted instances', async () => {
+    mockUseQuestionnaires.mockReturnValue({ data: sampleInstances, isLoading: false })
+    renderAt('/questionnaires')
+    expect(await screen.findByText('Submitted')).toBeInTheDocument()
+  })
+
+  it('shows Pending status badge for unsubmitted instances', async () => {
+    mockUseQuestionnaires.mockReturnValue({ data: sampleInstances, isLoading: false })
+    renderAt('/questionnaires')
+    expect(await screen.findByText('Pending')).toBeInTheDocument()
+  })
+
   it('shows the delete confirmation dialog when Delete is clicked', async () => {
-    mockUseQuestionnaires.mockReturnValue({ data: sampleQuestionnaires, isLoading: false })
+    mockUseQuestionnaires.mockReturnValue({ data: sampleInstances, isLoading: false })
     renderAt('/questionnaires')
     const deleteButtons = await screen.findAllByRole('button', { name: /delete/i })
     fireEvent.click(deleteButtons[0])
-    expect(screen.getByText(/delete questionnaire\?/i)).toBeInTheDocument()
+    expect(screen.getByText(/delete deployment\?/i)).toBeInTheDocument()
   })
 
   it('closes the confirmation dialog on Cancel', async () => {
-    mockUseQuestionnaires.mockReturnValue({ data: sampleQuestionnaires, isLoading: false })
+    mockUseQuestionnaires.mockReturnValue({ data: sampleInstances, isLoading: false })
     renderAt('/questionnaires')
     const [firstDelete] = await screen.findAllByRole('button', { name: /delete/i })
     fireEvent.click(firstDelete)
     const cancelButton = screen.getByRole('button', { name: /cancel/i })
     fireEvent.click(cancelButton)
-    expect(screen.queryByText(/delete questionnaire\?/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/delete deployment\?/i)).not.toBeInTheDocument()
   })
 
-  it('calls delete mutate with the questionnaire id on confirm', async () => {
-    mockUseQuestionnaires.mockReturnValue({ data: sampleQuestionnaires, isLoading: false })
+  it('calls delete mutate with the instance id on confirm', async () => {
+    mockUseQuestionnaires.mockReturnValue({ data: sampleInstances, isLoading: false })
     renderAt('/questionnaires')
     const [firstDelete] = await screen.findAllByRole('button', { name: /delete/i })
     fireEvent.click(firstDelete)
-    // Click the confirm Delete button inside the dialog
     const confirmButton = screen.getAllByRole('button', { name: /delete/i }).at(-1)!
     fireEvent.click(confirmButton)
     await waitFor(() => expect(mockMutate).toHaveBeenCalledWith('1', expect.any(Object)))
   })
 
-  it('has a + New Questionnaire link', async () => {
+  it('has a + New Deployment link', async () => {
     mockUseQuestionnaires.mockReturnValue({ data: [], isLoading: false })
     renderAt('/questionnaires')
-    expect(await screen.findByRole('link', { name: /new questionnaire/i })).toBeInTheDocument()
-  })
-
-  it('has a single Edit link per questionnaire pointing to /json', async () => {
-    mockUseQuestionnaires.mockReturnValue({ data: sampleQuestionnaires, isLoading: false })
-    renderAt('/questionnaires')
-    const editLinks = await screen.findAllByRole('link', { name: /^edit$/i })
-    expect(editLinks).toHaveLength(sampleQuestionnaires.length)
-    editLinks.forEach((link, i) => {
-      expect(link).toHaveAttribute('href', `/questionnaires/${sampleQuestionnaires[i].id}/json`)
-    })
-  })
-
-  it('does not render a JSON button separately', async () => {
-    mockUseQuestionnaires.mockReturnValue({ data: sampleQuestionnaires, isLoading: false })
-    renderAt('/questionnaires')
-    await screen.findAllByRole('link', { name: /^edit$/i })
-    expect(screen.queryByRole('link', { name: /^json$/i })).not.toBeInTheDocument()
+    expect(await screen.findByRole('link', { name: /new deployment/i })).toBeInTheDocument()
   })
 })

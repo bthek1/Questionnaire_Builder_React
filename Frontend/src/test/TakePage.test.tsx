@@ -3,7 +3,7 @@ import { vi, beforeEach } from 'vitest'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { RouterProvider, createRouter, createMemoryHistory } from '@tanstack/react-router'
 import { routeTree } from '../routeTree.gen'
-import type { QuestionnaireType } from '@/types'
+import type { Questionnaire } from '@/types'
 
 vi.mock('@/components/survey/SurveyRenderer', () => ({
   SurveyRenderer: ({ onComplete }: { onComplete: (data: object) => void }) => (
@@ -14,44 +14,68 @@ vi.mock('@/components/survey/SurveyRenderer', () => ({
 }))
 
 vi.mock('@/hooks/useQuestionnaires', () => ({
-  useQuestionnaireType: vi.fn(),
-  useQuestionnaireTypes: vi.fn(),
-  useCreateQuestionnaireType: vi.fn(),
-  useDeleteQuestionnaireType: vi.fn(),
-}))
-vi.mock('@/hooks/useResponses', () => ({
-  useSubmitResponse: vi.fn(),
-  useResponses: vi.fn(),
+  useQuestionnaireByToken: vi.fn(),
+  useSubmitAnswers: vi.fn(),
+  useQuestionnaires: vi.fn(),
+  useCreateQuestionnaire: vi.fn(),
+  useDeleteQuestionnaire: vi.fn(),
 }))
 
 import {
-  useQuestionnaireType,
-  useQuestionnaireTypes,
-  useCreateQuestionnaireType,
-  useDeleteQuestionnaireType,
+  useQuestionnaireByToken,
+  useSubmitAnswers,
+  useQuestionnaires,
+  useCreateQuestionnaire,
+  useDeleteQuestionnaire,
 } from '@/hooks/useQuestionnaires'
-import { useSubmitResponse, useResponses } from '@/hooks/useResponses'
 
-const mockUseQuestionnaire = useQuestionnaireType as ReturnType<typeof vi.fn>
-const mockUseQuestionnaires = useQuestionnaireTypes as ReturnType<typeof vi.fn>
-const mockUseCreateQuestionnaire = useCreateQuestionnaireType as ReturnType<typeof vi.fn>
-const mockUseDeleteQuestionnaire = useDeleteQuestionnaireType as ReturnType<typeof vi.fn>
-const mockUseSubmitResponse = useSubmitResponse as ReturnType<typeof vi.fn>
-const mockUseResponses = useResponses as ReturnType<typeof vi.fn>
+const mockUseQuestionnaireByToken = useQuestionnaireByToken as ReturnType<typeof vi.fn>
+const mockUseSubmitAnswers = useSubmitAnswers as ReturnType<typeof vi.fn>
+const mockUseQuestionnaires = useQuestionnaires as ReturnType<typeof vi.fn>
+const mockUseCreateQuestionnaire = useCreateQuestionnaire as ReturnType<typeof vi.fn>
+const mockUseDeleteQuestionnaire = useDeleteQuestionnaire as ReturnType<typeof vi.fn>
 
-const questionnaireWithSurvey: QuestionnaireType = {
-  id: 'q1',
-  title: 'My Test Survey',
-  surveyJson: { pages: [{ name: 'page1', elements: [{ type: 'text', name: 'q1' }] }] },
+vi.mock('@/hooks/useQuestionnaireTypes', () => ({
+  useQuestionnaireTypes: vi.fn().mockReturnValue({ data: [], isLoading: false }),
+  useCreateQuestionnaireType: vi.fn().mockReturnValue({ mutate: vi.fn(), isPending: false }),
+  useDeleteQuestionnaireType: vi.fn().mockReturnValue({ mutate: vi.fn(), isPending: false }),
+  useUpdateQuestionnaireType: vi.fn().mockReturnValue({ mutate: vi.fn(), isPending: false }),
+  useQuestionnaireType: vi.fn().mockReturnValue({ data: undefined, isLoading: false }),
+}))
+
+const instanceWithSurvey: Questionnaire = {
+  id: 'inst1',
+  questionnaireTypeId: 'q1',
+  questionnaireType: {
+    id: 'q1',
+    title: 'My Test Survey',
+    surveyJson: { pages: [{ name: 'page1', elements: [{ type: 'text', name: 'q1' }] }] },
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
+  },
+  name: '',
+  shareToken: 'token-abc',
+  answers: {},
+  submittedAt: null,
   createdAt: '2024-01-01T00:00:00Z',
   updatedAt: '2024-01-01T00:00:00Z',
 }
 
-const questionnaireWithoutSurvey: QuestionnaireType = {
-  id: 'q2',
-  title: 'Empty Survey',
-  createdAt: '2024-01-01T00:00:00Z',
-  updatedAt: '2024-01-01T00:00:00Z',
+const instanceWithoutSurvey: Questionnaire = {
+  ...instanceWithSurvey,
+  id: 'inst2',
+  shareToken: 'token-xyz',
+  questionnaireType: {
+    id: 'q2',
+    title: 'Empty Survey',
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
+  },
+}
+
+const submittedInstance: Questionnaire = {
+  ...instanceWithSurvey,
+  submittedAt: '2024-01-02T00:00:00Z',
 }
 
 function renderAt(path: string) {
@@ -68,98 +92,95 @@ function renderAt(path: string) {
 beforeEach(() => {
   vi.clearAllMocks()
   mockUseQuestionnaires.mockReturnValue({ data: [], isLoading: false })
-  mockUseCreateQuestionnaire.mockReturnValue({
-    mutateAsync: vi.fn(),
-    isPending: false,
-    isError: false,
-  })
+  mockUseCreateQuestionnaire.mockReturnValue({ mutate: vi.fn(), isPending: false, isError: false })
   mockUseDeleteQuestionnaire.mockReturnValue({ mutate: vi.fn(), isPending: false })
-  mockUseResponses.mockReturnValue({ data: [], isLoading: false })
 })
 
 describe('TakePage', () => {
   it('shows loading state while fetching questionnaire', async () => {
-    mockUseQuestionnaire.mockReturnValue({ data: undefined, isLoading: true, isError: false })
-    mockUseSubmitResponse.mockReturnValue({ mutate: vi.fn(), isError: false, reset: vi.fn() })
-    renderAt('/take/q1')
+    mockUseQuestionnaireByToken.mockReturnValue({ data: undefined, isLoading: true, isError: false })
+    mockUseSubmitAnswers.mockReturnValue({ mutate: vi.fn(), isError: false, reset: vi.fn() })
+    renderAt('/take/token-abc')
     expect(await screen.findByText(/loading questionnaire/i)).toBeInTheDocument()
   })
 
   it('shows error when questionnaire not found', async () => {
-    mockUseQuestionnaire.mockReturnValue({ data: undefined, isLoading: false, isError: true })
-    mockUseSubmitResponse.mockReturnValue({ mutate: vi.fn(), isError: false, reset: vi.fn() })
-    renderAt('/take/q1')
+    mockUseQuestionnaireByToken.mockReturnValue({ data: undefined, isLoading: false, isError: true })
+    mockUseSubmitAnswers.mockReturnValue({ mutate: vi.fn(), isError: false, reset: vi.fn() })
+    renderAt('/take/token-abc')
     expect(await screen.findByText(/questionnaire not found/i)).toBeInTheDocument()
   })
 
-  it('shows message when questionnaire has no survey content', async () => {
-    mockUseQuestionnaire.mockReturnValue({
-      data: questionnaireWithoutSurvey,
+  it('shows already-submitted message when submittedAt is set', async () => {
+    mockUseQuestionnaireByToken.mockReturnValue({
+      data: submittedInstance,
       isLoading: false,
       isError: false,
     })
-    mockUseSubmitResponse.mockReturnValue({ mutate: vi.fn(), isError: false, reset: vi.fn() })
-    renderAt('/take/q2')
+    mockUseSubmitAnswers.mockReturnValue({ mutate: vi.fn(), isError: false, reset: vi.fn() })
+    renderAt('/take/token-abc')
+    expect(await screen.findByText(/already submitted/i)).toBeInTheDocument()
+  })
+
+  it('shows message when questionnaire has no survey content', async () => {
+    mockUseQuestionnaireByToken.mockReturnValue({
+      data: instanceWithoutSurvey,
+      isLoading: false,
+      isError: false,
+    })
+    mockUseSubmitAnswers.mockReturnValue({ mutate: vi.fn(), isError: false, reset: vi.fn() })
+    renderAt('/take/token-xyz')
     expect(await screen.findByText(/no survey content yet/i)).toBeInTheDocument()
   })
 
   it('renders the survey title and SurveyRenderer when surveyJson exists', async () => {
-    mockUseQuestionnaire.mockReturnValue({
-      data: questionnaireWithSurvey,
+    mockUseQuestionnaireByToken.mockReturnValue({
+      data: instanceWithSurvey,
       isLoading: false,
       isError: false,
     })
-    mockUseSubmitResponse.mockReturnValue({ mutate: vi.fn(), isError: false, reset: vi.fn() })
-    renderAt('/take/q1')
+    mockUseSubmitAnswers.mockReturnValue({ mutate: vi.fn(), isError: false, reset: vi.fn() })
+    renderAt('/take/token-abc')
     expect(await screen.findByRole('heading', { name: /my test survey/i })).toBeInTheDocument()
     expect(screen.getByTestId('survey-renderer')).toBeInTheDocument()
   })
 
   it('shows thank-you message after successful submission', async () => {
-    const mockMutate = vi.fn().mockImplementation((_data, options) => {
+    const mockMutate = vi.fn().mockImplementation((_data: unknown, options: { onSuccess?: () => void }) => {
       options?.onSuccess?.()
     })
-    mockUseQuestionnaire.mockReturnValue({
-      data: questionnaireWithSurvey,
+    mockUseQuestionnaireByToken.mockReturnValue({
+      data: instanceWithSurvey,
       isLoading: false,
       isError: false,
     })
-    mockUseSubmitResponse.mockReturnValue({ mutate: mockMutate, isError: false, reset: vi.fn() })
-    renderAt('/take/q1')
+    mockUseSubmitAnswers.mockReturnValue({ mutate: mockMutate, isError: false, reset: vi.fn() })
+    renderAt('/take/token-abc')
 
     fireEvent.click(await screen.findByTestId('survey-renderer'))
     await waitFor(() => expect(screen.getByText(/thank you/i)).toBeInTheDocument())
-    expect(screen.getByText(/my test survey/i)).toBeInTheDocument()
   })
 
   it('shows error state when submission fails', async () => {
-    mockUseQuestionnaire.mockReturnValue({
-      data: questionnaireWithSurvey,
+    mockUseQuestionnaireByToken.mockReturnValue({
+      data: instanceWithSurvey,
       isLoading: false,
       isError: false,
     })
-    mockUseSubmitResponse.mockReturnValue({
-      mutate: vi.fn(),
-      isError: true,
-      reset: vi.fn(),
-    })
-    renderAt('/take/q1')
+    mockUseSubmitAnswers.mockReturnValue({ mutate: vi.fn(), isError: true, reset: vi.fn() })
+    renderAt('/take/token-abc')
     expect(await screen.findByText(/something went wrong/i)).toBeInTheDocument()
   })
 
   it('calls reset when try again is clicked after submission error', async () => {
     const mockReset = vi.fn()
-    mockUseQuestionnaire.mockReturnValue({
-      data: questionnaireWithSurvey,
+    mockUseQuestionnaireByToken.mockReturnValue({
+      data: instanceWithSurvey,
       isLoading: false,
       isError: false,
     })
-    mockUseSubmitResponse.mockReturnValue({
-      mutate: vi.fn(),
-      isError: true,
-      reset: mockReset,
-    })
-    renderAt('/take/q1')
+    mockUseSubmitAnswers.mockReturnValue({ mutate: vi.fn(), isError: true, reset: mockReset })
+    renderAt('/take/token-abc')
     fireEvent.click(await screen.findByRole('button', { name: /try again/i }))
     expect(mockReset).toHaveBeenCalled()
   })

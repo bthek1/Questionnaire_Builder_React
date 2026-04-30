@@ -1,9 +1,10 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { useQuestionnaireTypes } from '@/hooks/useQuestionnaires'
+import { useQuestionnaireTypes } from '@/hooks/useQuestionnaireTypes'
 import { CopyButton } from '@/components/ui/CopyButton'
 import { Button } from '@/components/ui/Button'
 
-export const Route = createFileRoute('/questionnaires/share')({
+export const Route = createFileRoute('/questionnaire-types/share')({
   component: ShareLinksPage,
 })
 
@@ -24,7 +25,7 @@ function ShareLinksPage() {
     <div className="space-y-6">
       <div className="flex items-center gap-3">
         <Button asChild size="sm" variant="outline">
-          <Link to="/questionnaires">← Back to list</Link>
+          <Link to="/questionnaire-types">← Back to list</Link>
         </Button>
         <h1 className="text-2xl font-semibold">Share Questionnaire Links</h1>
       </div>

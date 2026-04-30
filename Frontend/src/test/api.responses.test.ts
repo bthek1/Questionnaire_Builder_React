@@ -1,51 +1,88 @@
 import { vi, beforeEach } from 'vitest'
-import type { Questionnaire } from '@/types'
+import type { QuestionnaireType } from '@/types'
 
 vi.mock('@/lib/axios', () => ({
   apiClient: {
     get: vi.fn(),
     post: vi.fn(),
+    patch: vi.fn(),
+    delete: vi.fn(),
   },
 }))
 
 import { apiClient } from '@/lib/axios'
-import { submitResponse, getResponses } from '@/api/responses'
+import {
+  getQuestionnaireTypes,
+  getQuestionnaireType,
+  createQuestionnaireType,
+  updateQuestionnaireType,
+  deleteQuestionnaireType,
+} from '@/api/questionnaireTypes'
 
 const mockGet = apiClient.get as ReturnType<typeof vi.fn>
 const mockPost = apiClient.post as ReturnType<typeof vi.fn>
+const mockPatch = apiClient.patch as ReturnType<typeof vi.fn>
+const mockDelete = apiClient.delete as ReturnType<typeof vi.fn>
 
-const mockResponse: Questionnaire = {
-  id: 'r1',
-  questionnaireTypeId: 'q1',
-  answers: { q1: 'yes' },
-  submittedAt: '2024-01-02T00:00:00Z',
+const mockType: QuestionnaireType = {
+  id: 'qt1',
+  title: 'Test Survey',
+  surveyJson: { pages: [] },
+  createdAt: '2024-01-01T00:00:00Z',
+  updatedAt: '2024-01-01T00:00:00Z',
 }
 
 beforeEach(() => {
   vi.clearAllMocks()
 })
 
-describe('submitResponse()', () => {
-  it('posts answers and returns the created response', async () => {
-    const answers = { question1: 'yes', question2: 'no' }
-    mockPost.mockResolvedValueOnce({ data: mockResponse })
-    const result = await submitResponse('q1', answers)
-    expect(mockPost).toHaveBeenCalledWith('/questionnaires/q1/responses/', { answers })
-    expect(result).toEqual(mockResponse)
+describe('getQuestionnaireTypes()', () => {
+  it('returns array from list endpoint', async () => {
+    mockGet.mockResolvedValueOnce({ data: [mockType] })
+    const result = await getQuestionnaireTypes()
+    expect(mockGet).toHaveBeenCalledWith('/questionnaire-types/')
+    expect(result).toEqual([mockType])
+  })
+
+  it('unwraps paginated results', async () => {
+    mockGet.mockResolvedValueOnce({ data: { results: [mockType] } })
+    const result = await getQuestionnaireTypes()
+    expect(result).toEqual([mockType])
   })
 })
 
-describe('getResponses()', () => {
-  it('fetches responses for a questionnaire', async () => {
-    mockGet.mockResolvedValueOnce({ data: [mockResponse] })
-    const result = await getResponses('q1')
-    expect(mockGet).toHaveBeenCalledWith('/questionnaires/q1/responses/')
-    expect(result).toEqual([mockResponse])
-  })
-
-  it('returns empty array when no responses exist', async () => {
-    mockGet.mockResolvedValueOnce({ data: [] })
-    const result = await getResponses('q1')
-    expect(result).toHaveLength(0)
+describe('getQuestionnaireType()', () => {
+  it('fetches a single type by id', async () => {
+    mockGet.mockResolvedValueOnce({ data: mockType })
+    const result = await getQuestionnaireType('qt1')
+    expect(mockGet).toHaveBeenCalledWith('/questionnaire-types/qt1/')
+    expect(result).toEqual(mockType)
   })
 })
+
+describe('createQuestionnaireType()', () => {
+  it('posts payload and returns the new type', async () => {
+    mockPost.mockResolvedValueOnce({ data: mockType })
+    const result = await createQuestionnaireType({ title: 'Test Survey' })
+    expect(mockPost).toHaveBeenCalledWith('/questionnaire-types/', { title: 'Test Survey' })
+    expect(result).toEqual(mockType)
+  })
+})
+
+describe('updateQuestionnaireType()', () => {
+  it('patches the type and returns updated record', async () => {
+    mockPatch.mockResolvedValueOnce({ data: { ...mockType, title: 'Updated' } })
+    const result = await updateQuestionnaireType('qt1', { title: 'Updated' })
+    expect(mockPatch).toHaveBeenCalledWith('/questionnaire-types/qt1/', { title: 'Updated' })
+    expect(result.title).toBe('Updated')
+  })
+})
+
+describe('deleteQuestionnaireType()', () => {
+  it('calls delete endpoint with correct id', async () => {
+    mockDelete.mockResolvedValueOnce({})
+    await deleteQuestionnaireType('qt1')
+    expect(mockDelete).toHaveBeenCalledWith('/questionnaire-types/qt1/')
+  })
+})
+

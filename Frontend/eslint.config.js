@@ -14,11 +14,14 @@ export default defineConfig([
       js.configs.recommended,
       tseslint.configs.recommended,
       reactHooks.configs.flat.recommended,
-      reactRefresh.configs.vite,
       prettierConfig,
     ],
+    plugins: { 'react-refresh': reactRefresh },
     languageOptions: {
       globals: globals.browser,
+    },
+    rules: {
+      'react-refresh/only-export-components': ['error', { allowConstantExport: true }],
     },
   },
 ])

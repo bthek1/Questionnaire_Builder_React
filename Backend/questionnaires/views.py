@@ -3,8 +3,10 @@ from datetime import date
 
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
-from rest_framework import generics, permissions, viewsets
-from rest_framework.views import APIView
+from django.utils import timezone
+from rest_framework import permissions, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
 from .models import QuestionnaireType, Questionnaire
 from .pdf import generate_response_pdf
@@ -20,40 +22,60 @@ class QuestionnaireTypeViewSet(viewsets.ModelViewSet):
         return QuestionnaireType.objects.all()
 
 
-class ResponseListCreateView(generics.ListCreateAPIView):
+class QuestionnaireViewSet(viewsets.ModelViewSet):
     serializer_class = QuestionnaireSerializer
-
-    def get_permissions(self):
-        return [permissions.AllowAny()]
+    permission_classes = [permissions.AllowAny]
+    http_method_names = ["get", "post", "patch", "delete", "head", "options"]
 
     def get_queryset(self):
-        return Questionnaire.objects.filter(
-            questionnaire_type_id=self.kwargs["questionnaire_pk"]
-        )
+        return Questionnaire.objects.select_related("questionnaire_type").all()
 
     def perform_create(self, serializer):
-        serializer.save(questionnaire_type_id=self.kwargs["questionnaire_pk"])
+        type_id = self.request.data.get("questionnaireTypeId")
+        serializer.save(questionnaire_type_id=type_id)
 
-
-class ResponsePdfView(APIView):
-    permission_classes = [permissions.AllowAny]
-
-    def get(self, request, questionnaire_pk, response_pk):
-        questionnaire_type = get_object_or_404(QuestionnaireType, pk=questionnaire_pk)
-        response_obj = get_object_or_404(
-            Questionnaire,
-            pk=response_pk,
-            questionnaire_type=questionnaire_type,
+    @action(detail=False, methods=["get"], url_path=r"by-token/(?P<share_token>[^/.]+)")
+    def by_token(self, request, share_token=None):
+        instance = get_object_or_404(
+            Questionnaire.objects.select_related("questionnaire_type"),
+            share_token=share_token,
         )
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
+    @action(
+        detail=False,
+        methods=["patch"],
+        url_path=r"by-token/(?P<share_token>[^/.]+)/submit",
+    )
+    def submit(self, request, share_token=None):
+        instance = get_object_or_404(
+            Questionnaire.objects.select_related("questionnaire_type"),
+            share_token=share_token,
+        )
+        if instance.submitted_at is not None:
+            return Response(
+                {"detail": "Already submitted."},
+                status=status.HTTP_409_CONFLICT,
+            )
+        instance.answers = request.data.get("answers", {})
+        instance.submitted_at = timezone.now()
+        instance.save(update_fields=["answers", "submitted_at", "updated_at"])
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=["get"], url_path="pdf")
+    def pdf(self, request, pk=None):
+        instance = get_object_or_404(
+            Questionnaire.objects.select_related("questionnaire_type"), pk=pk
+        )
         try:
-            pdf_bytes = generate_response_pdf(questionnaire_type, response_obj)
+            pdf_bytes = generate_response_pdf(instance.questionnaire_type, instance)
         except ValueError as exc:
             return HttpResponse(str(exc), status=400)
 
-        safe_title = re.sub(r"[^A-Za-z0-9_-]", "-", questionnaire_type.title)[:60]
+        safe_title = re.sub(r"[^A-Za-z0-9_-]", "-", instance.questionnaire_type.title)[:60]
         filename = f"{safe_title}-{date.today().isoformat()}.pdf"
-
         http_response = HttpResponse(pdf_bytes, content_type="application/pdf")
         http_response["Content-Disposition"] = f'attachment; filename="{filename}"'
         return http_response

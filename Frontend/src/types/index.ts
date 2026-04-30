@@ -10,11 +10,11 @@ export interface QuestionnaireType {
 export interface Questionnaire {
   id: string
   questionnaireTypeId: string
-  answers: object
-  submittedAt: string
-}
-
-export interface Answer {
-  questionId: string
-  value: string | string[]
+  questionnaireType?: QuestionnaireType
+  name: string
+  shareToken: string
+  answers: Record<string, unknown>
+  submittedAt: string | null
+  createdAt: string
+  updatedAt: string
 }

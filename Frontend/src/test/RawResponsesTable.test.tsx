@@ -12,26 +12,36 @@ const responses: Questionnaire[] = [
   {
     id: 'r1',
     questionnaireTypeId: 'q1',
-    answers: [{ questionId: 'q1', value: 'Yes' }],
+    name: '',
+    shareToken: 'token-1',
+    answers: { q1: 'Yes' },
     submittedAt: '2026-04-30T14:22:00Z',
+    createdAt: '2026-04-30T00:00:00Z',
+    updatedAt: '2026-04-30T00:00:00Z',
   },
   {
     id: 'r2',
     questionnaireTypeId: 'q1',
-    answers: [{ questionId: 'q1', value: 'No' }],
+    name: '',
+    shareToken: 'token-2',
+    answers: { q1: 'No' },
     submittedAt: '2026-04-29T09:01:00Z',
+    createdAt: '2026-04-29T00:00:00Z',
+    updatedAt: '2026-04-29T00:00:00Z',
   },
 ]
 
-const longAnswers = Array.from({ length: 10 }, (_, i) => ({
-  questionId: `q${i}`,
-  value: `answer-${i}`,
-}))
+const longAnswers: Record<string, unknown> = {}
+Array.from({ length: 10 }, (_, i) => { longAnswers[`q${i}`] = `answer-${i}` })
 const longResponse: Questionnaire = {
   id: 'r3',
   questionnaireTypeId: 'q1',
+  name: '',
+  shareToken: 'token-3',
   answers: longAnswers,
   submittedAt: '2026-04-28T10:00:00Z',
+  createdAt: '2026-04-28T00:00:00Z',
+  updatedAt: '2026-04-28T00:00:00Z',
 }
 
 function expandTable() {

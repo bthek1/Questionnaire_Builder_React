@@ -14,8 +14,15 @@ class QuestionnaireTypeAdmin(admin.ModelAdmin):
 
 @admin.register(Questionnaire)
 class QuestionnaireAdmin(admin.ModelAdmin):
-    list_display = ("id", "questionnaire_type", "submitted_at")
+    list_display = (
+        "id",
+        "questionnaire_type",
+        "name",
+        "share_token",
+        "submitted_at",
+        "created_at",
+    )
     list_filter = ("questionnaire_type", "submitted_at")
-    search_fields = ("questionnaire_type__title",)
-    readonly_fields = ("id", "submitted_at")
-    ordering = ("-submitted_at",)
+    search_fields = ("questionnaire_type__title", "name")
+    readonly_fields = ("id", "share_token", "submitted_at", "created_at", "updated_at")
+    ordering = ("-created_at",)
