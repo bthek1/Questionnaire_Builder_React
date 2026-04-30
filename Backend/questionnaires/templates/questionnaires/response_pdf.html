@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>{{ questionnaire.title }} — Response</title>
+  <style>
+    /* ── Brand tokens ── */
+    :root {
+      --color-primary:            #002738;
+      --color-primary-foreground: #FFF4E5;
+      --color-background:         #F5F5F5;
+      --color-foreground:         #002738;
+      --color-muted:              #e0e6e7;
+      --color-muted-foreground:   #5b6268;
+      --color-footer:             #00354D;
+      --font: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    /* ── Page setup ── */
+    @page {
+      size: A4;
+      margin: 15mm;
+      @bottom-center {
+        content: "Recovery Metrics  ·  Page " counter(page) " of " counter(pages);
+        font-family: var(--font);
+        font-size: 8pt;
+        color: var(--color-primary-foreground);
+        background: var(--color-footer);
+        padding: 4mm 8mm;
+        width: 100%;
+        text-align: center;
+      }
+    }
+
+    /* ── Base ── */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font);
+      font-size: 10pt;
+      color: var(--color-foreground);
+      background: var(--color-background);
+      line-height: 1.5;
+    }
+
+    /* ── Header bar ── */
+    .header {
+      background: var(--color-primary);
+      color: var(--color-primary-foreground);
+      padding: 12mm 15mm 10mm;
+      margin: -15mm -15mm 0;
+    }
+
+    .header h1 {
+      font-size: 18pt;
+      font-weight: 700;
+      margin-bottom: 2mm;
+    }
+
+    .header .meta {
+      font-size: 9pt;
+      opacity: 0.8;
+    }
+
+    /* ── Description ── */
+    .description {
+      margin: 8mm 0 6mm;
+      font-size: 9.5pt;
+      color: var(--color-muted-foreground);
+      border-left: 3pt solid var(--color-muted);
+      padding-left: 4mm;
+    }
+
+    /* ── Question cards ── */
+    .question-card {
+      background: white;
+      border: 1pt solid var(--color-muted);
+      border-radius: 3pt;
+      padding: 5mm 6mm;
+      margin-bottom: 4mm;
+      page-break-inside: avoid;
+    }
+
+    .question-title {
+      font-size: 9.5pt;
+      font-weight: 700;
+      color: var(--color-primary);
+      margin-bottom: 2mm;
+    }
+
+    .question-answer {
+      font-size: 9.5pt;
+      color: var(--color-muted-foreground);
+    }
+
+    .question-answer.empty {
+      font-style: italic;
+      color: #aaa;
+    }
+
+    /* ── Section label ── */
+    .section-label {
+      font-size: 8pt;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-muted-foreground);
+      margin: 6mm 0 3mm;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <h1>{{ questionnaire.title }}</h1>
+    <div class="meta">Submitted: {{ response.submitted_at|date:"N j, Y, g:i a" }}</div>
+  </div>
+
+  {% if questionnaire.description %}
+  <div class="description">{{ questionnaire.description }}</div>
+  {% endif %}
+
+  <div class="section-label">Responses</div>
+
+  {% for q in questions %}
+  <div class="question-card">
+    <div class="question-title">{{ q.title }}</div>
+    {% if q.display_value %}
+    <div class="question-answer">{{ q.display_value }}</div>
+    {% else %}
+    <div class="question-answer empty">—</div>
+    {% endif %}
+  </div>
+  {% empty %}
+  <p style="color: var(--color-muted-foreground); font-style: italic;">No questions found for this questionnaire.</p>
+  {% endfor %}
+
+</body>
+</html>

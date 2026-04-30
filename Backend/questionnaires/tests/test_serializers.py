@@ -10,12 +10,20 @@ from questionnaires.serializers import (
 class TestQuestionnaireSerializer:
     def test_serializes_expected_fields(self, questionnaire):
         data = QuestionnaireSerializer(questionnaire).data
-        assert set(data.keys()) == {"id", "title", "description", "questions", "surveyJson", "createdAt", "updatedAt"}
+        assert set(data.keys()) == {
+            "id",
+            "title",
+            "description",
+            "surveyJson",
+            "createdAt",
+            "updatedAt",
+        }
 
     def test_survey_json_camel_case(self, questionnaire):
         data = QuestionnaireSerializer(questionnaire).data
         assert "surveyJson" in data
         assert "survey_json" not in data
+        assert "questions" not in data
 
     def test_created_at_camel_case(self, questionnaire):
         data = QuestionnaireSerializer(questionnaire).data
@@ -24,7 +32,10 @@ class TestQuestionnaireSerializer:
 
     def test_id_is_read_only(self):
         import uuid
-        serializer = QuestionnaireSerializer(data={"id": str(uuid.uuid4()), "title": "Test"})
+
+        serializer = QuestionnaireSerializer(
+            data={"id": str(uuid.uuid4()), "title": "Test"}
+        )
         assert serializer.is_valid()
         assert "id" not in serializer.validated_data
 
@@ -42,13 +53,17 @@ class TestQuestionnaireSerializer:
         assert serializer.is_valid(), serializer.errors
 
     def test_partial_update(self, questionnaire):
-        serializer = QuestionnaireSerializer(questionnaire, data={"title": "Updated"}, partial=True)
+        serializer = QuestionnaireSerializer(
+            questionnaire, data={"title": "Updated"}, partial=True
+        )
         assert serializer.is_valid(), serializer.errors
         instance = serializer.save()
         assert instance.title == "Updated"
 
     def test_survey_json_saves_to_snake_case_field(self, db):
-        serializer = QuestionnaireSerializer(data={"title": "Test", "surveyJson": {"pages": []}})
+        serializer = QuestionnaireSerializer(
+            data={"title": "Test", "surveyJson": {"pages": []}}
+        )
         assert serializer.is_valid(), serializer.errors
         instance = serializer.save()
         assert instance.survey_json == {"pages": []}

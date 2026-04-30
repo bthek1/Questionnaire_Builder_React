@@ -1,4 +1,3 @@
-
 import pytest
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
@@ -23,7 +22,11 @@ def questionnaire(db):
     return Questionnaire.objects.create(
         title="Test Questionnaire",
         description="A test description",
-        survey_json={"pages": [{"elements": [{"type": "text", "name": "q1", "title": "Question 1"}]}]},
+        survey_json={
+            "pages": [
+                {"elements": [{"type": "text", "name": "q1", "title": "Question 1"}]}
+            ]  # noqa: E501
+        },
     )
 
 

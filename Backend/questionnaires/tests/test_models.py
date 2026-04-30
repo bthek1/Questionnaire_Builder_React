@@ -29,6 +29,7 @@ class TestQuestionnaireModel:
 
     def test_id_is_uuid(self, questionnaire):
         import uuid
+
         assert isinstance(questionnaire.id, uuid.UUID)
 
     def test_timestamps_set_on_create(self, questionnaire):
@@ -56,8 +57,8 @@ class TestQuestionnaireModel:
 
     def test_title_max_length(self, db):
         long_title = "a" * 256
-        with pytest.raises(Exception):
-            q = Questionnaire(title=long_title)
+        q = Questionnaire(title=long_title)
+        with pytest.raises(Exception):  # noqa: B017, PT011
             q.full_clean()
 
 
@@ -74,6 +75,7 @@ class TestQuestionnaireResponseModel:
 
     def test_id_is_uuid(self, response_for):
         import uuid
+
         assert isinstance(response_for.id, uuid.UUID)
 
     def test_cascade_delete_with_questionnaire(self, questionnaire, response_for):

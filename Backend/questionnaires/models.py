@@ -8,7 +8,13 @@ User = get_user_model()
 
 class Questionnaire(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    owner = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="questionnaires")
+    owner = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="questionnaires",
+    )
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
     questions = models.JSONField(default=list, blank=True)
@@ -19,6 +25,9 @@ class Questionnaire(models.Model):
     class Meta:
         ordering = ["-created_at"]
 
+    def __str__(self) -> str:
+        return self.title
+
 
 class QuestionnaireResponse(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -27,3 +36,6 @@ class QuestionnaireResponse(models.Model):
     )
     answers = models.JSONField(default=list)
     submitted_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self) -> str:
+        return f"{self.questionnaire} - {self.submitted_at}"

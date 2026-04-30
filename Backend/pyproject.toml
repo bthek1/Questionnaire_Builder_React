@@ -12,6 +12,7 @@ dependencies = [
     "django-cors-headers ~=4.4",
     "psycopg[binary] ~=3.3",
     "python-decouple ~=3.8",
+    "weasyprint>=68.1",
 ]
 
 [build-system]

@@ -1,5 +1,5 @@
 def main():
-    print("Hello from backend!")
+    print("Hello from backend!")  # noqa: T201
 
 
 if __name__ == "__main__":
