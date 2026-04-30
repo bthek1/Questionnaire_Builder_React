@@ -363,8 +363,8 @@ localStorage.setItem('access_token', access)
 
 ### Step 10 — Verification checklist
 
-- [ ] `docker compose up -d db` — postgres container healthy
-- [ ] `uv run python manage.py migrate` — no errors
+- [x] `docker compose up -d db` — postgres container healthy
+- [x] `uv run python manage.py migrate` — no errors
 - [ ] `uv run python manage.py runserver` — starts on port 8000
 - [ ] `GET /api/questionnaires/` with Bearer token → 200 empty list
 - [ ] `POST /api/questionnaires/` → 201 with UUID id + camelCase fields
