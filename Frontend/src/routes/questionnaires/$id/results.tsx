@@ -9,28 +9,65 @@ export const Route = createFileRoute('/questionnaires/$id/results')({
   component: ResultsPage,
 })
 
-interface CalcValue {
+interface MetricResult {
   name: string
-  title?: string
+  label: string
   value: unknown
 }
 
-function evaluateMetrics(surveyJson: object, answers: Record<string, unknown>): CalcValue[] {
+/** Convert snake_case / camelCase names to "Title Case" for display. */
+function formatLabel(name: string): string {
+  return name
+    .replace(/_/g, ' ')
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .replace(/\b\w/g, (c) => c.toUpperCase())
+}
+
+/**
+ * Evaluate all calculatedValues from the surveyJson against the stored answers.
+ *
+ * How SurveyJS calculatedValues work:
+ *  - Each entry in `surveyJson.calculatedValues` has a `name` and an `expression`.
+ *  - SurveyJS re-evaluates the expression whenever any referenced question value changes.
+ *  - `includeIntoResult: true` causes the result to be merged into `survey.data` on completion
+ *    (so it's already stored in `instance.answers`).
+ *  - After `model.data = answers`, all expressions are re-evaluated synchronously.
+ *  - The results are accessible via `model.calculatedValues` — an array of CalculatedValue
+ *    objects, each with `.name` and `.value`.
+ */
+function evaluateMetrics(surveyJson: object, answers: Record<string, unknown>): MetricResult[] {
   const json = surveyJson as Record<string, unknown>
   const calcDefs = Array.isArray(json.calculatedValues)
-    ? (json.calculatedValues as Array<{ name: string; title?: string; includeIntoResult?: boolean }>)
+    ? (json.calculatedValues as Array<{ name: string; title?: string }>)
     : []
-
   if (calcDefs.length === 0) return []
 
+  // Build a label map from the JSON defs (title is optional in surveyJson)
+  const labelByName = Object.fromEntries(
+    calcDefs.map((d) => [d.name, d.title ? String(d.title) : formatLabel(d.name)]),
+  )
+
+  // Feed answers into a fresh model — this triggers synchronous re-evaluation of all
+  // calculatedValues expressions so model.calculatedValues[i].value is up-to-date.
   const model = new Model(surveyJson)
   model.data = answers
 
-  return calcDefs.map((def) => ({
-    name: def.name,
-    title: def.title ?? def.name,
-    value: model.getValue(def.name),
-  }))
+  // model.calculatedValues is CalculatedValue[] with .name and .value
+  const cvMap = new Map(
+    (model.calculatedValues as Array<{ name: string; value: unknown }>).map((cv) => [
+      cv.name,
+      cv.value,
+    ]),
+  )
+
+  return calcDefs
+    .filter((def) => def.name in labelByName)
+    .map((def) => ({
+      name: def.name,
+      label: labelByName[def.name],
+      // Prefer the freshly evaluated value; fall back to stored answer (includeIntoResult case)
+      value: cvMap.has(def.name) ? cvMap.get(def.name) : answers[def.name],
+    }))
 }
 
 function ResultsPage() {
@@ -104,7 +141,7 @@ function ResultsPage() {
               key={m.name}
               className="rounded-lg border bg-[var(--color-card)] px-6 py-5 shadow-sm"
             >
-              <p className="mb-1 text-sm text-[var(--color-muted-foreground)]">{m.title}</p>
+              <p className="mb-1 text-sm text-[var(--color-muted-foreground)]">{m.label}</p>
               <p className="text-3xl font-bold text-[var(--color-primary)]">
                 {m.value !== null && m.value !== undefined ? String(m.value) : '—'}
               </p>
@@ -115,4 +152,5 @@ function ResultsPage() {
     </div>
   )
 }
+
 
