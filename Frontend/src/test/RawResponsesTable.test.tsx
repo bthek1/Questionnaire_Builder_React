@@ -1,14 +1,14 @@
 import { render, screen, fireEvent } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { RawResponsesTable } from '@/components/questionnaire/RawResponsesTable'
-import type { QuestionnaireResponse } from '@/types'
+import type { Questionnaire } from '@/types'
 
 function wrapper({ children }: { children: React.ReactNode }) {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   return <QueryClientProvider client={qc}>{children}</QueryClientProvider>
 }
 
-const responses: QuestionnaireResponse[] = [
+const responses: Questionnaire[] = [
   {
     id: 'r1',
     questionnaireTypeId: 'q1',
@@ -27,7 +27,7 @@ const longAnswers = Array.from({ length: 10 }, (_, i) => ({
   questionId: `q${i}`,
   value: `answer-${i}`,
 }))
-const longResponse: QuestionnaireResponse = {
+const longResponse: Questionnaire = {
   id: 'r3',
   questionnaireTypeId: 'q1',
   answers: longAnswers,

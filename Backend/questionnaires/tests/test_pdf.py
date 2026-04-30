@@ -1,7 +1,7 @@
 import pytest
 from django.template.loader import render_to_string
 
-from questionnaires.models import QuestionnaireType, QuestionnaireResponse
+from questionnaires.models import QuestionnaireType, Questionnaire
 from questionnaires.pdf import _resolve_questions, generate_response_pdf
 
 
@@ -46,7 +46,7 @@ class TestResponsePdfTemplate:
                 "pages": [{"elements": [{"type": "text", "name": "q1", "title": "Q1"}]}]
             },
         )
-        r = QuestionnaireResponse.objects.create(questionnaire_type=q, answers={})
+        r = Questionnaire.objects.create(questionnaire_type=q, answers={})
         questions = _resolve_questions(q.survey_json, {})
         html = render_to_string(
             "questionnaires/response_pdf.html",
@@ -67,7 +67,7 @@ class TestGenerateResponsePdf:
 
     def test_raises_on_empty_survey_json(self, db):
         q = QuestionnaireType.objects.create(title="Empty", survey_json={})
-        r = QuestionnaireResponse.objects.create(questionnaire_type=q, answers={})
+        r = Questionnaire.objects.create(questionnaire_type=q, answers={})
         with pytest.raises(ValueError, match="survey_json is empty"):
             generate_response_pdf(q, r)
 
@@ -78,7 +78,7 @@ class TestGenerateResponsePdf:
                 "pages": [{"elements": [{"type": "text", "name": "q1", "title": "Q1"}]}]
             },
         )
-        r = QuestionnaireResponse.objects.create(questionnaire_type=q, answers={})
+        r = Questionnaire.objects.create(questionnaire_type=q, answers={})
         result = generate_response_pdf(q, r)
         assert isinstance(result, bytes)
 

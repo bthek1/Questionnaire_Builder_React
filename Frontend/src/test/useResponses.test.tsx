@@ -2,7 +2,7 @@ import { renderHook, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { vi, beforeEach } from 'vitest'
 import type { ReactNode } from 'react'
-import type { QuestionnaireResponse } from '@/types'
+import type { Questionnaire } from '@/types'
 
 vi.mock('@/api/responses', () => ({
   submitResponse: vi.fn(),
@@ -15,7 +15,7 @@ import { useSubmitResponse, useResponses, responseKeys } from '@/hooks/useRespon
 const mockSubmitResponse = submitResponse as ReturnType<typeof vi.fn>
 const mockGetResponses = getResponses as ReturnType<typeof vi.fn>
 
-const sampleResponse: QuestionnaireResponse = {
+const sampleResponse: Questionnaire = {
   id: 'r1',
   questionnaireTypeId: 'q1',
   answers: [{ questionId: 'q1', value: 'yes' }],

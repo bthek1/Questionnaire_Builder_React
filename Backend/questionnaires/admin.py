@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import QuestionnaireType, QuestionnaireResponse
+from .models import QuestionnaireType, Questionnaire
 
 
 @admin.register(QuestionnaireType)
@@ -12,8 +12,8 @@ class QuestionnaireTypeAdmin(admin.ModelAdmin):
     ordering = ("-created_at",)
 
 
-@admin.register(QuestionnaireResponse)
-class QuestionnaireResponseAdmin(admin.ModelAdmin):
+@admin.register(Questionnaire)
+class QuestionnaireAdmin(admin.ModelAdmin):
     list_display = ("id", "questionnaire_type", "submitted_at")
     list_filter = ("questionnaire_type", "submitted_at")
     search_fields = ("questionnaire_type__title",)

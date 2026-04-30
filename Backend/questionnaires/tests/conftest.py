@@ -2,7 +2,7 @@ import pytest
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
 
-from questionnaires.models import QuestionnaireType, QuestionnaireResponse
+from questionnaires.models import QuestionnaireType, Questionnaire
 
 User = get_user_model()
 
@@ -42,7 +42,7 @@ def questionnaire_with_owner(db, user):
 
 @pytest.fixture
 def response_for(questionnaire):
-    return QuestionnaireResponse.objects.create(
+    return Questionnaire.objects.create(
         questionnaire_type=questionnaire,
         answers={"q1": "Answer text"},
     )

@@ -7,7 +7,7 @@ export interface QuestionnaireType {
   updatedAt: string
 }
 
-export interface QuestionnaireResponse {
+export interface Questionnaire {
   id: string
   questionnaireTypeId: string
   answers: object

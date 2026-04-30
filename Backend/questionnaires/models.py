@@ -28,7 +28,7 @@ class QuestionnaireType(models.Model):
         return self.title
 
 
-class QuestionnaireResponse(models.Model):
+class Questionnaire(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     questionnaire_type = models.ForeignKey(
         QuestionnaireType, on_delete=models.CASCADE, related_name="responses"

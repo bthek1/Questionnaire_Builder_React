@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import type { QuestionnaireResponse } from '@/types'
+import type { Questionnaire } from '@/types'
 
 interface Props {
-  responses: QuestionnaireResponse[]
+  responses: Questionnaire[]
 }
 
 const TRUNCATE_LENGTH = 120

@@ -6,9 +6,9 @@ from django.shortcuts import get_object_or_404
 from rest_framework import generics, permissions, viewsets
 from rest_framework.views import APIView
 
-from .models import QuestionnaireType, QuestionnaireResponse
+from .models import QuestionnaireType, Questionnaire
 from .pdf import generate_response_pdf
-from .serializers import QuestionnaireResponseSerializer, QuestionnaireTypeSerializer
+from .serializers import QuestionnaireSerializer, QuestionnaireTypeSerializer
 
 
 class QuestionnaireTypeViewSet(viewsets.ModelViewSet):
@@ -21,13 +21,13 @@ class QuestionnaireTypeViewSet(viewsets.ModelViewSet):
 
 
 class ResponseListCreateView(generics.ListCreateAPIView):
-    serializer_class = QuestionnaireResponseSerializer
+    serializer_class = QuestionnaireSerializer
 
     def get_permissions(self):
         return [permissions.AllowAny()]
 
     def get_queryset(self):
-        return QuestionnaireResponse.objects.filter(
+        return Questionnaire.objects.filter(
             questionnaire_type_id=self.kwargs["questionnaire_pk"]
         )
 
@@ -41,7 +41,7 @@ class ResponsePdfView(APIView):
     def get(self, request, questionnaire_pk, response_pk):
         questionnaire_type = get_object_or_404(QuestionnaireType, pk=questionnaire_pk)
         response_obj = get_object_or_404(
-            QuestionnaireResponse,
+            Questionnaire,
             pk=response_pk,
             questionnaire_type=questionnaire_type,
         )

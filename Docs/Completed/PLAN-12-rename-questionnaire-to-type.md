@@ -32,10 +32,9 @@ from PLAN-11 (that restructure happens after this plan completes).
 
 ## Phase 1: Django Model & Migration
 
-**Status**: Not started
+**Status**: ✅ Completed 2026-04-30
 
-**Goal**: Rename the Django model from `Questionnaire` to `QuestionnaireType` and
-update the FK on `QuestionnaireResponse`, preserving all existing rows.
+**Goal**: Rename the Django model class and update the FK on `QuestionnaireResponse`, preserving all existing rows.
 
 **Deliverables**:
 
@@ -89,7 +88,7 @@ update the FK on `QuestionnaireResponse`, preserving all existing rows.
 
 ## Phase 2: Backend Serializers, Views & URLs
 
-**Status**: Not started
+**Status**: ✅ Completed 2026-04-30
 
 **Goal**: Update all backend Python code that references `Questionnaire` (the old
 model name) to use `QuestionnaireType`.
@@ -134,7 +133,7 @@ model name) to use `QuestionnaireType`.
 
 ## Phase 3: Frontend — TypeScript Types & API Layer
 
-**Status**: Not started
+**Status**: ✅ Completed 2026-04-30
 
 **Goal**: Update the TypeScript types and API client to reflect the renamed model
 while keeping the public API URL paths unchanged (they still hit `/api/questionnaires/`
@@ -182,7 +181,7 @@ until PLAN-11 changes the URL layout).
 
 ## Phase 4: Frontend — Routes & Components
 
-**Status**: Not started
+**Status**: ✅ Completed 2026-04-30
 
 **Goal**: Update every route file and component that imports `Questionnaire` type or
 `useQuestionnaires` hook to use the renamed equivalents.
@@ -212,7 +211,7 @@ until PLAN-11 changes the URL layout).
 
 ## Phase 5: Final Verification & Docs
 
-**Status**: Not started
+**Status**: ✅ Completed 2026-04-30
 
 **Goal**: Confirm zero data loss and no broken references across the full stack.
 

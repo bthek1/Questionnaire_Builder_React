@@ -6,7 +6,7 @@ from django.template.loader import render_to_string
 
 import weasyprint
 
-from .models import QuestionnaireType, QuestionnaireResponse
+from .models import QuestionnaireType, Questionnaire
 
 
 def _build_label_map(choices: list) -> dict[str, str]:

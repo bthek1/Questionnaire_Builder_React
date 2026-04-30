@@ -101,7 +101,7 @@ See [Docs/SurveyJS/](Docs/SurveyJS/README.md) for full per-package docs.
 
 > See [`.github/instructions/surveyjs.instructions.md`](.github/instructions/surveyjs.instructions.md) for detailed patterns.
 
-- **`Questionnaire.surveyJson`** (type `object`) stores the raw SurveyJS JSON schema. The old `questions: Question[]` array is superseded by this field.
+- **`QuestionnaireType.surveyJson`** (type `object`) stores the raw SurveyJS JSON schema. The old `questions: Question[]` array is superseded by this field.
 - **JSON editor** saves via `PATCH /questionnaires/:id` with `{ surveyJson: <parsed JSON> }`.
 - **Survey Renderer** submits via `survey.onComplete.add` → `POST /questionnaires/:id/responses`.
 - **SurveyJS components are not SSR-safe** — this is a Vite SPA so no issue, but do not attempt server rendering.
@@ -130,7 +130,7 @@ See [Docs/SurveyJS/](Docs/SurveyJS/README.md) for full per-package docs.
 - Set `VITE_API_BASE_URL` in `Frontend/.env` to point at the backend; defaults to `/api`.
 - Response API lives in `Frontend/src/api/responses.ts` — `submitResponse(id, data)` and `getResponses(id)`.
 - Response hooks live in `Frontend/src/hooks/useResponses.ts` — follow the same query-key factory pattern as [`useQuestionnaires.ts`](Frontend/src/hooks/useQuestionnaires.ts).
-- The `/take/:id` route calls `getQuestionnaire` without auth (public); responses are submitted without auth.
+- The `/take/:id` route calls `getQuestionnaireType` without auth (public); responses are submitted without auth.
 
 ### UI Components
 - Reusable primitives live in `Frontend/src/components/ui/`. Use the `cn()` helper from `Frontend/src/lib/utils.ts` for className merging.
@@ -139,7 +139,7 @@ See [Docs/SurveyJS/](Docs/SurveyJS/README.md) for full per-package docs.
 
 ### TypeScript
 - Strict mode + `noUnusedLocals` + `noUnusedParameters` — unused variables cause **build failures**.
-- `Questionnaire.surveyJson` is `object` (raw SurveyJS JSON). The old `questions: Question[]` array is **not** used for SurveyJS-powered forms.
+- `QuestionnaireType.surveyJson` is `object` (raw SurveyJS JSON). The old `questions: Question[]` array is **not** used for SurveyJS-powered forms.
 - Import alias `@/` maps to `Frontend/src/`.
 
 ---

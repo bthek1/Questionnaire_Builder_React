@@ -1,5 +1,5 @@
 import { vi, beforeEach } from 'vitest'
-import type { QuestionnaireResponse } from '@/types'
+import type { Questionnaire } from '@/types'
 
 vi.mock('@/lib/axios', () => ({
   apiClient: {
@@ -14,7 +14,7 @@ import { submitResponse, getResponses } from '@/api/responses'
 const mockGet = apiClient.get as ReturnType<typeof vi.fn>
 const mockPost = apiClient.post as ReturnType<typeof vi.fn>
 
-const mockResponse: QuestionnaireResponse = {
+const mockResponse: Questionnaire = {
   id: 'r1',
   questionnaireTypeId: 'q1',
   answers: { q1: 'yes' },

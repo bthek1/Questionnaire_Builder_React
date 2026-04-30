@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import QuestionnaireType, QuestionnaireResponse
+from .models import QuestionnaireType, Questionnaire
 
 
 class QuestionnaireTypeSerializer(serializers.ModelSerializer):
@@ -14,13 +14,13 @@ class QuestionnaireTypeSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "createdAt", "updatedAt"]
 
 
-class QuestionnaireResponseSerializer(serializers.ModelSerializer):
+class QuestionnaireSerializer(serializers.ModelSerializer):
     questionnaireTypeId = serializers.UUIDField(
         source="questionnaire_type_id", read_only=True
     )  # noqa: N815
     submittedAt = serializers.DateTimeField(source="submitted_at", read_only=True)  # noqa: N815
 
     class Meta:
-        model = QuestionnaireResponse
+        model = Questionnaire
         fields = ["id", "questionnaireTypeId", "answers", "submittedAt"]
         read_only_fields = ["id", "questionnaireTypeId", "submittedAt"]

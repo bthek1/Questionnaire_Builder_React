@@ -75,11 +75,6 @@ function QuestionnairesPage() {
                         </Link>
                       </Button>
                       <CopyButton id={q.id} label="Share" />
-                      <Button asChild size="sm" variant="outline">
-                        <Link to="/questionnaires/$id/results" params={{ id: q.id }}>
-                          Results
-                        </Link>
-                      </Button>
                       <Button
                         size="sm"
                         variant="destructive"

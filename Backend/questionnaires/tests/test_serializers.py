@@ -1,7 +1,7 @@
 import pytest
 
 from questionnaires.serializers import (
-    QuestionnaireResponseSerializer,
+    QuestionnaireSerializer,
     QuestionnaireTypeSerializer,
 )
 
@@ -72,7 +72,7 @@ class TestQuestionnaireSerializer:
 @pytest.mark.django_db
 class TestQuestionnaireResponseSerializer:
     def test_serializes_expected_fields(self, response_for):
-        data = QuestionnaireResponseSerializer(response_for).data
+        data = QuestionnaireSerializer(response_for).data
         assert set(data.keys()) == {
             "id",
             "questionnaireTypeId",
@@ -81,18 +81,18 @@ class TestQuestionnaireResponseSerializer:
         }
 
     def test_questionnaire_id_camel_case(self, response_for):
-        data = QuestionnaireResponseSerializer(response_for).data
+        data = QuestionnaireSerializer(response_for).data
         assert "questionnaireTypeId" in data
         assert str(response_for.questionnaire_type_id) == data["questionnaireTypeId"]
 
     def test_submitted_at_camel_case(self, response_for):
-        data = QuestionnaireResponseSerializer(response_for).data
+        data = QuestionnaireSerializer(response_for).data
         assert "submittedAt" in data
 
     def test_valid_create(self, questionnaire):
-        serializer = QuestionnaireResponseSerializer(data={"answers": {"q1": "yes"}})
+        serializer = QuestionnaireSerializer(data={"answers": {"q1": "yes"}})
         assert serializer.is_valid(), serializer.errors
 
     def test_answers_defaults_to_empty_list(self, questionnaire):
-        serializer = QuestionnaireResponseSerializer(data={})
+        serializer = QuestionnaireSerializer(data={})
         assert serializer.is_valid(), serializer.errors

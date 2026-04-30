@@ -1,19 +1,19 @@
 import { apiClient } from '@/lib/axios'
-import type { QuestionnaireResponse } from '@/types'
+import type { Questionnaire } from '@/types'
 
 export async function submitResponse(
   questionnaireId: string,
   answers: object,
-): Promise<QuestionnaireResponse> {
-  const { data } = await apiClient.post<QuestionnaireResponse>(
+): Promise<Questionnaire> {
+  const { data } = await apiClient.post<Questionnaire>(
     `/questionnaires/${questionnaireId}/responses/`,
     { answers },
   )
   return data
 }
 
-export async function getResponses(questionnaireId: string): Promise<QuestionnaireResponse[]> {
-  const { data } = await apiClient.get<QuestionnaireResponse[]>(
+export async function getResponses(questionnaireId: string): Promise<Questionnaire[]> {
+  const { data } = await apiClient.get<Questionnaire[]>(
     `/questionnaires/${questionnaireId}/responses/`,
   )
   return data

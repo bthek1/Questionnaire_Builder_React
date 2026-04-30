@@ -1,6 +1,6 @@
 import pytest
 
-from questionnaires.models import QuestionnaireType, QuestionnaireResponse
+from questionnaires.models import QuestionnaireType, Questionnaire
 
 
 @pytest.mark.django_db
@@ -62,7 +62,7 @@ class TestQuestionnaireModel:
 @pytest.mark.django_db
 class TestQuestionnaireResponseModel:
     def test_creation_defaults(self, questionnaire):
-        r = QuestionnaireResponse.objects.create(
+        r = Questionnaire.objects.create(
             questionnaire_type=questionnaire,
             answers={"q1": "hello"},
         )
@@ -78,11 +78,11 @@ class TestQuestionnaireResponseModel:
     def test_cascade_delete_with_questionnaire(self, questionnaire, response_for):
         qr_id = response_for.id
         questionnaire.delete()
-        assert not QuestionnaireResponse.objects.filter(id=qr_id).exists()
+        assert not Questionnaire.objects.filter(id=qr_id).exists()
 
     def test_related_name_responses(self, questionnaire, response_for):
         assert questionnaire.responses.count() == 1
 
     def test_answers_default_is_list(self, questionnaire):
-        r = QuestionnaireResponse.objects.create(questionnaire_type=questionnaire)
+        r = Questionnaire.objects.create(questionnaire_type=questionnaire)
         assert r.answers == []

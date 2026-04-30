@@ -1,6 +1,6 @@
 import pytest
 
-from questionnaires.models import QuestionnaireType, QuestionnaireResponse
+from questionnaires.models import QuestionnaireType, Questionnaire
 
 QUESTIONNAIRES_LIST_URL = "/api/questionnaires/"
 
@@ -110,9 +110,11 @@ class TestResponseListCreate:
         assert len(response.data) == 1
 
     def test_list_scoped_to_questionnaire(self, api_client, db):
-        q1 = QuestionnaireType.objects.create(title="Q1")
+        QuestionnaireType.objects.create(title="Q1")
         q2 = QuestionnaireType.objects.create(title="Q2")
-        QuestionnaireResponse.objects.create(questionnaire_type=q1, answers={})
+        Questionnaire.objects.create(
+            questionnaire_type=QuestionnaireType.objects.get(title="Q1"), answers={}
+        )
         response = api_client.get(responses_url(q2.id))
         assert response.data == []
 
@@ -123,10 +125,7 @@ class TestResponseListCreate:
         )
         assert response.status_code == 201
         assert (
-            QuestionnaireResponse.objects.filter(
-                questionnaire_type=questionnaire
-            ).count()
-            == 1
+            Questionnaire.objects.filter(questionnaire_type=questionnaire).count() == 1
         )  # noqa: E501
 
     def test_create_response_sets_questionnaire(self, api_client, questionnaire):
@@ -184,6 +183,6 @@ class TestResponsePdfView:
 
     def test_empty_survey_json_returns_400(self, api_client, db):
         q = QuestionnaireType.objects.create(title="Empty", survey_json={})
-        r = QuestionnaireResponse.objects.create(questionnaire_type=q, answers={})
+        r = Questionnaire.objects.create(questionnaire_type=q, answers={})
         response = api_client.get(pdf_url(q.id, r.id))
         assert response.status_code == 400

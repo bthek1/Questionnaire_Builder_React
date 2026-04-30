@@ -4,7 +4,7 @@ import { Model } from 'survey-core'
 import { useQuestionnaireType } from '@/hooks/useQuestionnaires'
 import { useResponses } from '@/hooks/useResponses'
 import { Button } from '@/components/ui/Button'
-import type { QuestionnaireResponse } from '@/types'
+import type { Questionnaire } from '@/types'
 
 export const Route = createFileRoute('/responses/$id/')({
   component: ResponseDetailPage,
@@ -99,7 +99,7 @@ function ResponseRow({
   surveyJson,
 }: {
   index: number
-  response: QuestionnaireResponse
+  response: Questionnaire
   questionnaireId: string
   surveyJson: object
 }) {
