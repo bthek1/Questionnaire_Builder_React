@@ -3,6 +3,7 @@ import { SurveyPDF } from 'survey-pdf'
 import { useQuestionnaire } from '@/hooks/useQuestionnaires'
 import { useResponses } from '@/hooks/useResponses'
 import { SurveyDashboard } from '@/components/survey/SurveyDashboard'
+import { RawResponsesTable } from '@/components/questionnaire/RawResponsesTable'
 import { Button } from '@/components/ui/Button'
 
 export const Route = createFileRoute('/questionnaires/$id/results')({
@@ -102,6 +103,9 @@ function ResultsPage() {
           responses={responseList as object[]}
         />
       )}
+
+      {/* Raw Responses */}
+      <RawResponsesTable responses={responseList} />
     </div>
   )
 }

@@ -12,7 +12,7 @@ Refer to [AGENTS.md](../../AGENTS.md) for architecture conventions and [.github/
 ## 0. Install SurveyJS packages
 
 ```bash
-pnpm add survey-react-ui survey-creator-react survey-analytics survey-pdf
+pnpm add survey-react-ui survey-analytics survey-pdf
 ```
 
 ---
@@ -98,23 +98,14 @@ export function useSubmitResponse(questionnaireId: string) {
 
 ## 4. Create SurveyJS Components
 
-### 4a. Survey Creator — `src/components/survey/SurveyCreatorWidget.tsx`
-
-See the full pattern in [surveyjs.instructions.md](../instructions/surveyjs.instructions.md#survey-creator-widget).
-
-- Accept `questionnaireId: string` and `initialJson?: object` as props.
-- Instantiate `SurveyCreator` inside `useState` initialiser (never in render body).
-- `saveSurveyFunc` → `updateQuestionnaire(questionnaireId, { surveyJson: creator.JSON })`.
-- Import `survey-core/survey-core.css` and `survey-creator-core/survey-creator-core.css`.
-
-### 4b. Survey Renderer — `src/components/survey/SurveyRenderer.tsx`
+### 4a. Survey Renderer — `src/components/survey/SurveyRenderer.tsx`
 
 - Accept `questionnaireId: string`, `surveyJson: object`, and `onComplete?: () => void`.
 - Create `Model` inside `useMemo`.
 - `model.onComplete.add(sender => submitResponse(questionnaireId, sender.data))`.
 - Import `survey-core/survey-core.css`.
 
-### 4c. Survey Dashboard — `src/components/survey/SurveyDashboard.tsx`
+### 4b. Survey Dashboard — `src/components/survey/SurveyDashboard.tsx`
 
 - Accept `surveyJson: object` and `responses: object[]`.
 - Create `VisualizationPanel` in `useEffect`; call `panel.clear()` in cleanup.
@@ -187,8 +178,7 @@ Create each file below. Follow the `createFileRoute` pattern from [`src/routes/i
 ### 7b. `src/routes/questionnaires/new.tsx` — Create New Questionnaire
 
 1. Render a small form (title + optional description) using `@tanstack/react-form`.
-2. On submit, call `useCreateQuestionnaire()`, then navigate to `/questionnaires/$id/edit` with the new id.
-3. Do **not** embed Survey Creator here — the creator lives in the edit route.
+2. On submit, call `useCreateQuestionnaire()`, then navigate to `/questionnaires/$id/json` with the new id.
 
 ```tsx
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
@@ -196,12 +186,12 @@ import { useCreateQuestionnaire } from '@/hooks/useQuestionnaires'
 // ... form setup
 ```
 
-### 7c. `src/routes/questionnaires/$id.edit.tsx` — Edit Questionnaire
+### 7c. `src/routes/questionnaires/$id/edit.tsx` — Edit Questionnaire
+
+This route redirects immediately to the JSON editor:
 
 ```tsx
-import { createFileRoute } from '@tanstack/react-router'
-import { useQuestionnaire } from '@/hooks/useQuestionnaires'
-import SurveyCreatorWidget from '@/components/survey/SurveyCreatorWidget'
+import { createFileRoute, Navigate } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/questionnaires/$id/edit')({
   component: EditQuestionnaire,
@@ -209,17 +199,7 @@ export const Route = createFileRoute('/questionnaires/$id/edit')({
 
 function EditQuestionnaire() {
   const { id } = Route.useParams()
-  const { data, isLoading } = useQuestionnaire(id)
-
-  if (isLoading) return <p>Loading…</p>
-  if (!data) return <p>Not found</p>
-
-  return (
-    <SurveyCreatorWidget
-      questionnaireId={id}
-      initialJson={data.surveyJson}
-    />
-  )
+  return <Navigate to="/questionnaires/$id/json" params={{ id }} replace />
 }
 ```
 

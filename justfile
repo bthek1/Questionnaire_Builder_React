@@ -65,7 +65,7 @@ test-e2e:
 
 # Create a Python virtual environment and install dependencies
 [group('django')]
-backend-install:
+install:
     python3 -m venv {{venv}}
     {{venv}}/bin/pip install -e {{backend_dir}}
 
@@ -76,27 +76,27 @@ backend-dev:
 
 # Apply all pending migrations
 [group('django')]
-backend-migrate:
+migrate:
     {{manage}} migrate
 
 # Create new migrations from model changes
 [group('django')]
-backend-makemigrations:
+makemigrations:
     {{manage}} makemigrations
 
 # Open the Django shell
 [group('django')]
-backend-shell:
+shell:
     {{manage}} shell
 
 # Create a Django superuser
 [group('django')]
-backend-createsuperuser:
+createsuperuser:
     {{manage}} createsuperuser
 
 # Collect static files
 [group('django')]
-backend-collectstatic:
+collectstatic:
     {{manage}} collectstatic --noinput
 
 # Run Django tests

@@ -31,8 +31,6 @@
     "react-dom": "^19.2.5",
     "survey-analytics": "^2.5.22",
     "survey-core": "^2.5.22",
-    "survey-creator-core": "^2.5.22",
-    "survey-creator-react": "^2.5.22",
     "survey-pdf": "^2.5.22",
     "survey-react-ui": "^2.5.22",
     "tailwind-merge": "^3.5.0"

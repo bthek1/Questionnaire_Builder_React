@@ -18,16 +18,9 @@ from django.contrib import admin
 from django.urls import include, path
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
-from responses.views import ResponseListCreateView
-
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/questionnaires/', include('questionnaires.urls')),
-    path(
-        'api/questionnaires/<uuid:questionnaire_pk>/responses/',
-        ResponseListCreateView.as_view(),
-        name='questionnaire-responses',
-    ),
     path('api/auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]

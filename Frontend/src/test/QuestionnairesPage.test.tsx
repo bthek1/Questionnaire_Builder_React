@@ -6,9 +6,6 @@ import { routeTree } from '../routeTree.gen'
 import type { Questionnaire } from '@/types'
 
 // Mock SurveyJS components that need real DOM/canvas
-vi.mock('@/components/survey/SurveyCreatorWidget', () => ({
-  default: () => <div data-testid="survey-creator">Survey Creator</div>,
-}))
 vi.mock('@/components/survey/SurveyRenderer', () => ({
   SurveyRenderer: () => <div data-testid="survey-renderer">Survey Renderer</div>,
 }))

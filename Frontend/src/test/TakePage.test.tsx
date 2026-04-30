@@ -12,9 +12,6 @@ vi.mock('@/components/survey/SurveyRenderer', () => ({
     </button>
   ),
 }))
-vi.mock('@/components/survey/SurveyCreatorWidget', () => ({
-  default: () => <div data-testid="survey-creator">Survey Creator</div>,
-}))
 vi.mock('@/components/survey/SurveyDashboard', () => ({
   SurveyDashboard: () => <div data-testid="survey-dashboard">Survey Dashboard</div>,
 }))

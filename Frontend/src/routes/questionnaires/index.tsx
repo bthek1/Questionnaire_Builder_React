@@ -33,9 +33,14 @@ function QuestionnairesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">My Questionnaires</h1>
-        <Button asChild>
-          <Link to="/questionnaires/new">+ New Questionnaire</Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button asChild variant="outline">
+            <Link to="/questionnaires/share">Share Links</Link>
+          </Button>
+          <Button asChild>
+            <Link to="/questionnaires/new">+ New Questionnaire</Link>
+          </Button>
+        </div>
       </div>
 
       {!questionnaires || questionnaires.length === 0 ? (
@@ -67,6 +72,11 @@ function QuestionnairesPage() {
                       <Button asChild size="sm" variant="outline">
                         <Link to="/questionnaires/$id/edit" params={{ id: q.id }}>
                           Edit
+                        </Link>
+                      </Button>
+                      <Button asChild size="sm" variant="outline">
+                        <Link to="/questionnaires/$id/json" params={{ id: q.id }}>
+                          JSON
                         </Link>
                       </Button>
                       <CopyButton id={q.id} label="Share" />

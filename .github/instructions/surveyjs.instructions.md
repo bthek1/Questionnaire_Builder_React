@@ -15,14 +15,14 @@ See [Docs/SurveyJS/README.md](../../Docs/SurveyJS/README.md) for an overview of 
 |---------------|---------|-------------|
 | Render a survey to a respondent | `survey-react-ui` | `survey-react-ui` |
 | Data model / headless logic | `survey-core` | `survey-core` |
-| Drag-and-drop builder for authors | `survey-creator-react` | `survey-creator-react` |
-| Builder options / types | `survey-creator-core` | `survey-creator-core` |
 | Response analytics charts | `survey-analytics` | `survey-analytics` |
 | Export survey/results to PDF | `survey-pdf` | `survey-pdf` |
 
+> **Note:** `survey-creator-react` and `survey-creator-core` have been removed. Use the JSON editor route (`/questionnaires/:id/json`) instead.
+
 Install order (SurveyJS resolves peers automatically):
 ```bash
-pnpm add survey-react-ui survey-creator-react survey-analytics survey-pdf
+pnpm add survey-react-ui survey-analytics survey-pdf
 ```
 
 ---
@@ -35,70 +35,18 @@ Always import CSS in the component file, not globally in `index.css`:
 // Survey Renderer
 import 'survey-core/survey-core.css';
 
-// Survey Creator
-import 'survey-core/survey-core.css';
-import 'survey-creator-core/survey-creator-core.css';
-
 // Dashboard
 import 'survey-analytics/survey.analytics.css';
 ```
 
 ---
 
-## Survey Creator Widget
+## Form Builder (JSON Editor)
 
-**File:** `src/components/survey/SurveyCreatorWidget.tsx`  
-**Route:** `src/routes/questionnaires/$id.edit.tsx`
+**Route:** `src/routes/questionnaires/$id/json.tsx`
 
-```tsx
-import { useState } from 'react';
-import { ICreatorOptions, SurveyCreator } from 'survey-creator-core';
-import { SurveyCreatorComponent } from 'survey-creator-react';
-import { updateQuestionnaire } from '@/api/questionnaires';
-import 'survey-core/survey-core.css';
-import 'survey-creator-core/survey-creator-core.css';
-
-const DEFAULT_OPTIONS: ICreatorOptions = {
-  autoSaveEnabled: true,
-  showLogicTab: true,
-  showThemeTab: true,
-  haveCommercialLicense: true, // suppress alert banner when license is set
-};
-
-interface Props {
-  questionnaireId: string;
-  initialJson?: object;
-}
-
-export default function SurveyCreatorWidget({ questionnaireId, initialJson }: Props) {
-  const [creator] = useState(() => {
-    const c = new SurveyCreator(DEFAULT_OPTIONS);
-
-    if (initialJson) {
-      c.JSON = initialJson;
-    }
-
-    c.saveSurveyFunc = (saveNo, callback) => {
-      updateQuestionnaire(questionnaireId, { surveyJson: c.JSON })
-        .then(() => callback(saveNo, true))
-        .catch(() => callback(saveNo, false));
-    };
-
-    return c;
-  });
-
-  return (
-    <div style={{ height: '100vh', width: '100%' }}>
-      <SurveyCreatorComponent creator={creator} />
-    </div>
-  );
-}
-```
-
-Key rules:
-- `useState` initialiser (not `useEffect`) — avoids re-creating the creator on every render.
-- `saveSurveyFunc` calls `PATCH /questionnaires/:id` with `{ surveyJson: creator.JSON }`.
-- Pass `haveCommercialLicense: true` once you have a license key.
+Survey Creator has been removed. Use the JSON editor route instead.
+The `/questionnaires/:id/edit` route redirects to `/questionnaires/:id/json`.
 
 ---
 

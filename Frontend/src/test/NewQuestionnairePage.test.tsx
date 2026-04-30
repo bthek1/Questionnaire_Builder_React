@@ -6,9 +6,6 @@ import { RouterProvider, createRouter, createMemoryHistory } from '@tanstack/rea
 import { routeTree } from '../routeTree.gen'
 import type { Questionnaire } from '@/types'
 
-vi.mock('@/components/survey/SurveyCreatorWidget', () => ({
-  default: () => <div data-testid="survey-creator">Survey Creator</div>,
-}))
 vi.mock('@/components/survey/SurveyRenderer', () => ({
   SurveyRenderer: () => <div data-testid="survey-renderer">Survey Renderer</div>,
 }))
@@ -99,10 +96,12 @@ describe('NewQuestionnairePage', () => {
     fireEvent.click(screen.getByRole('button', { name: /create/i }))
 
     await waitFor(() =>
-      expect(mutateAsync).toHaveBeenCalledWith({
-        title: 'My New Survey',
-        description: 'An optional description',
-      }),
+      expect(mutateAsync).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: 'My New Survey',
+          description: 'An optional description',
+        }),
+      ),
     )
   })
 

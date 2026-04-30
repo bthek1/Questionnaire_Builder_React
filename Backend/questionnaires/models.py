@@ -8,7 +8,7 @@ User = get_user_model()
 
 class Questionnaire(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='questionnaires')
+    owner = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='questionnaires')
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
     questions = models.JSONField(default=list, blank=True)
@@ -18,3 +18,12 @@ class Questionnaire(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+
+
+class QuestionnaireResponse(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    questionnaire = models.ForeignKey(
+        Questionnaire, on_delete=models.CASCADE, related_name='responses'
+    )
+    answers = models.JSONField(default=list)
+    submitted_at = models.DateTimeField(auto_now_add=True)
