@@ -12,10 +12,6 @@ vi.mock('@/components/survey/SurveyRenderer', () => ({
     </button>
   ),
 }))
-vi.mock('@/components/survey/SurveyDashboard', () => ({
-  SurveyDashboard: () => <div data-testid="survey-dashboard">Survey Dashboard</div>,
-}))
-vi.mock('survey-pdf', () => ({ SurveyPDF: vi.fn() }))
 
 vi.mock('@/hooks/useQuestionnaires', () => ({
   useQuestionnaire: vi.fn(),

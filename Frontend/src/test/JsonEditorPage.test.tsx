@@ -5,16 +5,11 @@ import { RouterProvider, createRouter, createMemoryHistory } from '@tanstack/rea
 import { routeTree } from '../routeTree.gen'
 import type { Questionnaire } from '@/types'
 
-vi.mock('@/components/survey/SurveyDashboard', () => ({
-  SurveyDashboard: () => <div data-testid="survey-dashboard">Survey Dashboard</div>,
-}))
 vi.mock('@/components/survey/SurveyRenderer', () => ({
   SurveyRenderer: ({ surveyJson }: { surveyJson: object }) => (
     <div data-testid="survey-renderer">{JSON.stringify(surveyJson)}</div>
   ),
 }))
-vi.mock('survey-pdf', () => ({ SurveyPDF: vi.fn() }))
-
 vi.mock('@/hooks/useQuestionnaires', () => ({
   useQuestionnaire: vi.fn(),
   useQuestionnaires: vi.fn(),

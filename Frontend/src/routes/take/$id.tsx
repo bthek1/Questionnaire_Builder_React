@@ -26,7 +26,7 @@ function TakePage() {
   if (isLoading) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
-        <span className="text-gray-500">Loading questionnaire…</span>
+        <span className="text-[var(--color-muted-foreground)]">Loading questionnaire…</span>
       </div>
     )
   }
@@ -35,7 +35,7 @@ function TakePage() {
     return (
       <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4">
         <p className="text-red-600 font-medium">Questionnaire not found.</p>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-[var(--color-muted-foreground)]">
           The link may be invalid or the questionnaire has been removed.
         </p>
       </div>
@@ -46,7 +46,7 @@ function TakePage() {
     return (
       <div className="flex min-h-[50vh] flex-col items-center justify-center gap-3 text-center">
         <h1 className="text-2xl font-semibold">Thank you!</h1>
-        <p className="text-gray-600">
+        <p className="text-[var(--color-muted-foreground)]">
           You have completed <span className="font-medium">{questionnaire.title}</span>.
         </p>
       </div>
@@ -58,7 +58,7 @@ function TakePage() {
       <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4">
         <p className="text-red-600 font-medium">Something went wrong submitting your response.</p>
         <button
-          className="text-sm underline text-blue-600 hover:text-blue-800"
+          className="text-sm underline text-[var(--color-primary)] hover:brightness-75"
           onClick={() => submitResponse.reset()}
         >
           Try again
@@ -70,7 +70,9 @@ function TakePage() {
   if (!questionnaire.surveyJson) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
-        <p className="text-gray-500">This questionnaire has no survey content yet.</p>
+        <p className="text-[var(--color-muted-foreground)]">
+          This questionnaire has no survey content yet.
+        </p>
       </div>
     )
   }

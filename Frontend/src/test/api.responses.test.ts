@@ -17,7 +17,7 @@ const mockPost = apiClient.post as ReturnType<typeof vi.fn>
 const mockResponse: QuestionnaireResponse = {
   id: 'r1',
   questionnaireId: 'q1',
-  answers: [{ questionId: 'q1', value: 'yes' }],
+  answers: { q1: 'yes' },
   submittedAt: '2024-01-02T00:00:00Z',
 }
 
@@ -30,7 +30,7 @@ describe('submitResponse()', () => {
     const answers = { question1: 'yes', question2: 'no' }
     mockPost.mockResolvedValueOnce({ data: mockResponse })
     const result = await submitResponse('q1', answers)
-    expect(mockPost).toHaveBeenCalledWith('/questionnaires/q1/responses', { answers })
+    expect(mockPost).toHaveBeenCalledWith('/questionnaires/q1/responses/', { answers })
     expect(result).toEqual(mockResponse)
   })
 })
@@ -39,7 +39,7 @@ describe('getResponses()', () => {
   it('fetches responses for a questionnaire', async () => {
     mockGet.mockResolvedValueOnce({ data: [mockResponse] })
     const result = await getResponses('q1')
-    expect(mockGet).toHaveBeenCalledWith('/questionnaires/q1/responses')
+    expect(mockGet).toHaveBeenCalledWith('/questionnaires/q1/responses/')
     expect(result).toEqual([mockResponse])
   })
 

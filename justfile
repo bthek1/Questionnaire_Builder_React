@@ -89,10 +89,10 @@ makemigrations:
 shell:
     {{manage}} shell
 
-# Create a Django superuser
+# Delete and recreate the superuser from DJANGO_SUPERUSER_* vars in Backend/.env
 [group('django')]
 createsuperuser:
-    {{manage}} createsuperuser
+    {{manage}} recreate_superuser
 
 # Collect static files
 [group('django')]

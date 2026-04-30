@@ -185,6 +185,7 @@ When any of the triggers below apply, create the file immediately alongside the 
 |------|--------|
 | [`AGENTS.md`](AGENTS.md) | Project-wide conventions, architecture, commands |
 | [`.github/instructions/surveyjs.instructions.md`](.github/instructions/surveyjs.instructions.md) | SurveyJS component patterns (Renderer, Dashboard, PDF) |
+| [`.github/instructions/survey-json.instructions.md`](.github/instructions/survey-json.instructions.md) | Survey definition JSON, response data shapes, calculated values, conditional logic, Django field mapping |
 | [`.github/instructions/ui-primitives.instructions.md`](.github/instructions/ui-primitives.instructions.md) | CVA variants, Radix `asChild`, `cn()`, Tailwind v4 theming |
 | [`.github/prompts/add-route.prompt.md`](.github/prompts/add-route.prompt.md) | Scaffold a single TanStack Router route + test |
 | [`.github/prompts/add-query-hook.prompt.md`](.github/prompts/add-query-hook.prompt.md) | Scaffold a React Query hook + Axios API file |

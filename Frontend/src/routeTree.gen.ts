@@ -10,16 +10,25 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ResponsesIndexRouteImport } from './routes/responses/index'
 import { Route as QuestionnairesIndexRouteImport } from './routes/questionnaires/index'
 import { Route as TakeIdRouteImport } from './routes/take/$id'
 import { Route as QuestionnairesShareRouteImport } from './routes/questionnaires/share'
+import { Route as QuestionnairesResultsRouteImport } from './routes/questionnaires/results'
 import { Route as QuestionnairesNewRouteImport } from './routes/questionnaires/new'
+import { Route as ResponsesIdIndexRouteImport } from './routes/responses/$id/index'
+import { Route as ResponsesIdResponseIdRouteImport } from './routes/responses/$id/$responseId'
 import { Route as QuestionnairesIdResultsRouteImport } from './routes/questionnaires/$id/results'
 import { Route as QuestionnairesIdJsonRouteImport } from './routes/questionnaires/$id/json'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResponsesIndexRoute = ResponsesIndexRouteImport.update({
+  id: '/responses/',
+  path: '/responses/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const QuestionnairesIndexRoute = QuestionnairesIndexRouteImport.update({
@@ -37,9 +46,24 @@ const QuestionnairesShareRoute = QuestionnairesShareRouteImport.update({
   path: '/questionnaires/share',
   getParentRoute: () => rootRouteImport,
 } as any)
+const QuestionnairesResultsRoute = QuestionnairesResultsRouteImport.update({
+  id: '/questionnaires/results',
+  path: '/questionnaires/results',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const QuestionnairesNewRoute = QuestionnairesNewRouteImport.update({
   id: '/questionnaires/new',
   path: '/questionnaires/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResponsesIdIndexRoute = ResponsesIdIndexRouteImport.update({
+  id: '/responses/$id/',
+  path: '/responses/$id/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResponsesIdResponseIdRoute = ResponsesIdResponseIdRouteImport.update({
+  id: '/responses/$id/$responseId',
+  path: '/responses/$id/$responseId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const QuestionnairesIdResultsRoute = QuestionnairesIdResultsRouteImport.update({
@@ -56,69 +80,97 @@ const QuestionnairesIdJsonRoute = QuestionnairesIdJsonRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/questionnaires/new': typeof QuestionnairesNewRoute
+  '/questionnaires/results': typeof QuestionnairesResultsRoute
   '/questionnaires/share': typeof QuestionnairesShareRoute
   '/take/$id': typeof TakeIdRoute
   '/questionnaires/': typeof QuestionnairesIndexRoute
+  '/responses/': typeof ResponsesIndexRoute
   '/questionnaires/$id/json': typeof QuestionnairesIdJsonRoute
   '/questionnaires/$id/results': typeof QuestionnairesIdResultsRoute
+  '/responses/$id/$responseId': typeof ResponsesIdResponseIdRoute
+  '/responses/$id/': typeof ResponsesIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/questionnaires/new': typeof QuestionnairesNewRoute
+  '/questionnaires/results': typeof QuestionnairesResultsRoute
   '/questionnaires/share': typeof QuestionnairesShareRoute
   '/take/$id': typeof TakeIdRoute
   '/questionnaires': typeof QuestionnairesIndexRoute
+  '/responses': typeof ResponsesIndexRoute
   '/questionnaires/$id/json': typeof QuestionnairesIdJsonRoute
   '/questionnaires/$id/results': typeof QuestionnairesIdResultsRoute
+  '/responses/$id/$responseId': typeof ResponsesIdResponseIdRoute
+  '/responses/$id': typeof ResponsesIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/questionnaires/new': typeof QuestionnairesNewRoute
+  '/questionnaires/results': typeof QuestionnairesResultsRoute
   '/questionnaires/share': typeof QuestionnairesShareRoute
   '/take/$id': typeof TakeIdRoute
   '/questionnaires/': typeof QuestionnairesIndexRoute
+  '/responses/': typeof ResponsesIndexRoute
   '/questionnaires/$id/json': typeof QuestionnairesIdJsonRoute
   '/questionnaires/$id/results': typeof QuestionnairesIdResultsRoute
+  '/responses/$id/$responseId': typeof ResponsesIdResponseIdRoute
+  '/responses/$id/': typeof ResponsesIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/questionnaires/new'
+    | '/questionnaires/results'
     | '/questionnaires/share'
     | '/take/$id'
     | '/questionnaires/'
+    | '/responses/'
     | '/questionnaires/$id/json'
     | '/questionnaires/$id/results'
+    | '/responses/$id/$responseId'
+    | '/responses/$id/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/questionnaires/new'
+    | '/questionnaires/results'
     | '/questionnaires/share'
     | '/take/$id'
     | '/questionnaires'
+    | '/responses'
     | '/questionnaires/$id/json'
     | '/questionnaires/$id/results'
+    | '/responses/$id/$responseId'
+    | '/responses/$id'
   id:
     | '__root__'
     | '/'
     | '/questionnaires/new'
+    | '/questionnaires/results'
     | '/questionnaires/share'
     | '/take/$id'
     | '/questionnaires/'
+    | '/responses/'
     | '/questionnaires/$id/json'
     | '/questionnaires/$id/results'
+    | '/responses/$id/$responseId'
+    | '/responses/$id/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   QuestionnairesNewRoute: typeof QuestionnairesNewRoute
+  QuestionnairesResultsRoute: typeof QuestionnairesResultsRoute
   QuestionnairesShareRoute: typeof QuestionnairesShareRoute
   TakeIdRoute: typeof TakeIdRoute
   QuestionnairesIndexRoute: typeof QuestionnairesIndexRoute
+  ResponsesIndexRoute: typeof ResponsesIndexRoute
   QuestionnairesIdJsonRoute: typeof QuestionnairesIdJsonRoute
   QuestionnairesIdResultsRoute: typeof QuestionnairesIdResultsRoute
+  ResponsesIdResponseIdRoute: typeof ResponsesIdResponseIdRoute
+  ResponsesIdIndexRoute: typeof ResponsesIdIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -128,6 +180,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/responses/': {
+      id: '/responses/'
+      path: '/responses'
+      fullPath: '/responses/'
+      preLoaderRoute: typeof ResponsesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/questionnaires/': {
@@ -151,11 +210,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof QuestionnairesShareRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/questionnaires/results': {
+      id: '/questionnaires/results'
+      path: '/questionnaires/results'
+      fullPath: '/questionnaires/results'
+      preLoaderRoute: typeof QuestionnairesResultsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/questionnaires/new': {
       id: '/questionnaires/new'
       path: '/questionnaires/new'
       fullPath: '/questionnaires/new'
       preLoaderRoute: typeof QuestionnairesNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/responses/$id/': {
+      id: '/responses/$id/'
+      path: '/responses/$id'
+      fullPath: '/responses/$id/'
+      preLoaderRoute: typeof ResponsesIdIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/responses/$id/$responseId': {
+      id: '/responses/$id/$responseId'
+      path: '/responses/$id/$responseId'
+      fullPath: '/responses/$id/$responseId'
+      preLoaderRoute: typeof ResponsesIdResponseIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/questionnaires/$id/results': {
@@ -178,11 +258,15 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   QuestionnairesNewRoute: QuestionnairesNewRoute,
+  QuestionnairesResultsRoute: QuestionnairesResultsRoute,
   QuestionnairesShareRoute: QuestionnairesShareRoute,
   TakeIdRoute: TakeIdRoute,
   QuestionnairesIndexRoute: QuestionnairesIndexRoute,
+  ResponsesIndexRoute: ResponsesIndexRoute,
   QuestionnairesIdJsonRoute: QuestionnairesIdJsonRoute,
   QuestionnairesIdResultsRoute: QuestionnairesIdResultsRoute,
+  ResponsesIdResponseIdRoute: ResponsesIdResponseIdRoute,
+  ResponsesIdIndexRoute: ResponsesIdIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

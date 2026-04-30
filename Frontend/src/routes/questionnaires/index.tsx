@@ -23,7 +23,7 @@ function QuestionnairesPage() {
     return (
       <div className="space-y-3">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="h-16 animate-pulse rounded-lg bg-gray-100" />
+          <div key={i} className="h-16 animate-pulse rounded-lg bg-[var(--color-muted)]" />
         ))}
       </div>
     )
@@ -32,7 +32,7 @@ function QuestionnairesPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">My Questionnaires</h1>
+        <h1 className="text-2xl font-semibold">Questionnaire Types</h1>
         <div className="flex items-center gap-2">
           <Button asChild variant="outline">
             <Link to="/questionnaires/share">Share Links</Link>
@@ -44,7 +44,7 @@ function QuestionnairesPage() {
       </div>
 
       {!questionnaires || questionnaires.length === 0 ? (
-        <div className="rounded-lg border border-dashed p-12 text-center text-gray-500">
+        <div className="rounded-lg border border-dashed p-12 text-center text-[var(--color-muted-foreground)]">
           <p className="mb-4">No questionnaires yet.</p>
           <Button asChild variant="outline">
             <Link to="/questionnaires/new">Create one</Link>
@@ -53,7 +53,7 @@ function QuestionnairesPage() {
       ) : (
         <div className="overflow-hidden rounded-lg border">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
+            <thead className="bg-[var(--color-muted)] text-left text-xs font-medium uppercase tracking-wide text-[var(--color-muted-foreground)]">
               <tr>
                 <th className="px-4 py-3">Title</th>
                 <th className="px-4 py-3">Created</th>
@@ -62,9 +62,9 @@ function QuestionnairesPage() {
             </thead>
             <tbody className="divide-y">
               {questionnaires.map((q) => (
-                <tr key={q.id} className="bg-white hover:bg-gray-50">
+                <tr key={q.id} className="bg-[var(--color-card)] hover:bg-[var(--color-muted)]">
                   <td className="px-4 py-3 font-medium">{q.title}</td>
-                  <td className="px-4 py-3 text-gray-500">
+                  <td className="px-4 py-3 text-[var(--color-muted-foreground)]">
                     {new Date(q.createdAt).toLocaleDateString()}
                   </td>
                   <td className="px-4 py-3">
@@ -99,9 +99,9 @@ function QuestionnairesPage() {
       {/* Confirmation dialog */}
       {pendingDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="w-full max-w-sm rounded-lg bg-white p-6 shadow-lg">
+          <div className="w-full max-w-sm rounded-lg bg-[var(--color-card)] p-6 shadow-lg">
             <h2 className="mb-2 text-lg font-semibold">Delete questionnaire?</h2>
-            <p className="mb-6 text-sm text-gray-600">
+            <p className="mb-6 text-sm text-[var(--color-muted-foreground)]">
               This action cannot be undone.
             </p>
             <div className="flex justify-end gap-3">

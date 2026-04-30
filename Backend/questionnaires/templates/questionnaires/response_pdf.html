@@ -75,6 +75,7 @@
     .question-card {
       background: white;
       border: 1pt solid var(--color-muted);
+      border-top: 3pt solid #20b2aa;
       border-radius: 3pt;
       padding: 5mm 6mm;
       margin-bottom: 4mm;
@@ -96,6 +97,56 @@
     .question-answer.empty {
       font-style: italic;
       color: #aaa;
+    }
+
+    /* ── Matrix table ── */
+    .matrix-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 9pt;
+      margin-top: 2mm;
+    }
+
+    .matrix-table thead th {
+      font-size: 8.5pt;
+      font-weight: 600;
+      color: var(--color-muted-foreground);
+      text-align: center;
+      padding: 1.5mm 2mm;
+      border-bottom: 1pt solid var(--color-muted);
+    }
+
+    .matrix-table thead th.row-header {
+      text-align: left;
+    }
+
+    .matrix-table tbody tr:nth-child(even) td {
+      background: #f9fbfb;
+    }
+
+    .matrix-table tbody td {
+      padding: 1.5mm 2mm;
+      border-bottom: 0.5pt solid var(--color-muted);
+      color: var(--color-foreground);
+      vertical-align: middle;
+    }
+
+    .matrix-table tbody td.col-cell {
+      text-align: center;
+    }
+
+    /* radio-style indicator */
+    .radio-dot {
+      display: inline-block;
+      width: 5mm;
+      height: 5mm;
+      border-radius: 50%;
+      border: 1.5pt solid #20b2aa;
+      vertical-align: middle;
+    }
+
+    .radio-dot.selected {
+      background: #20b2aa;
     }
 
     /* ── Section label ── */
@@ -126,7 +177,30 @@
   {% for q in questions %}
   <div class="question-card">
     <div class="question-title">{{ q.title }}</div>
-    {% if q.display_value %}
+    {% if q.type == "matrix" %}
+      <table class="matrix-table">
+        <thead>
+          <tr>
+            <th class="row-header"></th>
+            {% for col in q.columns %}
+            <th>{{ col }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in q.rows %}
+          <tr>
+            <td>{{ row.label }}</td>
+            {% for col in q.columns %}
+            <td class="col-cell">
+              <span class="radio-dot{% if row.selected == col %} selected{% endif %}"></span>
+            </td>
+            {% endfor %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% elif q.display_value %}
     <div class="question-answer">{{ q.display_value }}</div>
     {% else %}
     <div class="question-answer empty">—</div>

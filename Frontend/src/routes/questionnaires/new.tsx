@@ -150,14 +150,18 @@ function NewQuestionnairePage() {
         </div>
         <div>
           <h1 className="text-2xl font-semibold">New Questionnaire</h1>
-          <p className="text-sm text-gray-500">Fill in the details and pick a starting template</p>
+          <p className="text-sm text-[var(--color-muted-foreground)]">
+            Fill in the details and pick a starting template
+          </p>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Details card */}
-        <div className="rounded-xl border bg-white p-6 shadow-sm space-y-5">
-          <h2 className="text-sm font-medium uppercase tracking-wide text-gray-400">Details</h2>
+        <div className="rounded-xl border bg-[var(--color-card)] p-6 shadow-sm space-y-5">
+          <h2 className="text-sm font-medium uppercase tracking-wide text-[var(--color-muted-foreground)]">
+            Details
+          </h2>
 
           <div className="space-y-1.5">
             <Label htmlFor="title">
@@ -174,12 +178,10 @@ function NewQuestionnairePage() {
               autoFocus
             />
             <div className="flex items-center justify-between">
-              {titleError ? (
-                <p className="text-xs text-red-500">{titleError}</p>
-              ) : (
-                <span />
-              )}
-              <p className={`text-xs ${title.length > TITLE_MAX ? 'text-red-500' : 'text-gray-400'}`}>
+              {titleError ? <p className="text-xs text-red-500">{titleError}</p> : <span />}
+              <p
+                className={`text-xs ${title.length > TITLE_MAX ? 'text-red-500' : 'text-[var(--color-muted-foreground)]'}`}
+              >
                 {title.length}/{TITLE_MAX}
               </p>
             </div>
@@ -198,8 +200,8 @@ function NewQuestionnairePage() {
         </div>
 
         {/* Template picker card */}
-        <div className="rounded-xl border bg-white p-6 shadow-sm space-y-4">
-          <h2 className="text-sm font-medium uppercase tracking-wide text-gray-400">
+        <div className="rounded-xl border bg-[var(--color-card)] p-6 shadow-sm space-y-4">
+          <h2 className="text-sm font-medium uppercase tracking-wide text-[var(--color-muted-foreground)]">
             Starting Template
           </h2>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -208,19 +210,21 @@ function NewQuestionnairePage() {
                 key={t.id}
                 type="button"
                 onClick={() => setSelectedTemplate(t.id)}
-                className={`flex flex-col items-start gap-2 rounded-lg border p-4 text-left transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] ${
+                className={`flex flex-col items-start gap-2 rounded-lg border p-4 text-left transition-colors hover:bg-[var(--color-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] ${
                   selectedTemplate === t.id
                     ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/5 ring-1 ring-[var(--color-primary)]'
-                    : 'border-gray-200'
+                    : 'border-[var(--color-border)]'
                 }`}
               >
                 <span
-                  className={`${selectedTemplate === t.id ? 'text-[var(--color-primary)]' : 'text-gray-500'}`}
+                  className={`${selectedTemplate === t.id ? 'text-[var(--color-primary)]' : 'text-[var(--color-muted-foreground)]'}`}
                 >
                   {t.icon}
                 </span>
                 <span className="text-sm font-medium">{t.label}</span>
-                <span className="text-xs text-gray-500">{t.description}</span>
+                <span className="text-xs text-[var(--color-muted-foreground)]">
+                  {t.description}
+                </span>
               </button>
             ))}
           </div>

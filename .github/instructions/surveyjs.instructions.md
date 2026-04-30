@@ -1,11 +1,11 @@
 ---
 applyTo: "Frontend/src/components/survey/**,Frontend/src/routes/take/**,Frontend/src/routes/questionnaires/**"
-description: "Use when creating or modifying SurveyJS components (Survey Creator, Survey Renderer, Dashboard, PDF export) or any route that builds, takes, or analyses a questionnaire."
+description: "Use when creating or modifying SurveyJS components (Survey Renderer) or any route that builds or takes a questionnaire."
 ---
 
 # SurveyJS Integration Patterns
 
-See [Docs/SurveyJS/README.md](../../Docs/SurveyJS/README.md) for an overview of all four packages.
+See [Docs/SurveyJS/README.md](../../Docs/SurveyJS/README.md) for an overview of the packages in use.
 
 ---
 
@@ -15,14 +15,12 @@ See [Docs/SurveyJS/README.md](../../Docs/SurveyJS/README.md) for an overview of 
 |---------------|---------|-------------|
 | Render a survey to a respondent | `survey-react-ui` | `survey-react-ui` |
 | Data model / headless logic | `survey-core` | `survey-core` |
-| Response analytics charts | `survey-analytics` | `survey-analytics` |
-| Export survey/results to PDF | `survey-pdf` | `survey-pdf` |
 
-> **Note:** `survey-creator-react` and `survey-creator-core` have been removed. Use the JSON editor route (`/questionnaires/:id/json`) instead.
+> **Note:** `survey-creator-react`, `survey-creator-core`, `survey-analytics`, and `survey-pdf` have been removed (commercial EULA). Use the JSON editor route (`/questionnaires/:id/json`) for building surveys. Response data is displayed in a plain table.
 
-Install order (SurveyJS resolves peers automatically):
+Install:
 ```bash
-pnpm add survey-react-ui survey-analytics survey-pdf
+pnpm add survey-react-ui
 ```
 
 ---
@@ -34,9 +32,6 @@ Always import CSS in the component file, not globally in `index.css`:
 ```ts
 // Survey Renderer
 import 'survey-core/survey-core.css';
-
-// Dashboard
-import 'survey-analytics/survey.analytics.css';
 ```
 
 ---
@@ -104,68 +99,9 @@ Expose this as a copy button on the questionnaire list page (`/questionnaires`).
 
 ---
 
-## Analytics Dashboard
+## Responses / Results
 
-**File:** `src/components/survey/SurveyDashboard.tsx`  
-**Route:** `src/routes/questionnaires/$id.results.tsx`
-
-```tsx
-import { useEffect, useRef } from 'react';
-import { Model } from 'survey-core';
-import { VisualizationPanel } from 'survey-analytics';
-import 'survey-analytics/survey.analytics.css';
-
-interface Props {
-  surveyJson: object;
-  responses: object[];
-}
-
-export default function SurveyDashboard({ surveyJson, responses }: Props) {
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!containerRef.current || responses.length === 0) return;
-
-    const survey = new Model(surveyJson);
-    const panel = new VisualizationPanel(
-      survey.getAllQuestions(),
-      responses,
-      { allowHideQuestions: false },
-    );
-
-    panel.render(containerRef.current);
-    return () => { panel.clear(); };
-  }, [surveyJson, responses]);
-
-  return <div ref={containerRef} />;
-}
-```
-
-Feed `responses` from `useResponses(id)` hook — see `src/hooks/useResponses.ts`.
-
----
-
-## PDF Export
-
-```ts
-import { SurveyPDF } from 'survey-pdf';
-
-function exportToPdf(surveyJson: object, responses?: object) {
-  const pdf = new SurveyPDF(surveyJson, {
-    fontSize: 14,
-    margins: { left: 10, right: 10, top: 10, bot: 10 },
-    haveCommercialLicense: true,
-  });
-
-  if (responses) {
-    pdf.data = responses;
-  }
-
-  pdf.save('questionnaire-results.pdf');
-}
-```
-
-Place the export button in `$id.results.tsx` alongside the dashboard.
+Response data is fetched via `useResponses(id)` and displayed in a plain HTML table (`RawResponsesTable`). There is no analytics dashboard — `survey-analytics` has been removed.
 
 ---
 

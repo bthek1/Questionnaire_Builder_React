@@ -9,10 +9,6 @@ import type { Questionnaire } from '@/types'
 vi.mock('@/components/survey/SurveyRenderer', () => ({
   SurveyRenderer: () => <div data-testid="survey-renderer">Survey Renderer</div>,
 }))
-vi.mock('@/components/survey/SurveyDashboard', () => ({
-  SurveyDashboard: () => <div data-testid="survey-dashboard">Survey Dashboard</div>,
-}))
-vi.mock('survey-pdf', () => ({ SurveyPDF: vi.fn() }))
 
 vi.mock('@/hooks/useQuestionnaires', () => ({
   useQuestionnaires: vi.fn(),

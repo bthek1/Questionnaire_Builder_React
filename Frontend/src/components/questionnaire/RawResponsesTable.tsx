@@ -27,7 +27,7 @@ export function RawResponsesTable({ responses }: Props) {
     <div className="rounded-lg border">
       <button
         type="button"
-        className="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-medium hover:bg-gray-50"
+        className="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-medium hover:bg-[var(--color-muted)]"
         onClick={() => setExpanded((v) => !v)}
       >
         <span>Raw Responses ({responses.length})</span>
@@ -37,7 +37,7 @@ export function RawResponsesTable({ responses }: Props) {
       {expanded && (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
+            <thead className="bg-[var(--color-muted)] text-left text-xs font-medium uppercase tracking-wide text-[var(--color-muted-foreground)]">
               <tr>
                 <th className="px-4 py-3">#</th>
                 <th className="px-4 py-3">Submitted At</th>
@@ -49,15 +49,19 @@ export function RawResponsesTable({ responses }: Props) {
                 const full = JSON.stringify(r.answers)
                 const isLong = full.length > TRUNCATE_LENGTH
                 const isRowExpanded = expandedRows.has(r.id)
-                const preview = isLong && !isRowExpanded ? full.slice(0, TRUNCATE_LENGTH) + '…' : full
+                const preview =
+                  isLong && !isRowExpanded ? full.slice(0, TRUNCATE_LENGTH) + '…' : full
 
                 return (
-                  <tr key={r.id} className="bg-white hover:bg-gray-50 align-top">
-                    <td className="px-4 py-3 text-gray-500">{index + 1}</td>
-                    <td className="px-4 py-3 whitespace-nowrap text-gray-500">
+                  <tr
+                    key={r.id}
+                    className="bg-[var(--color-card)] hover:bg-[var(--color-muted)] align-top"
+                  >
+                    <td className="px-4 py-3 text-[var(--color-muted-foreground)]">{index + 1}</td>
+                    <td className="px-4 py-3 whitespace-nowrap text-[var(--color-muted-foreground)]">
                       {new Date(r.submittedAt).toLocaleString()}
                     </td>
-                    <td className="px-4 py-3 font-mono text-xs text-gray-700 max-w-md">
+                    <td className="px-4 py-3 font-mono text-xs text-[var(--color-foreground)] max-w-md">
                       <span>{preview}</span>
                       {isLong && (
                         <button

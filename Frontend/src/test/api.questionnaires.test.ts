@@ -77,7 +77,7 @@ describe('updateQuestionnaire()', () => {
     const patch = { title: 'Updated' }
     mockPatch.mockResolvedValueOnce({ data: { ...mockQuestionnaire, title: 'Updated' } })
     const result = await updateQuestionnaire('1', patch)
-    expect(mockPatch).toHaveBeenCalledWith('/questionnaires/1', patch)
+    expect(mockPatch).toHaveBeenCalledWith('/questionnaires/1/', patch)
     expect(result.title).toBe('Updated')
   })
 })
@@ -86,6 +86,6 @@ describe('deleteQuestionnaire()', () => {
   it('calls delete endpoint with correct id', async () => {
     mockDelete.mockResolvedValueOnce({})
     await deleteQuestionnaire('1')
-    expect(mockDelete).toHaveBeenCalledWith('/questionnaires/1')
+    expect(mockDelete).toHaveBeenCalledWith('/questionnaires/1/')
   })
 })
