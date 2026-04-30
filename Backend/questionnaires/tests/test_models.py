@@ -8,7 +8,6 @@ class TestQuestionnaireModel:
     def test_creation_defaults(self):
         q = Questionnaire.objects.create(title="My Survey")
         assert q.pk is not None
-        assert q.questions == []
         assert q.survey_json == {}
         assert q.description is None
         assert q.owner is None
@@ -18,13 +17,11 @@ class TestQuestionnaireModel:
             title="Full Survey",
             description="Desc",
             owner=user,
-            questions=[{"type": "text", "name": "q1"}],
             survey_json={"pages": []},
         )
         assert q.title == "Full Survey"
         assert q.description == "Desc"
         assert q.owner == user
-        assert q.questions == [{"type": "text", "name": "q1"}]
         assert q.survey_json == {"pages": []}
 
     def test_id_is_uuid(self, questionnaire):
