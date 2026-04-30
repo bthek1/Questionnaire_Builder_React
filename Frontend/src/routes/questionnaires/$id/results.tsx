@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { useQuestionnaire } from '@/hooks/useQuestionnaires'
+import { useQuestionnaireType } from '@/hooks/useQuestionnaires'
 import { useResponses } from '@/hooks/useResponses'
 import { Button } from '@/components/ui/Button'
 
@@ -9,7 +9,7 @@ export const Route = createFileRoute('/questionnaires/$id/results')({
 
 function ResultsPage() {
   const { id } = Route.useParams()
-  const { data: questionnaire, isLoading: loadingQ } = useQuestionnaire(id)
+  const { data: questionnaire, isLoading: loadingQ } = useQuestionnaireType(id)
   const { data: responses, isLoading: loadingR } = useResponses(id)
 
   if (loadingQ || loadingR) {

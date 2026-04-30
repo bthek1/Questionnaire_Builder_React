@@ -1,6 +1,6 @@
 import pytest
 
-from questionnaires.models import Questionnaire, QuestionnaireResponse
+from questionnaires.models import QuestionnaireType, QuestionnaireResponse
 
 QUESTIONNAIRES_LIST_URL = "/api/questionnaires/"
 
@@ -33,7 +33,7 @@ class TestQuestionnaireListCreate:
         response = api_client.post(QUESTIONNAIRES_LIST_URL, payload, format="json")
         assert response.status_code == 201
         assert response.data["title"] == "New Survey"
-        assert Questionnaire.objects.count() == 1
+        assert QuestionnaireType.objects.count() == 1
 
     def test_create_missing_title(self, api_client):
         response = api_client.post(QUESTIONNAIRES_LIST_URL, {}, format="json")
@@ -44,7 +44,7 @@ class TestQuestionnaireListCreate:
         payload = {"title": "Survey", "surveyJson": {"pages": [{"elements": []}]}}
         response = api_client.post(QUESTIONNAIRES_LIST_URL, payload, format="json")
         assert response.status_code == 201
-        q = Questionnaire.objects.get(id=response.data["id"])
+        q = QuestionnaireType.objects.get(id=response.data["id"])
         assert q.survey_json == {"pages": [{"elements": []}]}
 
     def test_create_returns_camel_case_fields(self, api_client):
@@ -88,7 +88,7 @@ class TestQuestionnaireRetrieveUpdateDelete:
     def test_delete_removes_questionnaire(self, api_client, questionnaire):
         response = api_client.delete(detail_url(questionnaire.id))
         assert response.status_code == 204
-        assert not Questionnaire.objects.filter(id=questionnaire.id).exists()
+        assert not QuestionnaireType.objects.filter(id=questionnaire.id).exists()
 
     def test_put_not_allowed(self, api_client, questionnaire):
         response = api_client.put(
@@ -110,9 +110,9 @@ class TestResponseListCreate:
         assert len(response.data) == 1
 
     def test_list_scoped_to_questionnaire(self, api_client, db):
-        q1 = Questionnaire.objects.create(title="Q1")
-        q2 = Questionnaire.objects.create(title="Q2")
-        QuestionnaireResponse.objects.create(questionnaire=q1, answers={})
+        q1 = QuestionnaireType.objects.create(title="Q1")
+        q2 = QuestionnaireType.objects.create(title="Q2")
+        QuestionnaireResponse.objects.create(questionnaire_type=q1, answers={})
         response = api_client.get(responses_url(q2.id))
         assert response.data == []
 
@@ -123,7 +123,9 @@ class TestResponseListCreate:
         )
         assert response.status_code == 201
         assert (
-            QuestionnaireResponse.objects.filter(questionnaire=questionnaire).count()
+            QuestionnaireResponse.objects.filter(
+                questionnaire_type=questionnaire
+            ).count()
             == 1
         )  # noqa: E501
 
@@ -133,14 +135,14 @@ class TestResponseListCreate:
             responses_url(questionnaire.id), payload, format="json"
         )
         assert response.status_code == 201
-        assert response.data["questionnaireId"] == str(questionnaire.id)
+        assert response.data["questionnaireTypeId"] == str(questionnaire.id)
 
     def test_create_response_returns_camel_case(self, api_client, questionnaire):
         payload = {"answers": {}}
         response = api_client.post(
             responses_url(questionnaire.id), payload, format="json"
         )
-        assert "questionnaireId" in response.data
+        assert "questionnaireTypeId" in response.data
         assert "submittedAt" in response.data
 
 
@@ -150,7 +152,9 @@ def pdf_url(questionnaire_pk, response_pk):
 
 @pytest.mark.django_db
 class TestResponsePdfView:
-    def test_returns_200_with_pdf_content_type(self, api_client, questionnaire, response_for):
+    def test_returns_200_with_pdf_content_type(
+        self, api_client, questionnaire, response_for
+    ):
         response = api_client.get(pdf_url(questionnaire.id, response_for.id))
         assert response.status_code == 200
         assert response["Content-Type"] == "application/pdf"
@@ -159,24 +163,27 @@ class TestResponsePdfView:
         response = api_client.get(pdf_url(questionnaire.id, response_for.id))
         assert len(response.content) > 100
 
-    def test_content_disposition_contains_title(self, api_client, questionnaire, response_for):
+    def test_content_disposition_contains_title(
+        self, api_client, questionnaire, response_for
+    ):
         response = api_client.get(pdf_url(questionnaire.id, response_for.id))
         assert "Content-Disposition" in response
         assert "Test-Questionnaire" in response["Content-Disposition"]
 
     def test_unknown_questionnaire_returns_404(self, api_client, response_for):
         import uuid
+
         response = api_client.get(pdf_url(uuid.uuid4(), response_for.id))
         assert response.status_code == 404
 
     def test_unknown_response_returns_404(self, api_client, questionnaire):
         import uuid
+
         response = api_client.get(pdf_url(questionnaire.id, uuid.uuid4()))
         assert response.status_code == 404
 
     def test_empty_survey_json_returns_400(self, api_client, db):
-        q = Questionnaire.objects.create(title="Empty", survey_json={})
-        r = QuestionnaireResponse.objects.create(questionnaire=q, answers={})
+        q = QuestionnaireType.objects.create(title="Empty", survey_json={})
+        r = QuestionnaireResponse.objects.create(questionnaire_type=q, answers={})
         response = api_client.get(pdf_url(q.id, r.id))
         assert response.status_code == 400
-

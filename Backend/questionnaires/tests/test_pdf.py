@@ -1,7 +1,7 @@
 import pytest
 from django.template.loader import render_to_string
 
-from questionnaires.models import Questionnaire, QuestionnaireResponse
+from questionnaires.models import QuestionnaireType, QuestionnaireResponse
 from questionnaires.pdf import _resolve_questions, generate_response_pdf
 
 
@@ -16,7 +16,11 @@ class TestResponsePdfTemplate:
         )
         html = render_to_string(
             "questionnaires/response_pdf.html",
-            {"questionnaire": questionnaire, "response": response_for, "questions": questions},
+            {
+                "questionnaire": questionnaire,
+                "response": response_for,
+                "questions": questions,
+            },
         )
         assert questionnaire.title in html
 
@@ -27,16 +31,22 @@ class TestResponsePdfTemplate:
         )
         html = render_to_string(
             "questionnaires/response_pdf.html",
-            {"questionnaire": questionnaire, "response": response_for, "questions": questions},
+            {
+                "questionnaire": questionnaire,
+                "response": response_for,
+                "questions": questions,
+            },
         )
         assert "Question 1" in html
 
     def test_empty_answer_renders_dash(self, db):
-        q = Questionnaire.objects.create(
+        q = QuestionnaireType.objects.create(
             title="Dash Test",
-            survey_json={"pages": [{"elements": [{"type": "text", "name": "q1", "title": "Q1"}]}]},
+            survey_json={
+                "pages": [{"elements": [{"type": "text", "name": "q1", "title": "Q1"}]}]
+            },
         )
-        r = QuestionnaireResponse.objects.create(questionnaire=q, answers={})
+        r = QuestionnaireResponse.objects.create(questionnaire_type=q, answers={})
         questions = _resolve_questions(q.survey_json, {})
         html = render_to_string(
             "questionnaires/response_pdf.html",
@@ -56,19 +66,19 @@ class TestGenerateResponsePdf:
         assert len(result) > 100
 
     def test_raises_on_empty_survey_json(self, db):
-        q = Questionnaire.objects.create(title="Empty", survey_json={})
-        r = QuestionnaireResponse.objects.create(questionnaire=q, answers={})
+        q = QuestionnaireType.objects.create(title="Empty", survey_json={})
+        r = QuestionnaireResponse.objects.create(questionnaire_type=q, answers={})
         with pytest.raises(ValueError, match="survey_json is empty"):
             generate_response_pdf(q, r)
 
     def test_empty_answers_do_not_raise(self, db):
-        q = Questionnaire.objects.create(
+        q = QuestionnaireType.objects.create(
             title="Survey",
             survey_json={
                 "pages": [{"elements": [{"type": "text", "name": "q1", "title": "Q1"}]}]
             },
         )
-        r = QuestionnaireResponse.objects.create(questionnaire=q, answers={})
+        r = QuestionnaireResponse.objects.create(questionnaire_type=q, answers={})
         result = generate_response_pdf(q, r)
         assert isinstance(result, bytes)
 
@@ -80,7 +90,9 @@ class TestResolveQuestions:
     def test_basic_text(self):
         survey = self._survey([{"type": "text", "name": "q1", "title": "Name"}])
         result = _resolve_questions(survey, {"q1": "Alice"})
-        assert result == [{"name": "q1", "title": "Name", "display_value": "Alice"}]
+        assert result == [
+            {"name": "q1", "title": "Name", "type": "text", "display_value": "Alice"}
+        ]
 
     def test_missing_answer_gives_empty_string(self):
         survey = self._survey([{"type": "text", "name": "q1", "title": "Q1"}])
@@ -88,33 +100,37 @@ class TestResolveQuestions:
         assert result[0]["display_value"] == ""
 
     def test_radio_resolves_label(self):
-        survey = self._survey([
-            {
-                "type": "radiogroup",
-                "name": "mood",
-                "title": "Mood",
-                "choices": [
-                    {"value": "1", "text": "Good"},
-                    {"value": "2", "text": "Bad"},
-                ],
-            }
-        ])
+        survey = self._survey(
+            [
+                {
+                    "type": "radiogroup",
+                    "name": "mood",
+                    "title": "Mood",
+                    "choices": [
+                        {"value": "1", "text": "Good"},
+                        {"value": "2", "text": "Bad"},
+                    ],
+                }
+            ]
+        )
         result = _resolve_questions(survey, {"mood": "1"})
         assert result[0]["display_value"] == "Good"
 
     def test_checkbox_multi_select_comma_separated(self):
-        survey = self._survey([
-            {
-                "type": "checkbox",
-                "name": "symptoms",
-                "title": "Symptoms",
-                "choices": [
-                    {"value": "a", "text": "Fatigue"},
-                    {"value": "b", "text": "Pain"},
-                    {"value": "c", "text": "Nausea"},
-                ],
-            }
-        ])
+        survey = self._survey(
+            [
+                {
+                    "type": "checkbox",
+                    "name": "symptoms",
+                    "title": "Symptoms",
+                    "choices": [
+                        {"value": "a", "text": "Fatigue"},
+                        {"value": "b", "text": "Pain"},
+                        {"value": "c", "text": "Nausea"},
+                    ],
+                }
+            ]
+        )
         result = _resolve_questions(survey, {"symptoms": ["a", "c"]})
         assert result[0]["display_value"] == "Fatigue, Nausea"
 

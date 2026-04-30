@@ -4,33 +4,33 @@ import { vi, beforeEach } from 'vitest'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { RouterProvider, createRouter, createMemoryHistory } from '@tanstack/react-router'
 import { routeTree } from '../routeTree.gen'
-import type { Questionnaire } from '@/types'
+import type { QuestionnaireType } from '@/types'
 
 vi.mock('@/components/survey/SurveyRenderer', () => ({
   SurveyRenderer: () => <div data-testid="survey-renderer">Survey Renderer</div>,
 }))
 
 vi.mock('@/hooks/useQuestionnaires', () => ({
-  useCreateQuestionnaire: vi.fn(),
-  useQuestionnaire: vi.fn(),
-  useQuestionnaires: vi.fn(),
-  useDeleteQuestionnaire: vi.fn(),
-  useUpdateQuestionnaire: vi.fn(),
+  useCreateQuestionnaireType: vi.fn(),
+  useQuestionnaireType: vi.fn(),
+  useQuestionnaireTypes: vi.fn(),
+  useDeleteQuestionnaireType: vi.fn(),
+  useUpdateQuestionnaireType: vi.fn(),
 }))
 
 import {
-  useCreateQuestionnaire,
-  useQuestionnaire,
-  useQuestionnaires,
-  useDeleteQuestionnaire,
+  useCreateQuestionnaireType,
+  useQuestionnaireType,
+  useQuestionnaireTypes,
+  useDeleteQuestionnaireType,
 } from '@/hooks/useQuestionnaires'
 
-const mockUseCreateQuestionnaire = useCreateQuestionnaire as ReturnType<typeof vi.fn>
-const mockUseQuestionnaire = useQuestionnaire as ReturnType<typeof vi.fn>
-const mockUseQuestionnaires = useQuestionnaires as ReturnType<typeof vi.fn>
-const mockUseDeleteQuestionnaire = useDeleteQuestionnaire as ReturnType<typeof vi.fn>
+const mockUseCreateQuestionnaire = useCreateQuestionnaireType as ReturnType<typeof vi.fn>
+const mockUseQuestionnaire = useQuestionnaireType as ReturnType<typeof vi.fn>
+const mockUseQuestionnaires = useQuestionnaireTypes as ReturnType<typeof vi.fn>
+const mockUseDeleteQuestionnaire = useDeleteQuestionnaireType as ReturnType<typeof vi.fn>
 
-const createdQuestionnaire: Questionnaire = {
+const createdQuestionnaire: QuestionnaireType = {
   id: 'new-id',
   title: 'My New Survey',
   createdAt: '2024-01-01T00:00:00Z',
@@ -61,13 +61,21 @@ beforeEach(() => {
 
 describe('NewQuestionnairePage', () => {
   it('renders the heading', async () => {
-    mockUseCreateQuestionnaire.mockReturnValue({ mutateAsync: vi.fn(), isPending: false, isError: false })
+    mockUseCreateQuestionnaire.mockReturnValue({
+      mutateAsync: vi.fn(),
+      isPending: false,
+      isError: false,
+    })
     renderAt('/questionnaires/new')
     expect(await screen.findByRole('heading', { name: /new questionnaire/i })).toBeInTheDocument()
   })
 
   it('shows a validation error when title is empty', async () => {
-    mockUseCreateQuestionnaire.mockReturnValue({ mutateAsync: vi.fn(), isPending: false, isError: false })
+    mockUseCreateQuestionnaire.mockReturnValue({
+      mutateAsync: vi.fn(),
+      isPending: false,
+      isError: false,
+    })
     renderAt('/questionnaires/new')
     const submitButton = await screen.findByRole('button', { name: /create/i })
     fireEvent.click(submitButton)
@@ -102,7 +110,11 @@ describe('NewQuestionnairePage', () => {
   })
 
   it('shows a loading button label while creating', async () => {
-    mockUseCreateQuestionnaire.mockReturnValue({ mutateAsync: vi.fn(), isPending: true, isError: false })
+    mockUseCreateQuestionnaire.mockReturnValue({
+      mutateAsync: vi.fn(),
+      isPending: true,
+      isError: false,
+    })
     renderAt('/questionnaires/new')
     expect(await screen.findByRole('button', { name: /creating/i })).toBeDisabled()
   })

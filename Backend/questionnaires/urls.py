@@ -1,10 +1,10 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
-from .views import QuestionnaireViewSet, ResponseListCreateView, ResponsePdfView
+from .views import QuestionnaireTypeViewSet, ResponseListCreateView, ResponsePdfView
 
 router = DefaultRouter()
-router.register("", QuestionnaireViewSet, basename="questionnaire")
+router.register("", QuestionnaireTypeViewSet, basename="questionnaire")
 
 urlpatterns = [
     path("", include(router.urls)),

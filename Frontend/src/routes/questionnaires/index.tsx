@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { useQuestionnaires, useDeleteQuestionnaire } from '@/hooks/useQuestionnaires'
+import { useQuestionnaireTypes, useDeleteQuestionnaireType } from '@/hooks/useQuestionnaires'
 import { Button } from '@/components/ui/Button'
 import { CopyButton } from '@/components/ui/CopyButton'
 
@@ -9,8 +9,8 @@ export const Route = createFileRoute('/questionnaires/')({
 })
 
 function QuestionnairesPage() {
-  const { data: questionnaires, isLoading } = useQuestionnaires()
-  const deleteQuestionnaire = useDeleteQuestionnaire()
+  const { data: questionnaires, isLoading } = useQuestionnaireTypes()
+  const deleteQuestionnaire = useDeleteQuestionnaireType()
   const [pendingDelete, setPendingDelete] = useState<string | null>(null)
 
   function handleDelete(id: string) {

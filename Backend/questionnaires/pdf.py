@@ -6,7 +6,7 @@ from django.template.loader import render_to_string
 
 import weasyprint
 
-from .models import Questionnaire, QuestionnaireResponse
+from .models import QuestionnaireType, QuestionnaireResponse
 
 
 def _build_label_map(choices: list) -> dict[str, str]:
@@ -81,13 +81,18 @@ def _resolve_questions(survey_json: dict, answers: dict) -> list[dict]:
                     display = str(raw)
 
                 questions.append(
-                    {"name": name, "title": title, "type": q_type, "display_value": display}
+                    {
+                        "name": name,
+                        "title": title,
+                        "type": q_type,
+                        "display_value": display,
+                    }
                 )
     return questions
 
 
 def generate_response_pdf(
-    questionnaire: Questionnaire,
+    questionnaire: QuestionnaireType,
     response: QuestionnaireResponse,
 ) -> bytes:
     """Render *response* for *questionnaire* as PDF bytes.

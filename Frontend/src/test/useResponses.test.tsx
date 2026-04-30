@@ -17,7 +17,7 @@ const mockGetResponses = getResponses as ReturnType<typeof vi.fn>
 
 const sampleResponse: QuestionnaireResponse = {
   id: 'r1',
-  questionnaireId: 'q1',
+  questionnaireTypeId: 'q1',
   answers: [{ questionId: 'q1', value: 'yes' }],
   submittedAt: '2024-01-02T00:00:00Z',
 }

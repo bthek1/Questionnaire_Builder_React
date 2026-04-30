@@ -11,7 +11,6 @@
 
 
 - [ ] new backend design
-- [ ] be able to create pdfs
 
 
 

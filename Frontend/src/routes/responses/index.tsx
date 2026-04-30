@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { useQuestionnaires } from '@/hooks/useQuestionnaires'
+import { useQuestionnaireTypes } from '@/hooks/useQuestionnaires'
 import { useResponses } from '@/hooks/useResponses'
 import { Button } from '@/components/ui/Button'
 
@@ -21,7 +21,9 @@ function ResponseRow({
   return (
     <tr className="bg-[var(--color-card)] hover:bg-[var(--color-muted)]">
       <td className="px-4 py-3 font-medium">{title}</td>
-      <td className="px-4 py-3 text-[var(--color-muted-foreground)]">{new Date(createdAt).toLocaleDateString()}</td>
+      <td className="px-4 py-3 text-[var(--color-muted-foreground)]">
+        {new Date(createdAt).toLocaleDateString()}
+      </td>
       <td className="px-4 py-3 text-[var(--color-foreground)]">
         {isLoading ? (
           <span className="text-[var(--color-muted-foreground)]">…</span>
@@ -43,7 +45,7 @@ function ResponseRow({
 }
 
 function ResponsesPage() {
-  const { data: questionnaires, isLoading } = useQuestionnaires()
+  const { data: questionnaires, isLoading } = useQuestionnaireTypes()
 
   if (isLoading) {
     return (

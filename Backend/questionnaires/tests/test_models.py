@@ -1,19 +1,19 @@
 import pytest
 
-from questionnaires.models import Questionnaire, QuestionnaireResponse
+from questionnaires.models import QuestionnaireType, QuestionnaireResponse
 
 
 @pytest.mark.django_db
 class TestQuestionnaireModel:
     def test_creation_defaults(self):
-        q = Questionnaire.objects.create(title="My Survey")
+        q = QuestionnaireType.objects.create(title="My Survey")
         assert q.pk is not None
         assert q.survey_json == {}
         assert q.description is None
         assert q.owner is None
 
     def test_creation_with_all_fields(self, user):
-        q = Questionnaire.objects.create(
+        q = QuestionnaireType.objects.create(
             title="Full Survey",
             description="Desc",
             owner=user,
@@ -41,9 +41,9 @@ class TestQuestionnaireModel:
         assert questionnaire.updated_at >= original
 
     def test_ordering_newest_first(self, db):
-        q1 = Questionnaire.objects.create(title="First")
-        q2 = Questionnaire.objects.create(title="Second")
-        qs = list(Questionnaire.objects.all())
+        q1 = QuestionnaireType.objects.create(title="First")
+        q2 = QuestionnaireType.objects.create(title="Second")
+        qs = list(QuestionnaireType.objects.all())
         assert qs[0].pk == q2.pk
         assert qs[1].pk == q1.pk
 
@@ -54,7 +54,7 @@ class TestQuestionnaireModel:
 
     def test_title_max_length(self, db):
         long_title = "a" * 256
-        q = Questionnaire(title=long_title)
+        q = QuestionnaireType(title=long_title)
         with pytest.raises(Exception):  # noqa: B017, PT011
             q.full_clean()
 
@@ -63,7 +63,7 @@ class TestQuestionnaireModel:
 class TestQuestionnaireResponseModel:
     def test_creation_defaults(self, questionnaire):
         r = QuestionnaireResponse.objects.create(
-            questionnaire=questionnaire,
+            questionnaire_type=questionnaire,
             answers={"q1": "hello"},
         )
         assert r.pk is not None
@@ -84,5 +84,5 @@ class TestQuestionnaireResponseModel:
         assert questionnaire.responses.count() == 1
 
     def test_answers_default_is_list(self, questionnaire):
-        r = QuestionnaireResponse.objects.create(questionnaire=questionnaire)
+        r = QuestionnaireResponse.objects.create(questionnaire_type=questionnaire)
         assert r.answers == []

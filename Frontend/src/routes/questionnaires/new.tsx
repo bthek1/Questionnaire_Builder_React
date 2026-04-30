@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { ClipboardList, Star, MessageSquare, HelpCircle, FileText } from 'lucide-react'
-import { useCreateQuestionnaire } from '@/hooks/useQuestionnaires'
+import { useCreateQuestionnaireType } from '@/hooks/useQuestionnaires'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
@@ -114,7 +114,7 @@ const TEMPLATES: Template[] = [
 
 function NewQuestionnairePage() {
   const navigate = useNavigate()
-  const createQuestionnaire = useCreateQuestionnaire()
+  const createQuestionnaire = useCreateQuestionnaireType()
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [selectedTemplate, setSelectedTemplate] = useState('blank')

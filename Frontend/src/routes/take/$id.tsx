@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useCallback, useState } from 'react'
-import { useQuestionnaire } from '@/hooks/useQuestionnaires'
+import { useQuestionnaireType } from '@/hooks/useQuestionnaires'
 import { useSubmitResponse } from '@/hooks/useResponses'
 import { SurveyRenderer } from '@/components/survey/SurveyRenderer'
 
@@ -10,7 +10,7 @@ export const Route = createFileRoute('/take/$id')({
 
 function TakePage() {
   const { id } = Route.useParams()
-  const { data: questionnaire, isLoading, isError } = useQuestionnaire(id)
+  const { data: questionnaire, isLoading, isError } = useQuestionnaireType(id)
   const submitResponse = useSubmitResponse(id)
   const [submitted, setSubmitted] = useState(false)
 

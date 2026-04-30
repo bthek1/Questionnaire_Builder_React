@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { Model } from 'survey-core'
 import { Survey } from 'survey-react-ui'
-import { useQuestionnaire } from '@/hooks/useQuestionnaires'
+import { useQuestionnaireType } from '@/hooks/useQuestionnaires'
 import { useResponses } from '@/hooks/useResponses'
 import { Button } from '@/components/ui/Button'
 import 'survey-core/survey-core.css'
@@ -13,7 +13,7 @@ export const Route = createFileRoute('/responses/$id/$responseId')({
 
 function ResponseViewPage() {
   const { id, responseId } = Route.useParams()
-  const { data: questionnaire, isLoading: loadingQ } = useQuestionnaire(id)
+  const { data: questionnaire, isLoading: loadingQ } = useQuestionnaireType(id)
   const { data: responses, isLoading: loadingR } = useResponses(id)
   const [downloading, setDownloading] = useState(false)
 
@@ -43,7 +43,9 @@ function ResponseViewPage() {
       <div className="py-24 text-center text-gray-500">
         <p>Response not found.</p>
         <Button asChild variant="outline" className="mt-4">
-          <Link to="/responses/$id" params={{ id }}>← Back</Link>
+          <Link to="/responses/$id" params={{ id }}>
+            ← Back
+          </Link>
         </Button>
       </div>
     )
@@ -62,14 +64,15 @@ function ResponseViewPage() {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <Button asChild size="sm" variant="outline">
-            <Link to="/responses/$id" params={{ id }}>← Back</Link>
+            <Link to="/responses/$id" params={{ id }}>
+              ← Back
+            </Link>
           </Button>
           <div>
-            <h1 className="text-2xl font-semibold">
-              {questionnaire?.title ?? 'Response'}
-            </h1>
+            <h1 className="text-2xl font-semibold">{questionnaire?.title ?? 'Response'}</h1>
             <p className="text-sm text-gray-500">
-              Response #{index + 1} &middot; Submitted {new Date(response.submittedAt).toLocaleString()}
+              Response #{index + 1} &middot; Submitted{' '}
+              {new Date(response.submittedAt).toLocaleString()}
             </p>
           </div>
         </div>
@@ -87,9 +90,7 @@ function ResponseViewPage() {
         {survey ? (
           <Survey model={survey} />
         ) : (
-          <p className="p-8 text-center text-sm text-gray-500">
-            No survey definition available.
-          </p>
+          <p className="p-8 text-center text-sm text-gray-500">No survey definition available.</p>
         )}
       </div>
     </div>

@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { Model } from 'survey-core'
-import { useQuestionnaire } from '@/hooks/useQuestionnaires'
+import { useQuestionnaireType } from '@/hooks/useQuestionnaires'
 import { useResponses } from '@/hooks/useResponses'
 import { Button } from '@/components/ui/Button'
 import type { QuestionnaireResponse } from '@/types'
@@ -152,7 +152,7 @@ function ResponseRow({
 
 function ResponseDetailPage() {
   const { id } = Route.useParams()
-  const { data: questionnaire, isLoading: loadingQ } = useQuestionnaire(id)
+  const { data: questionnaire, isLoading: loadingQ } = useQuestionnaireType(id)
   const { data: responses, isLoading: loadingR } = useResponses(id)
 
   if (loadingQ || loadingR) {

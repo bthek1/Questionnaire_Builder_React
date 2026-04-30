@@ -16,7 +16,7 @@ const mockPost = apiClient.post as ReturnType<typeof vi.fn>
 
 const mockResponse: QuestionnaireResponse = {
   id: 'r1',
-  questionnaireId: 'q1',
+  questionnaireTypeId: 'q1',
   answers: { q1: 'yes' },
   submittedAt: '2024-01-02T00:00:00Z',
 }

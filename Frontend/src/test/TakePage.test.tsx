@@ -3,7 +3,7 @@ import { vi, beforeEach } from 'vitest'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { RouterProvider, createRouter, createMemoryHistory } from '@tanstack/react-router'
 import { routeTree } from '../routeTree.gen'
-import type { Questionnaire } from '@/types'
+import type { QuestionnaireType } from '@/types'
 
 vi.mock('@/components/survey/SurveyRenderer', () => ({
   SurveyRenderer: ({ onComplete }: { onComplete: (data: object) => void }) => (
@@ -14,27 +14,32 @@ vi.mock('@/components/survey/SurveyRenderer', () => ({
 }))
 
 vi.mock('@/hooks/useQuestionnaires', () => ({
-  useQuestionnaire: vi.fn(),
-  useQuestionnaires: vi.fn(),
-  useCreateQuestionnaire: vi.fn(),
-  useDeleteQuestionnaire: vi.fn(),
+  useQuestionnaireType: vi.fn(),
+  useQuestionnaireTypes: vi.fn(),
+  useCreateQuestionnaireType: vi.fn(),
+  useDeleteQuestionnaireType: vi.fn(),
 }))
 vi.mock('@/hooks/useResponses', () => ({
   useSubmitResponse: vi.fn(),
   useResponses: vi.fn(),
 }))
 
-import { useQuestionnaire, useQuestionnaires, useCreateQuestionnaire, useDeleteQuestionnaire } from '@/hooks/useQuestionnaires'
+import {
+  useQuestionnaireType,
+  useQuestionnaireTypes,
+  useCreateQuestionnaireType,
+  useDeleteQuestionnaireType,
+} from '@/hooks/useQuestionnaires'
 import { useSubmitResponse, useResponses } from '@/hooks/useResponses'
 
-const mockUseQuestionnaire = useQuestionnaire as ReturnType<typeof vi.fn>
-const mockUseQuestionnaires = useQuestionnaires as ReturnType<typeof vi.fn>
-const mockUseCreateQuestionnaire = useCreateQuestionnaire as ReturnType<typeof vi.fn>
-const mockUseDeleteQuestionnaire = useDeleteQuestionnaire as ReturnType<typeof vi.fn>
+const mockUseQuestionnaire = useQuestionnaireType as ReturnType<typeof vi.fn>
+const mockUseQuestionnaires = useQuestionnaireTypes as ReturnType<typeof vi.fn>
+const mockUseCreateQuestionnaire = useCreateQuestionnaireType as ReturnType<typeof vi.fn>
+const mockUseDeleteQuestionnaire = useDeleteQuestionnaireType as ReturnType<typeof vi.fn>
 const mockUseSubmitResponse = useSubmitResponse as ReturnType<typeof vi.fn>
 const mockUseResponses = useResponses as ReturnType<typeof vi.fn>
 
-const questionnaireWithSurvey: Questionnaire = {
+const questionnaireWithSurvey: QuestionnaireType = {
   id: 'q1',
   title: 'My Test Survey',
   surveyJson: { pages: [{ name: 'page1', elements: [{ type: 'text', name: 'q1' }] }] },
@@ -42,7 +47,7 @@ const questionnaireWithSurvey: Questionnaire = {
   updatedAt: '2024-01-01T00:00:00Z',
 }
 
-const questionnaireWithoutSurvey: Questionnaire = {
+const questionnaireWithoutSurvey: QuestionnaireType = {
   id: 'q2',
   title: 'Empty Survey',
   createdAt: '2024-01-01T00:00:00Z',
@@ -63,7 +68,11 @@ function renderAt(path: string) {
 beforeEach(() => {
   vi.clearAllMocks()
   mockUseQuestionnaires.mockReturnValue({ data: [], isLoading: false })
-  mockUseCreateQuestionnaire.mockReturnValue({ mutateAsync: vi.fn(), isPending: false, isError: false })
+  mockUseCreateQuestionnaire.mockReturnValue({
+    mutateAsync: vi.fn(),
+    isPending: false,
+    isError: false,
+  })
   mockUseDeleteQuestionnaire.mockReturnValue({ mutate: vi.fn(), isPending: false })
   mockUseResponses.mockReturnValue({ data: [], isLoading: false })
 })

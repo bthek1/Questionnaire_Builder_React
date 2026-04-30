@@ -3,7 +3,7 @@ import { vi, beforeEach } from 'vitest'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { RouterProvider, createRouter, createMemoryHistory } from '@tanstack/react-router'
 import { routeTree } from '../routeTree.gen'
-import type { Questionnaire } from '@/types'
+import type { QuestionnaireType } from '@/types'
 
 vi.mock('@/components/survey/SurveyRenderer', () => ({
   SurveyRenderer: ({ surveyJson }: { surveyJson: object }) => (
@@ -11,11 +11,11 @@ vi.mock('@/components/survey/SurveyRenderer', () => ({
   ),
 }))
 vi.mock('@/hooks/useQuestionnaires', () => ({
-  useQuestionnaire: vi.fn(),
-  useQuestionnaires: vi.fn(),
-  useCreateQuestionnaire: vi.fn(),
-  useDeleteQuestionnaire: vi.fn(),
-  useUpdateQuestionnaire: vi.fn(),
+  useQuestionnaireType: vi.fn(),
+  useQuestionnaireTypes: vi.fn(),
+  useCreateQuestionnaireType: vi.fn(),
+  useDeleteQuestionnaireType: vi.fn(),
+  useUpdateQuestionnaireType: vi.fn(),
 }))
 vi.mock('@/hooks/useResponses', () => ({
   useSubmitResponse: vi.fn(),
@@ -23,23 +23,23 @@ vi.mock('@/hooks/useResponses', () => ({
 }))
 
 import {
-  useQuestionnaire,
-  useQuestionnaires,
-  useCreateQuestionnaire,
-  useDeleteQuestionnaire,
-  useUpdateQuestionnaire,
+  useQuestionnaireType,
+  useQuestionnaireTypes,
+  useCreateQuestionnaireType,
+  useDeleteQuestionnaireType,
+  useUpdateQuestionnaireType,
 } from '@/hooks/useQuestionnaires'
 import { useSubmitResponse, useResponses } from '@/hooks/useResponses'
 
-const mockUseQuestionnaire = useQuestionnaire as ReturnType<typeof vi.fn>
-const mockUseQuestionnaires = useQuestionnaires as ReturnType<typeof vi.fn>
-const mockUseCreateQuestionnaire = useCreateQuestionnaire as ReturnType<typeof vi.fn>
-const mockUseDeleteQuestionnaire = useDeleteQuestionnaire as ReturnType<typeof vi.fn>
-const mockUseUpdateQuestionnaire = useUpdateQuestionnaire as ReturnType<typeof vi.fn>
+const mockUseQuestionnaire = useQuestionnaireType as ReturnType<typeof vi.fn>
+const mockUseQuestionnaires = useQuestionnaireTypes as ReturnType<typeof vi.fn>
+const mockUseCreateQuestionnaire = useCreateQuestionnaireType as ReturnType<typeof vi.fn>
+const mockUseDeleteQuestionnaire = useDeleteQuestionnaireType as ReturnType<typeof vi.fn>
+const mockUseUpdateQuestionnaire = useUpdateQuestionnaireType as ReturnType<typeof vi.fn>
 const mockUseSubmitResponse = useSubmitResponse as ReturnType<typeof vi.fn>
 const mockUseResponses = useResponses as ReturnType<typeof vi.fn>
 
-const testQuestionnaire: Questionnaire = {
+const testQuestionnaire: QuestionnaireType = {
   id: 'q1',
   title: 'My Test Survey',
   surveyJson: { pages: [] },
@@ -64,7 +64,11 @@ beforeEach(() => {
   vi.clearAllMocks()
   mockUseQuestionnaire.mockReturnValue({ data: testQuestionnaire, isLoading: false })
   mockUseQuestionnaires.mockReturnValue({ data: [], isLoading: false })
-  mockUseCreateQuestionnaire.mockReturnValue({ mutateAsync: vi.fn(), isPending: false, isError: false })
+  mockUseCreateQuestionnaire.mockReturnValue({
+    mutateAsync: vi.fn(),
+    isPending: false,
+    isError: false,
+  })
   mockUseDeleteQuestionnaire.mockReturnValue({ mutate: vi.fn(), isPending: false })
   mockUseUpdateQuestionnaire.mockReturnValue({ mutate: mockMutate, isPending: false })
   mockUseSubmitResponse.mockReturnValue({ mutateAsync: vi.fn(), isPending: false })
@@ -74,7 +78,7 @@ beforeEach(() => {
 describe('JsonEditorPage', () => {
   it('renders textarea pre-filled with existing surveyJson', async () => {
     renderAt('/questionnaires/q1/json')
-    const textarea = await screen.findByRole('textbox') as HTMLTextAreaElement
+    const textarea = (await screen.findByRole('textbox')) as HTMLTextAreaElement
     expect(textarea.value).toContain('"pages"')
   })
 
@@ -90,10 +94,7 @@ describe('JsonEditorPage', () => {
     renderAt('/questionnaires/q1/json')
     const saveBtn = await screen.findByRole('button', { name: /save/i })
     fireEvent.click(saveBtn)
-    expect(mockMutate).toHaveBeenCalledWith(
-      { surveyJson: { pages: [] } },
-      expect.any(Object),
-    )
+    expect(mockMutate).toHaveBeenCalledWith({ surveyJson: { pages: [] } }, expect.any(Object))
   })
 
   it('renders the preview panel on load with the saved surveyJson', async () => {

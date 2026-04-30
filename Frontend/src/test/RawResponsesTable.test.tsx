@@ -11,22 +11,25 @@ function wrapper({ children }: { children: React.ReactNode }) {
 const responses: QuestionnaireResponse[] = [
   {
     id: 'r1',
-    questionnaireId: 'q1',
+    questionnaireTypeId: 'q1',
     answers: [{ questionId: 'q1', value: 'Yes' }],
     submittedAt: '2026-04-30T14:22:00Z',
   },
   {
     id: 'r2',
-    questionnaireId: 'q1',
+    questionnaireTypeId: 'q1',
     answers: [{ questionId: 'q1', value: 'No' }],
     submittedAt: '2026-04-29T09:01:00Z',
   },
 ]
 
-const longAnswers = Array.from({ length: 10 }, (_, i) => ({ questionId: `q${i}`, value: `answer-${i}` }))
+const longAnswers = Array.from({ length: 10 }, (_, i) => ({
+  questionId: `q${i}`,
+  value: `answer-${i}`,
+}))
 const longResponse: QuestionnaireResponse = {
   id: 'r3',
-  questionnaireId: 'q1',
+  questionnaireTypeId: 'q1',
   answers: longAnswers,
   submittedAt: '2026-04-28T10:00:00Z',
 }

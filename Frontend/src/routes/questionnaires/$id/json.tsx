@@ -1,10 +1,10 @@
 import { useState, useCallback } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { useQuestionnaire, useUpdateQuestionnaire } from '@/hooks/useQuestionnaires'
+import { useQuestionnaireType, useUpdateQuestionnaireType } from '@/hooks/useQuestionnaires'
 import { Button } from '@/components/ui/Button'
 import { Textarea } from '@/components/ui/Textarea'
 import { SurveyRenderer } from '@/components/survey/SurveyRenderer'
-import type { Questionnaire } from '@/types'
+import type { QuestionnaireType } from '@/types'
 
 export const Route = createFileRoute('/questionnaires/$id/json')({
   component: JsonEditorPage,
@@ -12,7 +12,7 @@ export const Route = createFileRoute('/questionnaires/$id/json')({
 
 function JsonEditorPage() {
   const { id } = Route.useParams()
-  const { data: questionnaire, isLoading } = useQuestionnaire(id)
+  const { data: questionnaire, isLoading } = useQuestionnaireType(id)
 
   if (isLoading) {
     return (
@@ -28,12 +28,12 @@ function JsonEditorPage() {
 }
 
 interface JsonEditorProps {
-  questionnaire: Questionnaire | undefined
+  questionnaire: QuestionnaireType | undefined
   id: string
 }
 
 function JsonEditor({ questionnaire, id }: JsonEditorProps) {
-  const updateQuestionnaire = useUpdateQuestionnaire(id)
+  const updateQuestionnaire = useUpdateQuestionnaireType(id)
   const initialJson = questionnaire?.surveyJson ?? {}
   const [text, setText] = useState(() => JSON.stringify(initialJson, null, 2))
   const [parseError, setParseError] = useState<string | null>(null)
@@ -108,10 +108,7 @@ function JsonEditor({ questionnaire, id }: JsonEditorProps) {
 
         <div className="space-y-2">
           <h2 className="text-sm font-semibold text-gray-600">Preview</h2>
-          <div
-            data-testid="survey-preview"
-            className="rounded-lg border bg-white p-4"
-          >
+          <div data-testid="survey-preview" className="rounded-lg border bg-white p-4">
             <SurveyRenderer surveyJson={previewJson} onComplete={handlePreviewComplete} />
           </div>
         </div>

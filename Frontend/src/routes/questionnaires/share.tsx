@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { useQuestionnaires } from '@/hooks/useQuestionnaires'
+import { useQuestionnaireTypes } from '@/hooks/useQuestionnaires'
 import { CopyButton } from '@/components/ui/CopyButton'
 import { Button } from '@/components/ui/Button'
 
@@ -8,7 +8,7 @@ export const Route = createFileRoute('/questionnaires/share')({
 })
 
 function ShareLinksPage() {
-  const { data: questionnaires, isLoading } = useQuestionnaires()
+  const { data: questionnaires, isLoading } = useQuestionnaireTypes()
 
   if (isLoading) {
     return (

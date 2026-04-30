@@ -1,4 +1,4 @@
-export interface Questionnaire {
+export interface QuestionnaireType {
   id: string
   title: string
   description?: string
@@ -9,7 +9,7 @@ export interface Questionnaire {
 
 export interface QuestionnaireResponse {
   id: string
-  questionnaireId: string
+  questionnaireTypeId: string
   answers: object
   submittedAt: string
 }

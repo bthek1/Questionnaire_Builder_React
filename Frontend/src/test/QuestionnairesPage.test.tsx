@@ -3,7 +3,7 @@ import { vi, beforeEach } from 'vitest'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { RouterProvider, createRouter, createMemoryHistory } from '@tanstack/react-router'
 import { routeTree } from '../routeTree.gen'
-import type { Questionnaire } from '@/types'
+import type { QuestionnaireType } from '@/types'
 
 // Mock SurveyJS components that need real DOM/canvas
 vi.mock('@/components/survey/SurveyRenderer', () => ({
@@ -11,19 +11,19 @@ vi.mock('@/components/survey/SurveyRenderer', () => ({
 }))
 
 vi.mock('@/hooks/useQuestionnaires', () => ({
-  useQuestionnaires: vi.fn(),
-  useDeleteQuestionnaire: vi.fn(),
+  useQuestionnaireTypes: vi.fn(),
+  useDeleteQuestionnaireType: vi.fn(),
 }))
 
-import { useQuestionnaires, useDeleteQuestionnaire } from '@/hooks/useQuestionnaires'
+import { useQuestionnaireTypes, useDeleteQuestionnaireType } from '@/hooks/useQuestionnaires'
 
-const mockUseQuestionnaires = useQuestionnaires as ReturnType<typeof vi.fn>
-const mockUseDeleteQuestionnaire = useDeleteQuestionnaire as ReturnType<typeof vi.fn>
+const mockUseQuestionnaires = useQuestionnaireTypes as ReturnType<typeof vi.fn>
+const mockUseDeleteQuestionnaire = useDeleteQuestionnaireType as ReturnType<typeof vi.fn>
 
 const mockMutate = vi.fn()
 const mockDeleteHook = { mutate: mockMutate, isPending: false }
 
-const sampleQuestionnaires: Questionnaire[] = [
+const sampleQuestionnaires: QuestionnaireType[] = [
   {
     id: '1',
     title: 'Survey Alpha',

@@ -1,5 +1,5 @@
 import { vi, beforeEach } from 'vitest'
-import type { Questionnaire } from '@/types'
+import type { QuestionnaireType } from '@/types'
 
 // Mock the axios client so no real HTTP requests are made
 vi.mock('@/lib/axios', () => ({
@@ -13,11 +13,11 @@ vi.mock('@/lib/axios', () => ({
 
 import { apiClient } from '@/lib/axios'
 import {
-  getQuestionnaires,
-  getQuestionnaire,
-  createQuestionnaire,
-  updateQuestionnaire,
-  deleteQuestionnaire,
+  getQuestionnaireTypes,
+  getQuestionnaireType,
+  createQuestionnaireType,
+  updateQuestionnaireType,
+  deleteQuestionnaireType,
 } from '@/api/questionnaires'
 
 const mockGet = apiClient.get as ReturnType<typeof vi.fn>
@@ -25,7 +25,7 @@ const mockPost = apiClient.post as ReturnType<typeof vi.fn>
 const mockPatch = apiClient.patch as ReturnType<typeof vi.fn>
 const mockDelete = apiClient.delete as ReturnType<typeof vi.fn>
 
-const mockQuestionnaire: Questionnaire = {
+const mockQuestionnaire: QuestionnaireType = {
   id: '1',
   title: 'Test Survey',
   description: 'A description',
@@ -38,54 +38,54 @@ beforeEach(() => {
   vi.clearAllMocks()
 })
 
-describe('getQuestionnaires()', () => {
+describe('getQuestionnaireTypes()', () => {
   it('returns array when API responds with an array', async () => {
     mockGet.mockResolvedValueOnce({ data: [mockQuestionnaire] })
-    const result = await getQuestionnaires()
+    const result = await getQuestionnaireTypes()
     expect(mockGet).toHaveBeenCalledWith('/questionnaires')
     expect(result).toEqual([mockQuestionnaire])
   })
 
   it('returns results array when API responds with paginated object', async () => {
     mockGet.mockResolvedValueOnce({ data: { results: [mockQuestionnaire] } })
-    const result = await getQuestionnaires()
+    const result = await getQuestionnaireTypes()
     expect(result).toEqual([mockQuestionnaire])
   })
 })
 
-describe('getQuestionnaire()', () => {
+describe('getQuestionnaireType()', () => {
   it('returns a single questionnaire by id', async () => {
     mockGet.mockResolvedValueOnce({ data: mockQuestionnaire })
-    const result = await getQuestionnaire('1')
+    const result = await getQuestionnaireType('1')
     expect(mockGet).toHaveBeenCalledWith('/questionnaires/1')
     expect(result).toEqual(mockQuestionnaire)
   })
 })
 
-describe('createQuestionnaire()', () => {
+describe('createQuestionnaireType()', () => {
   it('posts payload and returns created questionnaire', async () => {
     const payload = { title: 'New Survey', description: 'Desc' }
     mockPost.mockResolvedValueOnce({ data: { ...mockQuestionnaire, ...payload } })
-    const result = await createQuestionnaire(payload)
+    const result = await createQuestionnaireType(payload)
     expect(mockPost).toHaveBeenCalledWith('/questionnaires/', payload)
     expect(result.title).toBe('New Survey')
   })
 })
 
-describe('updateQuestionnaire()', () => {
+describe('updateQuestionnaireType()', () => {
   it('patches the questionnaire and returns the updated record', async () => {
     const patch = { title: 'Updated' }
     mockPatch.mockResolvedValueOnce({ data: { ...mockQuestionnaire, title: 'Updated' } })
-    const result = await updateQuestionnaire('1', patch)
+    const result = await updateQuestionnaireType('1', patch)
     expect(mockPatch).toHaveBeenCalledWith('/questionnaires/1/', patch)
     expect(result.title).toBe('Updated')
   })
 })
 
-describe('deleteQuestionnaire()', () => {
+describe('deleteQuestionnaireType()', () => {
   it('calls delete endpoint with correct id', async () => {
     mockDelete.mockResolvedValueOnce({})
-    await deleteQuestionnaire('1')
+    await deleteQuestionnaireType('1')
     expect(mockDelete).toHaveBeenCalledWith('/questionnaires/1/')
   })
 })

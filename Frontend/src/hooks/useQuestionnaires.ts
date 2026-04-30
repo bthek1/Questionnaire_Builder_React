@@ -1,61 +1,61 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
-  getQuestionnaires,
-  getQuestionnaire,
-  createQuestionnaire,
-  updateQuestionnaire,
-  deleteQuestionnaire,
+  getQuestionnaireTypes,
+  getQuestionnaireType,
+  createQuestionnaireType,
+  updateQuestionnaireType,
+  deleteQuestionnaireType,
 } from '@/api/questionnaires'
-import type { Questionnaire } from '@/types'
+import type { QuestionnaireType } from '@/types'
 
-export const questionnaireKeys = {
+export const questionnaireTypeKeys = {
   all: ['questionnaires'] as const,
   detail: (id: string) => ['questionnaires', id] as const,
 }
 
-export function useQuestionnaires() {
+export function useQuestionnaireTypes() {
   return useQuery({
-    queryKey: questionnaireKeys.all,
-    queryFn: getQuestionnaires,
+    queryKey: questionnaireTypeKeys.all,
+    queryFn: getQuestionnaireTypes,
   })
 }
 
-export function useQuestionnaire(id: string) {
+export function useQuestionnaireType(id: string) {
   return useQuery({
-    queryKey: questionnaireKeys.detail(id),
-    queryFn: () => getQuestionnaire(id),
+    queryKey: questionnaireTypeKeys.detail(id),
+    queryFn: () => getQuestionnaireType(id),
     enabled: !!id,
   })
 }
 
-export function useCreateQuestionnaire() {
+export function useCreateQuestionnaireType() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: createQuestionnaire,
+    mutationFn: createQuestionnaireType,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: questionnaireKeys.all })
+      queryClient.invalidateQueries({ queryKey: questionnaireTypeKeys.all })
     },
   })
 }
 
-export function useUpdateQuestionnaire(id: string) {
+export function useUpdateQuestionnaireType(id: string) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (payload: Partial<Omit<Questionnaire, 'id' | 'createdAt' | 'updatedAt'>>) =>
-      updateQuestionnaire(id, payload),
+    mutationFn: (payload: Partial<Omit<QuestionnaireType, 'id' | 'createdAt' | 'updatedAt'>>) =>
+      updateQuestionnaireType(id, payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: questionnaireKeys.all })
-      queryClient.invalidateQueries({ queryKey: questionnaireKeys.detail(id) })
+      queryClient.invalidateQueries({ queryKey: questionnaireTypeKeys.all })
+      queryClient.invalidateQueries({ queryKey: questionnaireTypeKeys.detail(id) })
     },
   })
 }
 
-export function useDeleteQuestionnaire() {
+export function useDeleteQuestionnaireType() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: deleteQuestionnaire,
+    mutationFn: deleteQuestionnaireType,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: questionnaireKeys.all })
+      queryClient.invalidateQueries({ queryKey: questionnaireTypeKeys.all })
     },
   })
 }
