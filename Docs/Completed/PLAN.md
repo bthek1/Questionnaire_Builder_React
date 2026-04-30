@@ -26,7 +26,7 @@
   ```
 - [x] Verify `package.json` targets React 19 and TypeScript 6
 - [x] Remove boilerplate files (`App.css`, `assets/react.svg`, placeholder content in `App.tsx`)
-- [ ] Commit: `chore: initial vite scaffold`
+- [x] Commit: `chore: initial vite scaffold`
 
 ---
 
@@ -190,7 +190,7 @@ export default defineConfig({
 - [x] Create a shared `src/lib/form.ts` with reusable form factory helpers
 - [x] Build example `QuestionnaireForm` component using `@tanstack/react-form` + Radix UI primitives
 - [x] Integrate form submission with axios API layer
-- [ ] Commit: `feat: setup tanstack form`
+- [x] Commit: `feat: setup tanstack form`
 
 ---
 
@@ -313,6 +313,4 @@ e2e/                      # Playwright tests
 | Phase 10 — Linting & Formatting | ✅ Complete |
 | Phase 11 — Testing Setup | ✅ Complete |
 
-**Next step:** Phase 12 — create `src/hooks/` directory and write tests for the new form component.
-
-**Note:** `src/hooks/` directory (referenced in Phase 12 target structure) has not been created yet.
+**All phases complete.** `src/hooks/useQuestionnaires.ts` created; `QuestionnaireForm` tests written and passing (8/8).
