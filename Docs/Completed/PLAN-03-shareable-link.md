@@ -44,11 +44,11 @@ If a modal UX is preferred over a plain button:
 ---
 
 ## Acceptance Criteria
-- [ ] Each questionnaire row has a "Copy link" button.
-- [ ] Clicking it writes `<origin>/take/:id` to the clipboard.
-- [ ] The button text changes to "Copied!" for 2 s then resets.
+- [x] Each questionnaire row has a "Copy link" button.
+- [x] Clicking it writes `<origin>/take/:id` to the clipboard.
+- [x] The button text changes to "Copied!" for 2 s then resets.
 - [ ] Works in Chrome, Firefox, and Safari (clipboard API available on HTTPS / localhost).
-- [ ] `pnpm build` passes.
+- [x] `pnpm build` passes.
 
 ---
 

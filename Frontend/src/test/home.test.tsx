@@ -19,7 +19,7 @@ function renderWithProviders() {
 describe('home route', () => {
   it('renders the heading', async () => {
     renderWithProviders()
-    const heading = await screen.findByRole('heading', { name: /questionnaire builder/i })
-    expect(heading).toBeInTheDocument()
+    const link = await screen.findByRole('link', { name: /questionnaire builder/i })
+    expect(link).toBeInTheDocument()
   })
 })

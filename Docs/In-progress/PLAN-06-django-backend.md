@@ -115,18 +115,16 @@ Run with: `docker compose up -d db`
 
 ```bash
 cd Backend/
-python -m venv .venv
-source .venv/bin/activate
+uv init --no-workspace
+uv add django djangorestframework djangorestframework-simplejwt \
+       django-cors-headers "psycopg[binary]" python-decouple
 
-pip install django djangorestframework djangorestframework-simplejwt \
-            django-cors-headers psycopg[binary] python-decouple
-
-pip freeze > requirements.txt
-
-django-admin startproject config .
-python manage.py startapp questionnaires
-python manage.py startapp responses
+uv run django-admin startproject config .
+uv run python manage.py startapp questionnaires
+uv run python manage.py startapp responses
 ```
+
+> `uv` creates a `.venv` automatically and records dependencies in `pyproject.toml`. Use `uv run <cmd>` in place of activating the venv manually. To enter an interactive shell, run `uv run -- bash` or `source .venv/bin/activate`.
 
 ---
 
@@ -339,9 +337,9 @@ urlpatterns = [
 ### Step 8 — Migrations & superuser
 
 ```bash
-python manage.py makemigrations
-python manage.py migrate
-python manage.py createsuperuser
+uv run python manage.py makemigrations
+uv run python manage.py migrate
+uv run python manage.py createsuperuser
 ```
 
 ---
@@ -366,8 +364,8 @@ localStorage.setItem('access_token', access)
 ### Step 10 — Verification checklist
 
 - [ ] `docker compose up -d db` — postgres container healthy
-- [ ] `python manage.py migrate` — no errors
-- [ ] `python manage.py runserver` — starts on port 8000
+- [ ] `uv run python manage.py migrate` — no errors
+- [ ] `uv run python manage.py runserver` — starts on port 8000
 - [ ] `GET /api/questionnaires/` with Bearer token → 200 empty list
 - [ ] `POST /api/questionnaires/` → 201 with UUID id + camelCase fields
 - [ ] `PATCH /api/questionnaires/:id/` → 200 with updated fields

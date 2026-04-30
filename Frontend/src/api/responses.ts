@@ -1,9 +1,9 @@
 import { apiClient } from '@/lib/axios'
-import type { QuestionnaireResponse, Answer } from '@/types'
+import type { QuestionnaireResponse } from '@/types'
 
 export async function submitResponse(
   questionnaireId: string,
-  answers: Answer[],
+  answers: object,
 ): Promise<QuestionnaireResponse> {
   const { data } = await apiClient.post<QuestionnaireResponse>(
     `/questionnaires/${questionnaireId}/responses`,

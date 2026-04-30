@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { ICreatorOptions, SurveyCreator } from 'survey-creator-core'
-import { SurveyCreatorComponent } from 'survey-creator-react'
+import type { ICreatorOptions } from 'survey-creator-core'
+import { SurveyCreator, SurveyCreatorComponent } from 'survey-creator-react'
 import { updateQuestionnaire } from '@/api/questionnaires'
 import 'survey-core/survey-core.css'
 import 'survey-creator-core/survey-creator-core.css'

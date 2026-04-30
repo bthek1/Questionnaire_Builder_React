@@ -57,10 +57,10 @@ import { SurveyCreatorComponent, SurveyCreator } from 'survey-creator-react'
 ---
 
 ## Acceptance Criteria
-- [ ] Navigating to `/questionnaires/:id/edit` renders the SurveyJS creator.
-- [ ] Clicking the creator's save button persists the JSON to the backend.
-- [ ] Reloading the edit page restores the previous design.
-- [ ] No TypeScript errors (`pnpm build`).
+- [x] Navigating to `/questionnaires/:id/edit` renders the SurveyJS creator.
+- [x] Clicking the creator's save button persists the JSON to the backend.
+- [x] Reloading the edit page restores the previous design.
+- [x] No TypeScript errors (`pnpm build`).
 
 ---
 
