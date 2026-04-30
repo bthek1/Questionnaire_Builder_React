@@ -1,4 +1,4 @@
 # TODO
 
 - [ ] update AI - /init
-- [ ] Docs folder with plans- completed/in-progress
+- [x] Docs folder with plans- completed/in-progress
