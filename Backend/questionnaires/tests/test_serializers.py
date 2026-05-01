@@ -80,7 +80,9 @@ class TestQuestionnaireResponseSerializer:
             "name",
             "shareToken",
             "answers",
+            "metrics",
             "submittedAt",
+            "surveyJsonSnapshot",
             "createdAt",
             "updatedAt",
         }
@@ -106,6 +108,44 @@ class TestQuestionnaireResponseSerializer:
 
     def test_answers_defaults_to_empty_dict(self, questionnaire):
         from questionnaires.models import Questionnaire
+
         r = Questionnaire.objects.create(questionnaire_type=questionnaire)
         data = QuestionnaireSerializer(r).data
         assert data["answers"] == {}
+
+    def test_survey_json_snapshot_in_output(self, response_for):
+        data = QuestionnaireSerializer(response_for).data
+        assert "surveyJsonSnapshot" in data
+        assert "survey_json_snapshot" not in data
+
+    def test_survey_json_snapshot_is_read_only(self, response_for):
+        serializer = QuestionnaireSerializer(
+            response_for,
+            data={"surveyJsonSnapshot": {"hacked": True}},
+            partial=True,
+        )
+        assert serializer.is_valid(), serializer.errors
+        assert "survey_json_snapshot" not in serializer.validated_data
+
+    def test_metrics_in_serializer_output(self, questionnaire):
+        from questionnaires.models import Questionnaire
+
+        r = Questionnaire.objects.create(
+            questionnaire_type=questionnaire,
+            metrics={"total_score": 42},
+        )
+        data = QuestionnaireSerializer(r).data
+        assert data["metrics"] == {"total_score": 42}
+
+    def test_metrics_defaults_to_empty_dict_in_output(self, response_for):
+        data = QuestionnaireSerializer(response_for).data
+        assert data["metrics"] == {}
+
+    def test_metrics_writable_on_input(self, response_for):
+        serializer = QuestionnaireSerializer(
+            response_for,
+            data={"metrics": {"score": 99}},
+            partial=True,
+        )
+        assert serializer.is_valid(), serializer.errors
+        assert serializer.validated_data.get("metrics") == {"score": 99}

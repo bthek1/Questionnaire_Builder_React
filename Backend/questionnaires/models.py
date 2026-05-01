@@ -36,6 +36,8 @@ class Questionnaire(models.Model):
     name = models.CharField(max_length=255, blank=True)
     share_token = models.UUIDField(default=uuid.uuid4, unique=True, db_index=True)
     answers = models.JSONField(default=dict, blank=True)
+    survey_json_snapshot = models.JSONField(default=dict, blank=True)
+    metrics = models.JSONField(default=dict, blank=True)
     submitted_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

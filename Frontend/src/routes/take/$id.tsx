@@ -3,6 +3,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useCallback, useState } from 'react'
 import { useQuestionnaireByToken, useSubmitAnswers } from '@/hooks/useQuestionnaires'
 import { SurveyRenderer } from '@/components/survey/SurveyRenderer'
+import { evaluateMetrics } from '@/lib/metrics'
 
 export const Route = createFileRoute('/take/$id')({
   component: TakePage,
@@ -16,11 +17,18 @@ function TakePage() {
 
   const handleComplete = useCallback(
     (data: object) => {
-      submitAnswers.mutate(data as Record<string, unknown>, {
-        onSuccess: () => setSubmitted(true),
-      })
+      const answers = data as Record<string, unknown>
+      const surveyJson = instance?.questionnaireType?.surveyJson
+      const metricResults = surveyJson ? evaluateMetrics(surveyJson, answers) : []
+      const metrics = Object.fromEntries(metricResults.map((m) => [m.name, m.value]))
+      submitAnswers.mutate(
+        { answers, metrics },
+        {
+          onSuccess: () => setSubmitted(true),
+        },
+      )
     },
-    [submitAnswers],
+    [submitAnswers, instance],
   )
 
   if (isLoading) {
@@ -82,6 +90,9 @@ function TakePage() {
     )
   }
 
+  // Use the live surveyJson here — the take page renders the current form for submission.
+  // The snapshot (surveyJsonSnapshot) is only used post-submission in the results page
+  // to ensure historical answers remain interpretable even if the type definition changes.
   const surveyJson = instance.questionnaireType?.surveyJson
   if (!surveyJson) {
     return (
@@ -101,4 +112,3 @@ function TakePage() {
     </div>
   )
 }
-

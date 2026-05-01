@@ -41,10 +41,11 @@ export async function deleteQuestionnaire(id: string): Promise<void> {
 export async function submitAnswers(
   shareToken: string,
   answers: Record<string, unknown>,
+  metrics: Record<string, unknown> = {},
 ): Promise<Questionnaire> {
   const { data } = await apiClient.patch<Questionnaire>(
     `/questionnaires/by-token/${shareToken}/submit/`,
-    { answers },
+    { answers, metrics },
   )
   return data
 }

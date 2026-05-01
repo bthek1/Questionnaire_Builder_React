@@ -171,12 +171,52 @@ class TestQuestionnaireInstanceByToken:
         assert response_for.answers == {"q1": "hello"}
         assert response_for.submitted_at is not None
 
+    def test_submit_sets_survey_json_snapshot(
+        self, api_client, response_for, questionnaire
+    ):
+        url = submit_url(response_for.share_token)
+        api_client.patch(url, {"answers": {"q1": "hello"}}, format="json")
+        response_for.refresh_from_db()
+        assert response_for.survey_json_snapshot == questionnaire.survey_json
+
+    def test_submit_snapshot_in_response_body(
+        self, api_client, response_for, questionnaire
+    ):
+        url = submit_url(response_for.share_token)
+        response = api_client.patch(url, {"answers": {"q1": "hello"}}, format="json")
+        assert response.status_code == 200
+        assert response.data["surveyJsonSnapshot"] == questionnaire.survey_json
+
     def test_submit_returns_409_on_resubmission(self, api_client, response_for):
         url = submit_url(response_for.share_token)
         payload = {"answers": {"q1": "first"}}
         api_client.patch(url, payload, format="json")
         second = api_client.patch(url, {"answers": {"q1": "second"}}, format="json")
         assert second.status_code == 409
+
+    def test_submit_saves_metrics_from_payload(self, api_client, response_for):
+        url = submit_url(response_for.share_token)
+        payload = {"answers": {"q1": "hello"}, "metrics": {"total_score": 42}}
+        response = api_client.patch(url, payload, format="json")
+        assert response.status_code == 200
+        response_for.refresh_from_db()
+        assert response_for.metrics == {"total_score": 42}
+
+    def test_submit_metrics_in_response_body(self, api_client, response_for):
+        url = submit_url(response_for.share_token)
+        payload = {"answers": {"q1": "hello"}, "metrics": {"risk": "low"}}
+        response = api_client.patch(url, payload, format="json")
+        assert response.status_code == 200
+        assert response.data["metrics"] == {"risk": "low"}
+
+    def test_submit_without_metrics_defaults_to_empty_dict(
+        self, api_client, response_for
+    ):
+        url = submit_url(response_for.share_token)
+        response = api_client.patch(url, {"answers": {"q1": "hello"}}, format="json")
+        assert response.status_code == 200
+        response_for.refresh_from_db()
+        assert response_for.metrics == {}
 
 
 @pytest.mark.django_db

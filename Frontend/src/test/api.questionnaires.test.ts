@@ -108,8 +108,22 @@ describe('submitAnswers()', () => {
     const submitted = { ...mockInstance, answers, submittedAt: '2024-01-02T00:00:00Z' }
     mockPatch.mockResolvedValueOnce({ data: submitted })
     const result = await submitAnswers('token-abc', answers)
-    expect(mockPatch).toHaveBeenCalledWith('/questionnaires/by-token/token-abc/submit/', { answers })
+    expect(mockPatch).toHaveBeenCalledWith('/questionnaires/by-token/token-abc/submit/', {
+      answers,
+      metrics: {},
+    })
     expect(result).toEqual(submitted)
   })
-})
 
+  it('includes metrics in the PATCH body when provided', async () => {
+    const answers = { q1: 'yes' }
+    const metrics = { total_score: 42 }
+    const submitted = { ...mockInstance, answers, submittedAt: '2024-01-02T00:00:00Z' }
+    mockPatch.mockResolvedValueOnce({ data: submitted })
+    await submitAnswers('token-abc', answers, metrics)
+    expect(mockPatch).toHaveBeenCalledWith('/questionnaires/by-token/token-abc/submit/', {
+      answers,
+      metrics,
+    })
+  })
+})

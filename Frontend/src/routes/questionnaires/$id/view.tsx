@@ -16,10 +16,13 @@ function ViewPage() {
   const { data: instance, isLoading, isError } = useQuestionnaire(id)
 
   const model = useMemo(() => {
-    if (!instance?.questionnaireType?.surveyJson) return null
-    const m = new Model(instance.questionnaireType.surveyJson)
+    // Prefer the snapshot taken at submit time so the displayed form matches the
+    // answers exactly as they were collected, even if the type definition changes later.
+    const surveyJson = instance?.surveyJsonSnapshot ?? instance?.questionnaireType?.surveyJson
+    if (!surveyJson) return null
+    const m = new Model(surveyJson)
     m.mode = 'display'
-    if (instance.answers && Object.keys(instance.answers).length > 0) {
+    if (instance?.answers && Object.keys(instance.answers).length > 0) {
       m.data = instance.answers
     }
     return m

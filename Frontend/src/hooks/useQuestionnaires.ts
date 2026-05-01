@@ -73,7 +73,13 @@ export function useDeleteQuestionnaire() {
 export function useSubmitAnswers(shareToken: string) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (answers: Record<string, unknown>) => submitAnswers(shareToken, answers),
+    mutationFn: ({
+      answers,
+      metrics = {},
+    }: {
+      answers: Record<string, unknown>
+      metrics?: Record<string, unknown>
+    }) => submitAnswers(shareToken, answers, metrics),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: questionnaireKeys.byToken(shareToken) })
     },

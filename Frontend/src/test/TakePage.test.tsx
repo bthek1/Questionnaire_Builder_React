@@ -5,6 +5,10 @@ import { RouterProvider, createRouter, createMemoryHistory } from '@tanstack/rea
 import { routeTree } from '../routeTree.gen'
 import type { Questionnaire } from '@/types'
 
+vi.mock('@/lib/metrics', () => ({
+  evaluateMetrics: vi.fn().mockReturnValue([]),
+}))
+
 vi.mock('@/components/survey/SurveyRenderer', () => ({
   SurveyRenderer: ({ onComplete }: { onComplete: (data: object) => void }) => (
     <button data-testid="survey-renderer" onClick={() => onComplete({ q1: 'answer' })}>
@@ -28,12 +32,14 @@ import {
   useCreateQuestionnaire,
   useDeleteQuestionnaire,
 } from '@/hooks/useQuestionnaires'
+import { evaluateMetrics } from '@/lib/metrics'
 
 const mockUseQuestionnaireByToken = useQuestionnaireByToken as ReturnType<typeof vi.fn>
 const mockUseSubmitAnswers = useSubmitAnswers as ReturnType<typeof vi.fn>
 const mockUseQuestionnaires = useQuestionnaires as ReturnType<typeof vi.fn>
 const mockUseCreateQuestionnaire = useCreateQuestionnaire as ReturnType<typeof vi.fn>
 const mockUseDeleteQuestionnaire = useDeleteQuestionnaire as ReturnType<typeof vi.fn>
+const mockEvaluateMetrics = evaluateMetrics as ReturnType<typeof vi.fn>
 
 vi.mock('@/hooks/useQuestionnaireTypes', () => ({
   useQuestionnaireTypes: vi.fn().mockReturnValue({ data: [], isLoading: false }),
@@ -91,6 +97,7 @@ function renderAt(path: string) {
 
 beforeEach(() => {
   vi.clearAllMocks()
+  mockEvaluateMetrics.mockReturnValue([])
   mockUseQuestionnaires.mockReturnValue({ data: [], isLoading: false })
   mockUseCreateQuestionnaire.mockReturnValue({ mutate: vi.fn(), isPending: false, isError: false })
   mockUseDeleteQuestionnaire.mockReturnValue({ mutate: vi.fn(), isPending: false })
@@ -98,14 +105,22 @@ beforeEach(() => {
 
 describe('TakePage', () => {
   it('shows loading state while fetching questionnaire', async () => {
-    mockUseQuestionnaireByToken.mockReturnValue({ data: undefined, isLoading: true, isError: false })
+    mockUseQuestionnaireByToken.mockReturnValue({
+      data: undefined,
+      isLoading: true,
+      isError: false,
+    })
     mockUseSubmitAnswers.mockReturnValue({ mutate: vi.fn(), isError: false, reset: vi.fn() })
     renderAt('/take/token-abc')
     expect(await screen.findByText(/loading questionnaire/i)).toBeInTheDocument()
   })
 
   it('shows error when questionnaire not found', async () => {
-    mockUseQuestionnaireByToken.mockReturnValue({ data: undefined, isLoading: false, isError: true })
+    mockUseQuestionnaireByToken.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      isError: true,
+    })
     mockUseSubmitAnswers.mockReturnValue({ mutate: vi.fn(), isError: false, reset: vi.fn() })
     renderAt('/take/token-abc')
     expect(await screen.findByText(/questionnaire not found/i)).toBeInTheDocument()
@@ -146,9 +161,11 @@ describe('TakePage', () => {
   })
 
   it('shows thank-you message after successful submission', async () => {
-    const mockMutate = vi.fn().mockImplementation((_data: unknown, options: { onSuccess?: () => void }) => {
-      options?.onSuccess?.()
-    })
+    const mockMutate = vi
+      .fn()
+      .mockImplementation((_data: unknown, options: { onSuccess?: () => void }) => {
+        options?.onSuccess?.()
+      })
     mockUseQuestionnaireByToken.mockReturnValue({
       data: instanceWithSurvey,
       isLoading: false,
@@ -183,5 +200,53 @@ describe('TakePage', () => {
     renderAt('/take/token-abc')
     fireEvent.click(await screen.findByRole('button', { name: /try again/i }))
     expect(mockReset).toHaveBeenCalled()
+  })
+
+  it('calls mutate with non-empty metrics when calculatedValues are present', async () => {
+    const mockMutate = vi
+      .fn()
+      .mockImplementation((_data: unknown, options: { onSuccess?: () => void }) => {
+        options?.onSuccess?.()
+      })
+    mockEvaluateMetrics.mockReturnValue([{ name: 'total_score', label: 'Total Score', value: 42 }])
+    mockUseQuestionnaireByToken.mockReturnValue({
+      data: instanceWithSurvey,
+      isLoading: false,
+      isError: false,
+    })
+    mockUseSubmitAnswers.mockReturnValue({ mutate: mockMutate, isError: false, reset: vi.fn() })
+    renderAt('/take/token-abc')
+
+    fireEvent.click(await screen.findByTestId('survey-renderer'))
+    await waitFor(() =>
+      expect(mockMutate).toHaveBeenCalledWith(
+        expect.objectContaining({ metrics: { total_score: 42 } }),
+        expect.any(Object),
+      ),
+    )
+  })
+
+  it('calls mutate with empty metrics when no calculatedValues are defined', async () => {
+    const mockMutate = vi
+      .fn()
+      .mockImplementation((_data: unknown, options: { onSuccess?: () => void }) => {
+        options?.onSuccess?.()
+      })
+    mockEvaluateMetrics.mockReturnValue([])
+    mockUseQuestionnaireByToken.mockReturnValue({
+      data: instanceWithSurvey,
+      isLoading: false,
+      isError: false,
+    })
+    mockUseSubmitAnswers.mockReturnValue({ mutate: mockMutate, isError: false, reset: vi.fn() })
+    renderAt('/take/token-abc')
+
+    fireEvent.click(await screen.findByTestId('survey-renderer'))
+    await waitFor(() =>
+      expect(mockMutate).toHaveBeenCalledWith(
+        expect.objectContaining({ metrics: {} }),
+        expect.any(Object),
+      ),
+    )
   })
 })

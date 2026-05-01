@@ -1,85 +1,30 @@
 /* eslint-disable react-refresh/only-export-components */
 import { useMemo } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { Model } from 'survey-core'
 import { useQuestionnaire } from '@/hooks/useQuestionnaires'
 import { Button } from '@/components/ui/Button'
+import { evaluateMetrics, metricsFromStored, type MetricResult } from '@/lib/metrics'
 
 export const Route = createFileRoute('/questionnaires/$id/results')({
   component: ResultsPage,
 })
 
-interface MetricResult {
-  name: string
-  label: string
-  value: unknown
-}
-
-/** Convert snake_case / camelCase names to "Title Case" for display. */
-function formatLabel(name: string): string {
-  return name
-    .replace(/_/g, ' ')
-    .replace(/([a-z])([A-Z])/g, '$1 $2')
-    .replace(/\b\w/g, (c) => c.toUpperCase())
-}
-
-/**
- * Evaluate all calculatedValues from the surveyJson against the stored answers.
- *
- * How SurveyJS calculatedValues work:
- *  - Each entry in `surveyJson.calculatedValues` has a `name` and an `expression`.
- *  - SurveyJS re-evaluates the expression whenever any referenced question value changes.
- *  - `includeIntoResult: true` causes the result to be merged into `survey.data` on completion
- *    (so it's already stored in `instance.answers`).
- *  - After `model.data = answers`, all expressions are re-evaluated synchronously.
- *  - The results are accessible via `model.calculatedValues` — an array of CalculatedValue
- *    objects, each with `.name` and `.value`.
- */
-function evaluateMetrics(surveyJson: object, answers: Record<string, unknown>): MetricResult[] {
-  const json = surveyJson as Record<string, unknown>
-  const calcDefs = Array.isArray(json.calculatedValues)
-    ? (json.calculatedValues as Array<{ name: string; title?: string }>)
-    : []
-  if (calcDefs.length === 0) return []
-
-  // Build a label map from the JSON defs (title is optional in surveyJson)
-  const labelByName = Object.fromEntries(
-    calcDefs.map((d) => [d.name, d.title ? String(d.title) : formatLabel(d.name)]),
-  )
-
-  // Feed answers into a fresh model — this triggers synchronous re-evaluation of all
-  // calculatedValues expressions so model.calculatedValues[i].value is up-to-date.
-  const model = new Model(surveyJson)
-  model.data = answers
-
-  // model.calculatedValues is CalculatedValue[] with .name and .value
-  const cvMap = new Map(
-    (model.calculatedValues as Array<{ name: string; value: unknown }>).map((cv) => [
-      cv.name,
-      cv.value,
-    ]),
-  )
-
-  return calcDefs
-    .filter((def) => def.name in labelByName)
-    .map((def) => ({
-      name: def.name,
-      label: labelByName[def.name],
-      // Prefer the freshly evaluated value; fall back to stored answer (includeIntoResult case)
-      value: cvMap.has(def.name) ? cvMap.get(def.name) : answers[def.name],
-    }))
-}
-
 function ResultsPage() {
   const { id } = Route.useParams()
   const { data: instance, isLoading, isError } = useQuestionnaire(id)
 
-  const metrics = useMemo(() => {
-    if (!instance?.questionnaireType?.surveyJson || !instance.answers) return []
-    return evaluateMetrics(
-      instance.questionnaireType.surveyJson,
-      instance.answers as Record<string, unknown>,
-    )
+  const metrics = useMemo((): MetricResult[] => {
+    // Prefer the snapshot taken at submit time; fall back to the live type definition
+    const surveyJson = instance?.surveyJsonSnapshot ?? instance?.questionnaireType?.surveyJson
+    if (!surveyJson || !instance?.answers) return []
+
+    const storedMetrics = instance.metrics
+    // If stored metrics are non-empty, use them directly (no Model instantiation)
+    if (storedMetrics && Object.keys(storedMetrics).length > 0) {
+      return metricsFromStored(surveyJson, storedMetrics)
+    }
+    // Fallback: re-evaluate via Model (pre-PLAN-15 records or un-submitted instances)
+    return evaluateMetrics(surveyJson, instance.answers as Record<string, unknown>)
   }, [instance])
 
   function handleDownloadPdf() {

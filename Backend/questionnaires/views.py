@@ -59,8 +59,18 @@ class QuestionnaireViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_409_CONFLICT,
             )
         instance.answers = request.data.get("answers", {})
+        instance.survey_json_snapshot = instance.questionnaire_type.survey_json or {}
+        instance.metrics = request.data.get("metrics", {})
         instance.submitted_at = timezone.now()
-        instance.save(update_fields=["answers", "submitted_at", "updated_at"])
+        instance.save(
+            update_fields=[
+                "answers",
+                "survey_json_snapshot",
+                "metrics",
+                "submitted_at",
+                "updated_at",
+            ]
+        )
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
@@ -74,7 +84,9 @@ class QuestionnaireViewSet(viewsets.ModelViewSet):
         except ValueError as exc:
             return HttpResponse(str(exc), status=400)
 
-        safe_title = re.sub(r"[^A-Za-z0-9_-]", "-", instance.questionnaire_type.title)[:60]
+        safe_title = re.sub(r"[^A-Za-z0-9_-]", "-", instance.questionnaire_type.title)[
+            :60
+        ]
         filename = f"{safe_title}-{date.today().isoformat()}.pdf"
         http_response = HttpResponse(pdf_bytes, content_type="application/pdf")
         http_response["Content-Disposition"] = f'attachment; filename="{filename}"'

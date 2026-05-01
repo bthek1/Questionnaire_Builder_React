@@ -96,3 +96,52 @@ class TestQuestionnaireResponseModel:
     def test_answers_default_is_dict(self, questionnaire):
         r = Questionnaire.objects.create(questionnaire_type=questionnaire)
         assert r.answers == {}
+
+    def test_survey_json_snapshot_default_is_empty_dict(self, questionnaire):
+        r = Questionnaire.objects.create(questionnaire_type=questionnaire)
+        assert r.survey_json_snapshot == {}
+
+    def test_survey_json_snapshot_not_set_when_unsubmitted(self, questionnaire):
+        r = Questionnaire.objects.create(
+            questionnaire_type=questionnaire, answers={"q1": "hello"}
+        )
+        assert r.submitted_at is None
+        assert r.survey_json_snapshot == {}
+
+    def test_ordering_newest_first(self, questionnaire):
+        r1 = Questionnaire.objects.create(questionnaire_type=questionnaire)
+        r2 = Questionnaire.objects.create(questionnaire_type=questionnaire)
+        instances = list(Questionnaire.objects.all())
+        assert instances[0].pk == r2.pk
+        assert instances[1].pk == r1.pk
+
+    def test_str_includes_type_title_and_name(self, questionnaire):
+        r = Questionnaire.objects.create(
+            questionnaire_type=questionnaire, name="My Run"
+        )
+        assert questionnaire.title in str(r)
+        assert "My Run" in str(r)
+
+    def test_str_falls_back_to_token_when_no_name(self, questionnaire):
+        r = Questionnaire.objects.create(questionnaire_type=questionnaire)
+        assert questionnaire.title in str(r)
+        assert str(r.share_token) in str(r)
+
+    def test_metrics_default_is_empty_dict(self, questionnaire):
+        r = Questionnaire.objects.create(questionnaire_type=questionnaire)
+        assert r.metrics == {}
+
+    def test_metrics_round_trips_non_empty_dict(self, questionnaire):
+        r = Questionnaire.objects.create(
+            questionnaire_type=questionnaire,
+            metrics={"total_score": 42, "risk_level": "medium"},
+        )
+        r.refresh_from_db()
+        assert r.metrics == {"total_score": 42, "risk_level": "medium"}
+
+
+@pytest.mark.django_db
+class TestQuestionnaireTypeRelatedName:
+    def test_questionnaire_types_related_name(self, questionnaire_with_owner, user):
+        assert user.questionnaire_types.count() == 1
+        assert user.questionnaire_types.first().pk == questionnaire_with_owner.pk

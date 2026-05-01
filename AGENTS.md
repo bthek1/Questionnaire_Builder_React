@@ -39,6 +39,7 @@ Use `pnpm`, not `npm` or `yarn`.
 | Survey renderer | `survey-react-ui` | `Frontend/src/components/survey/SurveyRenderer.tsx` |
 | Response analytics | `survey-analytics` | `Frontend/src/components/survey/SurveyDashboard.tsx` |
 | PDF export | `survey-pdf` | used inside results page |
+| Metrics utility | Pure functions | `Frontend/src/lib/metrics.ts` |
 | Type API | Axios | `Frontend/src/api/questionnaireTypes.ts` |
 | Instance API | Axios | `Frontend/src/api/questionnaires.ts` |
 | Type hooks | TanStack React Query | `Frontend/src/hooks/useQuestionnaireTypes.ts` |
@@ -156,7 +157,7 @@ See [Docs/SurveyJS/](Docs/SurveyJS/README.md) for full per-package docs.
 ### TypeScript
 - Strict mode + `noUnusedLocals` + `noUnusedParameters` — unused variables cause **build failures**.
 - `QuestionnaireType.surveyJson` is `object` (raw SurveyJS JSON). The old `questions: Question[]` array is **not** used for SurveyJS-powered forms.
-- `Questionnaire` (instance) has `answers: Record<string, unknown>` and `submittedAt: string | null` (null = not yet submitted).
+- `Questionnaire` (instance) has `answers: Record<string, unknown>`, `metrics?: Record<string, unknown>` (pre-computed calculatedValues stored at submit time; empty `{}` if not yet submitted or pre-PLAN-15), `surveyJsonSnapshot: object` (snapshot of the type's `surveyJson` taken at submit time; empty `{}` if not yet submitted), and `submittedAt: string | null` (null = not yet submitted).
 - Import alias `@/` maps to `Frontend/src/`.
 
 ---
@@ -167,7 +168,31 @@ See [Docs/SurveyJS/](Docs/SurveyJS/README.md) for full per-package docs.
 - **Setup**: [`Frontend/src/test/setup.ts`](Frontend/src/test/setup.ts) imports `@testing-library/jest-dom`.
 - Each test file should wrap components with `QueryClientProvider` using a fresh `QueryClient({ defaultOptions: { queries: { retry: false } } })` to avoid cache pollution and timeout flakiness.
 - Mock API calls with `vi.mock('../api/<file>')` at the top of the test. See [`JsonEditorPage.test.tsx`](Frontend/src/test/JsonEditorPage.test.tsx) for the full pattern.
+- To mock a class used with `new` (e.g. `survey-core` `Model`), use `vi.hoisted()` + a `class` in the factory — arrow functions in `mockImplementation` are not constructors. See [`ResultsPage.test.tsx`](Frontend/src/test/ResultsPage.test.tsx) for the pattern.
+- Use exact string matching (`findByText('Pending')`) not regex (`/Pending/i`) when the regex could match multiple elements with similar text (e.g. badge vs. title).
+- **Current test count**: 124 frontend tests (16 files), 87 backend tests.
 - **E2E**: Playwright tests in `Frontend/e2e/`. Base URL: `http://localhost:5173`.
+
+### Frontend test files
+
+| File | Covers |
+|------|--------|
+| `metrics.test.ts` | `evaluateMetrics`, `metricsFromStored`, `formatLabel` utilities |
+| `CopyButton.test.tsx` | CopyButton UI component |
+| `JsonEditorPage.test.tsx` | `/questionnaire-types/:id/json` split-view editor |
+| `NewQuestionnairePage.test.tsx` | `/questionnaires/new` deploy form |
+| `QuestionnairesPage.test.tsx` | `/questionnaires` list page |
+| `RawResponsesTable.test.tsx` | RawResponsesTable component |
+| `ResultsPage.test.tsx` | `/questionnaires/:id/results` metrics page |
+| `ShareLinksPage.test.tsx` | `/questionnaire-types/share` shareable URLs |
+| `TakePage.test.tsx` | `/take/:shareToken` respondent view |
+| `api.questionnaires.test.ts` | `api/questionnaires.ts` functions |
+| `api.responses.test.ts` | deprecated responses API stub |
+| `home.test.tsx` | root redirect |
+| `useQuestionnaires.test.tsx` | `useQuestionnaireTypes` hooks (note: file name is a misnomer) |
+| `useQuestionnairesHooks.test.tsx` | `useQuestionnaires` instance hooks incl. `useUpdateQuestionnaire`, `useSubmitAnswers` |
+| `useResponses.test.tsx` | deprecated responses hooks |
+| `utils.test.ts` | `cn()`, `buildShareUrl()` utilities |
 
 ---
 

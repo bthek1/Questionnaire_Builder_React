@@ -14,7 +14,9 @@ export interface Questionnaire {
   name: string
   shareToken: string
   answers: Record<string, unknown>
+  metrics?: Record<string, unknown>
   submittedAt: string | null
+  surveyJsonSnapshot?: object
   createdAt: string
   updatedAt: string
 }
