@@ -35,11 +35,12 @@ Use `pnpm`, not `npm` or `yarn`.
 | HTTP | Axios | `Frontend/src/lib/axios.ts` |
 | Styling | Tailwind CSS v4 + Radix UI | `Frontend/src/index.css` |
 | Types | Central interfaces | `Frontend/src/types/index.ts` |
-| Form builder UI | Raw JSON editor (Monaco) | `Frontend/src/routes/questionnaire-types/$id/json.tsx` |
+| Form builder UI | React visual editor + Raw JSON editor (Monaco) | `Frontend/src/routes/questionnaire-types/$id/json.tsx` |
 | Survey renderer | `survey-react-ui` | `Frontend/src/components/survey/SurveyRenderer.tsx` |
 | Response analytics | `survey-analytics` | `Frontend/src/components/survey/SurveyDashboard.tsx` |
 | PDF export | `survey-pdf` | used inside results page |
 | Metrics utility | Pure functions | `Frontend/src/lib/metrics.ts` |
+| Form builder conversion | Pure functions | `Frontend/src/lib/formBuilder.ts` |
 | Type API | Axios | `Frontend/src/api/questionnaireTypes.ts` |
 | Instance API | Axios | `Frontend/src/api/questionnaires.ts` |
 | Type hooks | TanStack React Query | `Frontend/src/hooks/useQuestionnaireTypes.ts` |
@@ -152,6 +153,7 @@ See [Docs/SurveyJS/](Docs/SurveyJS/README.md) for full per-package docs.
 ### UI Components
 - Reusable primitives live in `Frontend/src/components/ui/`. Use the `cn()` helper from `Frontend/src/lib/utils.ts` for className merging.
 - Use CVA variants + `asChild` (Radix Slot) pattern — see [`Button.tsx`](Frontend/src/components/ui/Button.tsx).
+- Form builder components live in `Frontend/src/components/formBuilder/`: `QuestionList`, `QuestionEditor`, `SurveyTitleEditor`, `AdvancedQuestionPlaceholder`. Barrel export via `index.ts`.
 - Tailwind v4: theme values are CSS variables (e.g. `var(--color-primary)`) defined in `Frontend/src/index.css`.
 
 ### TypeScript
@@ -170,13 +172,16 @@ See [Docs/SurveyJS/](Docs/SurveyJS/README.md) for full per-package docs.
 - Mock API calls with `vi.mock('../api/<file>')` at the top of the test. See [`JsonEditorPage.test.tsx`](Frontend/src/test/JsonEditorPage.test.tsx) for the full pattern.
 - To mock a class used with `new` (e.g. `survey-core` `Model`), use `vi.hoisted()` + a `class` in the factory — arrow functions in `mockImplementation` are not constructors. See [`ResultsPage.test.tsx`](Frontend/src/test/ResultsPage.test.tsx) for the pattern.
 - Use exact string matching (`findByText('Pending')`) not regex (`/Pending/i`) when the regex could match multiple elements with similar text (e.g. badge vs. title).
-- **Current test count**: 124 frontend tests (16 files), 87 backend tests.
+- **Current test count**: 171 frontend tests (19 files), 87 backend tests.
 - **E2E**: Playwright tests in `Frontend/e2e/`. Base URL: `http://localhost:5173`.
 
 ### Frontend test files
 
 | File | Covers |
 |------|--------|
+| `formBuilder.test.ts` | `parseSurveyJson`, `buildSurveyJson`, `generateUniqueName` utilities |
+| `QuestionList.test.tsx` | QuestionList component: render, add, delete, reorder |
+| `QuestionEditor.test.tsx` | QuestionEditor: type toggle shows/hides fields, onChange, duplicate name |
 | `metrics.test.ts` | `evaluateMetrics`, `metricsFromStored`, `formatLabel` utilities |
 | `CopyButton.test.tsx` | CopyButton UI component |
 | `JsonEditorPage.test.tsx` | `/questionnaire-types/:id/json` split-view editor |
