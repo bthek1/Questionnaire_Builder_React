@@ -4,6 +4,7 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import { useQuestionnaireType, useUpdateQuestionnaireType } from '@/hooks/useQuestionnaireTypes'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { Label } from '@/components/ui/Label'
 import { Textarea } from '@/components/ui/Textarea'
 import { SurveyRenderer } from '@/components/survey/SurveyRenderer'
 import {
@@ -15,6 +16,8 @@ import {
 import { parseSurveyJson, buildSurveyJson, generateUniqueName } from '@/lib/formBuilder'
 import type {
   BuilderSurvey,
+  BuilderPage,
+  BuilderSurveySettings,
   AnyQuestion,
   BuilderQuestion,
   AdvancedQuestion,
@@ -70,6 +73,53 @@ function JsonEditor({ questionnaire, id }: JsonEditorProps) {
     parseSurveyJson(initialJson as Record<string, unknown>),
   )
   const [selectedQuestionIndex, setSelectedQuestionIndex] = useState<number | null>(null)
+  const [selectedPageIndex, setSelectedPageIndex] = useState(0)
+
+  // Helpers: current page questions + updater
+  const safePageIndex = Math.min(selectedPageIndex, builderSurvey.pages.length - 1)
+  const currentPage: BuilderPage = builderSurvey.pages[safePageIndex] ?? {
+    name: 'page1',
+    questions: [],
+  }
+  const currentQuestions = currentPage.questions
+
+  function updateQuestions(questions: AnyQuestion[]) {
+    const newPages = builderSurvey.pages.map((p, i) =>
+      i === safePageIndex ? { ...p, questions } : p,
+    )
+    setBuilderSurvey({ ...builderSurvey, pages: newPages })
+  }
+
+  function handleAddPage() {
+    const newPage: BuilderPage = { name: `page${builderSurvey.pages.length + 1}`, questions: [] }
+    const newPages = [...builderSurvey.pages, newPage]
+    setBuilderSurvey({ ...builderSurvey, pages: newPages })
+    setSelectedPageIndex(newPages.length - 1)
+    setSelectedQuestionIndex(null)
+  }
+
+  function handleDeletePage(pageIndex: number) {
+    if (builderSurvey.pages.length <= 1) return
+    const newPages = builderSurvey.pages.filter((_, i) => i !== pageIndex)
+    setBuilderSurvey({ ...builderSurvey, pages: newPages })
+    setSelectedPageIndex((prev) =>
+      Math.max(0, prev >= newPages.length ? newPages.length - 1 : prev),
+    )
+    setSelectedQuestionIndex(null)
+  }
+
+  function handleSettingsChange(patch: Partial<BuilderSurveySettings>) {
+    const newSettings = { ...(builderSurvey.settings ?? {}), ...patch }
+    // Remove empty/undefined values
+    Object.keys(newSettings).forEach((k) => {
+      if (!newSettings[k as keyof BuilderSurveySettings])
+        delete newSettings[k as keyof BuilderSurveySettings]
+    })
+    setBuilderSurvey({
+      ...builderSurvey,
+      settings: Object.keys(newSettings).length ? newSettings : undefined,
+    })
+  }
 
   // Derived preview JSON — no useEffect needed, just memoized derivation
   const visualPreviewJson = useMemo(() => buildSurveyJson(builderSurvey), [builderSurvey])
@@ -162,7 +212,7 @@ function JsonEditor({ questionnaire, id }: JsonEditorProps) {
   // ---- Visual builder actions ----
 
   function handleAddQuestion() {
-    const names = builderSurvey.questions.map((q) => q.name)
+    const names = currentQuestions.map((q) => q.name)
     const newName = generateUniqueName(names)
     const newQ: BuilderQuestion = {
       name: newName,
@@ -170,13 +220,13 @@ function JsonEditor({ questionnaire, id }: JsonEditorProps) {
       type: 'text',
       required: false,
     }
-    const questions = [...builderSurvey.questions, newQ]
-    setBuilderSurvey({ ...builderSurvey, questions })
+    const questions = [...currentQuestions, newQ]
+    updateQuestions(questions)
     setSelectedQuestionIndex(questions.length - 1)
   }
 
   function handleAddQuestionAt(index: number) {
-    const names = builderSurvey.questions.map((q) => q.name)
+    const names = currentQuestions.map((q) => q.name)
     const newName = generateUniqueName(names)
     const newQ: BuilderQuestion = {
       name: newName,
@@ -184,15 +234,15 @@ function JsonEditor({ questionnaire, id }: JsonEditorProps) {
       type: 'text',
       required: false,
     }
-    const questions = [...builderSurvey.questions]
+    const questions = [...currentQuestions]
     questions.splice(index, 0, newQ)
-    setBuilderSurvey({ ...builderSurvey, questions })
+    updateQuestions(questions)
     setSelectedQuestionIndex(index)
   }
 
   function handleDeleteQuestion(index: number) {
-    const questions = builderSurvey.questions.filter((_, i) => i !== index)
-    setBuilderSurvey({ ...builderSurvey, questions })
+    const questions = currentQuestions.filter((_, i) => i !== index)
+    updateQuestions(questions)
     setSelectedQuestionIndex((prev) => {
       if (prev === null) return null
       if (prev === index) return null
@@ -201,8 +251,8 @@ function JsonEditor({ questionnaire, id }: JsonEditorProps) {
   }
 
   function handleDuplicateQuestion(index: number) {
-    const source = builderSurvey.questions[index]
-    const names = builderSurvey.questions.map((q) => q.name)
+    const source = currentQuestions[index]
+    const names = currentQuestions.map((q) => q.name)
     const newName = generateUniqueName(names)
     const newQ: AnyQuestion =
       '_advanced' in source && source._advanced
@@ -212,43 +262,43 @@ function JsonEditor({ questionnaire, id }: JsonEditorProps) {
             name: newName,
             title: `${(source as BuilderQuestion).title} (copy)`,
           }
-    const questions = [...builderSurvey.questions]
+    const questions = [...currentQuestions]
     questions.splice(index + 1, 0, newQ)
-    setBuilderSurvey({ ...builderSurvey, questions })
+    updateQuestions(questions)
     setSelectedQuestionIndex(index + 1)
   }
 
   function handleMoveUp(index: number) {
     if (index === 0) return
-    const questions = [...builderSurvey.questions]
+    const questions = [...currentQuestions]
     ;[questions[index - 1], questions[index]] = [questions[index], questions[index - 1]]
-    setBuilderSurvey({ ...builderSurvey, questions })
+    updateQuestions(questions)
     setSelectedQuestionIndex((prev) => (prev === index ? index - 1 : prev))
   }
 
   function handleMoveDown(index: number) {
-    if (index === builderSurvey.questions.length - 1) return
-    const questions = [...builderSurvey.questions]
+    if (index === currentQuestions.length - 1) return
+    const questions = [...currentQuestions]
     ;[questions[index], questions[index + 1]] = [questions[index + 1], questions[index]]
-    setBuilderSurvey({ ...builderSurvey, questions })
+    updateQuestions(questions)
     setSelectedQuestionIndex((prev) => (prev === index ? index + 1 : prev))
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function handleAdvancedRawChange(index: number, raw: Record<string, any>) {
-    const questions = builderSurvey.questions.map((q, i) =>
+    const questions = currentQuestions.map((q, i) =>
       i === index && '_advanced' in q && q._advanced ? { ...q, raw } : q,
     )
-    setBuilderSurvey({ ...builderSurvey, questions })
+    updateQuestions(questions)
   }
 
   function handleQuestionChange(index: number, updated: BuilderQuestion) {
-    const questions = builderSurvey.questions.map((q, i) => (i === index ? updated : q))
-    setBuilderSurvey({ ...builderSurvey, questions })
+    const questions = currentQuestions.map((q, i) => (i === index ? updated : q))
+    updateQuestions(questions)
   }
 
   // Duplicate name detection
-  const questionNames = builderSurvey.questions.map((q) => q.name)
+  const questionNames = currentQuestions.map((q) => q.name)
   const duplicateNames = new Set(
     questionNames.filter((name, i) => questionNames.indexOf(name) !== i),
   )
@@ -384,8 +434,130 @@ function JsonEditor({ questionnaire, id }: JsonEditorProps) {
               onChange={(t) => setBuilderSurvey({ ...builderSurvey, title: t })}
             />
 
+            {/* Survey settings */}
+            <details data-testid="survey-settings-panel">
+              <summary className="cursor-pointer text-sm font-medium text-[var(--color-muted-foreground)]">
+                Survey settings ▸
+              </summary>
+              <div className="mt-3 grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label htmlFor="s-description">Description</Label>
+                  <Input
+                    id="s-description"
+                    value={builderSurvey.settings?.description ?? ''}
+                    onChange={(e) =>
+                      handleSettingsChange({ description: e.target.value || undefined })
+                    }
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="s-locale">Locale</Label>
+                  <Input
+                    id="s-locale"
+                    placeholder="e.g. en, de, fr"
+                    value={builderSurvey.settings?.locale ?? ''}
+                    onChange={(e) => handleSettingsChange({ locale: e.target.value || undefined })}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="s-progress-bar">Progress bar</Label>
+                  <select
+                    id="s-progress-bar"
+                    className="w-full rounded border border-[var(--color-border)] bg-[var(--color-background)] px-2 py-1 text-sm"
+                    value={builderSurvey.settings?.showProgressBar ?? ''}
+                    onChange={(e) =>
+                      handleSettingsChange({
+                        showProgressBar: (e.target.value ||
+                          undefined) as BuilderSurveySettings['showProgressBar'],
+                      })
+                    }
+                  >
+                    <option value="">Default (off)</option>
+                    <option value="top">Top</option>
+                    <option value="bottom">Bottom</option>
+                    <option value="both">Both</option>
+                    <option value="off">Off</option>
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="s-question-numbers">Question numbers</Label>
+                  <select
+                    id="s-question-numbers"
+                    className="w-full rounded border border-[var(--color-border)] bg-[var(--color-background)] px-2 py-1 text-sm"
+                    value={builderSurvey.settings?.showQuestionNumbers ?? ''}
+                    onChange={(e) =>
+                      handleSettingsChange({
+                        showQuestionNumbers: (e.target.value ||
+                          undefined) as BuilderSurveySettings['showQuestionNumbers'],
+                      })
+                    }
+                  >
+                    <option value="">Default</option>
+                    <option value="on">On</option>
+                    <option value="off">Off</option>
+                    <option value="onPage">Per page</option>
+                  </select>
+                </div>
+                <div className="col-span-2 space-y-1">
+                  <Label htmlFor="s-completed-html">Completed HTML</Label>
+                  <Textarea
+                    id="s-completed-html"
+                    rows={3}
+                    value={builderSurvey.settings?.completedHtml ?? ''}
+                    onChange={(e) =>
+                      handleSettingsChange({ completedHtml: e.target.value || undefined })
+                    }
+                    placeholder="<p>Thank you for completing the survey!</p>"
+                  />
+                </div>
+              </div>
+            </details>
+
+            {/* Page tabs */}
+            <div className="flex flex-wrap items-center gap-1">
+              {builderSurvey.pages.map((page, pi) => (
+                <div key={pi} className="flex items-center gap-0.5">
+                  <button
+                    type="button"
+                    data-testid={`page-tab-${pi}`}
+                    onClick={() => {
+                      setSelectedPageIndex(pi)
+                      setSelectedQuestionIndex(null)
+                    }}
+                    className={cn(
+                      'rounded px-3 py-1 text-sm font-medium transition-colors',
+                      pi === safePageIndex
+                        ? 'bg-[var(--color-primary)] text-[var(--color-primary-foreground)]'
+                        : 'bg-[var(--color-muted)] text-[var(--color-muted-foreground)] hover:bg-[var(--color-accent)]',
+                    )}
+                  >
+                    {page.title ?? page.name}
+                  </button>
+                  {builderSurvey.pages.length > 1 && (
+                    <button
+                      type="button"
+                      data-testid={`page-delete-${pi}`}
+                      onClick={() => handleDeletePage(pi)}
+                      className="rounded px-1 text-xs text-[var(--color-muted-foreground)] hover:text-red-500"
+                      title="Delete page"
+                    >
+                      ×
+                    </button>
+                  )}
+                </div>
+              ))}
+              <button
+                type="button"
+                data-testid="add-page"
+                onClick={handleAddPage}
+                className="rounded border border-dashed border-[var(--color-border)] px-3 py-1 text-sm text-[var(--color-muted-foreground)] hover:border-[var(--color-primary)] hover:text-[var(--color-primary)]"
+              >
+                + Page
+              </button>
+            </div>
+
             <QuestionList
-              questions={builderSurvey.questions}
+              questions={currentQuestions}
               selectedIndex={selectedQuestionIndex}
               onSelect={(i) => setSelectedQuestionIndex((prev) => (prev === i ? null : i))}
               onAdd={handleAddQuestion}
@@ -395,7 +567,7 @@ function JsonEditor({ questionnaire, id }: JsonEditorProps) {
               onMoveUp={handleMoveUp}
               onMoveDown={handleMoveDown}
               renderEditor={(i) => {
-                const q = builderSurvey.questions[i]
+                const q = currentQuestions[i]
                 return isAdvanced(q) ? (
                   <AdvancedQuestionPlaceholder
                     name={q.name}

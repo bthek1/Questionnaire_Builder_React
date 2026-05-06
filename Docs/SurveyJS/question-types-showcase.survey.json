@@ -1,0 +1,626 @@
+{
+  "$schema": "https://unpkg.com/survey-core/surveyjs_definition.json",
+  "title": "SurveyJS Question Types Showcase",
+  "description": "A demonstration of every supported SurveyJS question type.",
+  "locale": "en",
+  "showProgressBar": "top",
+  "showQuestionNumbers": "on",
+  "checkErrorsMode": "onNextPage",
+  "clearInvisibleValues": "onHidden",
+  "completedHtml": "<h4>Thank you for completing the showcase!</h4>",
+  "pages": [
+    {
+      "name": "page_text_inputs",
+      "title": "Text & Number Inputs",
+      "elements": [
+        {
+          "type": "html",
+          "name": "intro_text_inputs",
+          "html": "<p><strong>This page demonstrates text-based input types.</strong> The <code>text</code> type supports multiple <code>inputType</code> variants.</p>"
+        },
+        {
+          "type": "text",
+          "name": "text_plain",
+          "title": "Plain text (type: text)",
+          "description": "Default single-line text input.",
+          "isRequired": false,
+          "placeholder": "Enter any text..."
+        },
+        {
+          "type": "text",
+          "name": "text_number",
+          "title": "Number (inputType: number)",
+          "inputType": "number",
+          "min": 0,
+          "max": 120,
+          "placeholder": "0-120"
+        },
+        {
+          "type": "text",
+          "name": "text_email",
+          "title": "Email (inputType: email)",
+          "inputType": "email",
+          "placeholder": "you@example.com",
+          "validators": [
+            { "type": "email" }
+          ]
+        },
+        {
+          "type": "text",
+          "name": "text_date",
+          "title": "Date (inputType: date)",
+          "inputType": "date"
+        },
+        {
+          "type": "text",
+          "name": "text_datetime_local",
+          "title": "Date & Time (inputType: datetime-local)",
+          "inputType": "datetime-local"
+        },
+        {
+          "type": "text",
+          "name": "text_time",
+          "title": "Time (inputType: time)",
+          "inputType": "time"
+        },
+        {
+          "type": "text",
+          "name": "text_tel",
+          "title": "Phone number (inputType: tel)",
+          "inputType": "tel",
+          "placeholder": "+61 400 000 000"
+        },
+        {
+          "type": "text",
+          "name": "text_url",
+          "title": "URL (inputType: url)",
+          "inputType": "url",
+          "placeholder": "https://example.com"
+        },
+        {
+          "type": "text",
+          "name": "text_password",
+          "title": "Password (inputType: password)",
+          "inputType": "password"
+        },
+        {
+          "type": "text",
+          "name": "text_range",
+          "title": "Range slider (inputType: range)",
+          "inputType": "range",
+          "min": 0,
+          "max": 100,
+          "step": 5
+        },
+        {
+          "type": "text",
+          "name": "text_color",
+          "title": "Color picker (inputType: color)",
+          "inputType": "color",
+          "defaultValue": "#0078d4"
+        }
+      ]
+    },
+    {
+      "name": "page_long_text",
+      "title": "Long Text & Multi-Text",
+      "elements": [
+        {
+          "type": "comment",
+          "name": "comment_basic",
+          "title": "Long text / textarea (type: comment)",
+          "description": "Multi-line free-text input.",
+          "rows": 4,
+          "placeholder": "Enter a detailed response..."
+        },
+        {
+          "type": "multipletext",
+          "name": "multipletext_name",
+          "title": "Multiple text fields (type: multipletext)",
+          "description": "Several short text inputs grouped under one question.",
+          "colCount": 2,
+          "items": [
+            { "name": "first_name", "title": "First name", "isRequired": false },
+            { "name": "last_name",  "title": "Last name",  "isRequired": false },
+            { "name": "preferred",  "title": "Preferred name" },
+            { "name": "pronouns",   "title": "Pronouns" }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "page_single_choice",
+      "title": "Single-Choice Questions",
+      "elements": [
+        {
+          "type": "radiogroup",
+          "name": "radio_yes_no",
+          "title": "Radio group - Yes / No (type: radiogroup)",
+          "isRequired": false,
+          "choices": [
+            { "value": "yes", "text": "Yes" },
+            { "value": "no",  "text": "No" }
+          ]
+        },
+        {
+          "type": "radiogroup",
+          "name": "radio_custom",
+          "title": "Radio group with 'Other' option",
+          "choices": [
+            "Option A",
+            "Option B",
+            "Option C"
+          ],
+          "showOtherItem": true,
+          "otherText": "Other (please specify)",
+          "otherPlaceholder": "Describe..."
+        },
+        {
+          "type": "dropdown",
+          "name": "dropdown_basic",
+          "title": "Dropdown (type: dropdown)",
+          "description": "Select one from a list — good for long option sets.",
+          "placeholder": "-- Select one --",
+          "choices": [
+            { "value": "au", "text": "Australia" },
+            { "value": "nz", "text": "New Zealand" },
+            { "value": "us", "text": "United States" },
+            { "value": "gb", "text": "United Kingdom" },
+            { "value": "ca", "text": "Canada" }
+          ]
+        },
+        {
+          "type": "boolean",
+          "name": "boolean_basic",
+          "title": "Boolean toggle (type: boolean)",
+          "description": "Renders as a Yes/No toggle switch.",
+          "labelTrue": "Yes",
+          "labelFalse": "No"
+        },
+        {
+          "type": "imagepicker",
+          "name": "imagepicker_basic",
+          "title": "Image picker - single select (type: imagepicker)",
+          "description": "Choose one image.",
+          "choices": [
+            {
+              "value": "mood_great",
+              "text": "Great",
+              "imageLink": "https://placehold.co/80x80/22c55e/fff?text=:D"
+            },
+            {
+              "value": "mood_ok",
+              "text": "OK",
+              "imageLink": "https://placehold.co/80x80/facc15/fff?text=:|"
+            },
+            {
+              "value": "mood_poor",
+              "text": "Poor",
+              "imageLink": "https://placehold.co/80x80/ef4444/fff?text=:("
+            }
+          ],
+          "imageWidth": 80,
+          "imageHeight": 80
+        }
+      ]
+    },
+    {
+      "name": "page_multi_choice",
+      "title": "Multi-Choice Questions",
+      "elements": [
+        {
+          "type": "checkbox",
+          "name": "checkbox_symptoms",
+          "title": "Checkbox (type: checkbox)",
+          "description": "Select all that apply.",
+          "choices": [
+            { "value": "fatigue",   "text": "Fatigue" },
+            { "value": "anxiety",   "text": "Anxiety" },
+            { "value": "low_mood",  "text": "Low mood" },
+            { "value": "insomnia",  "text": "Insomnia" },
+            { "value": "pain",      "text": "Chronic pain" }
+          ],
+          "showNoneItem": true,
+          "noneText": "None of the above",
+          "showOtherItem": true
+        },
+        {
+          "type": "tagbox",
+          "name": "tagbox_goals",
+          "title": "Tag box - multi-select dropdown (type: tagbox)",
+          "description": "Select multiple items from a searchable dropdown.",
+          "choices": [
+            "Reduce anxiety",
+            "Improve sleep",
+            "Build resilience",
+            "Manage pain",
+            "Strengthen relationships",
+            "Return to work",
+            "Increase physical activity"
+          ],
+          "showOtherItem": true
+        },
+        {
+          "type": "imagepicker",
+          "name": "imagepicker_multi",
+          "title": "Image picker - multi select (type: imagepicker, multiSelect: true)",
+          "multiSelect": true,
+          "choices": [
+            {
+              "value": "walking",
+              "text": "Walking",
+              "imageLink": "https://placehold.co/80x80/3b82f6/fff?text=Walk"
+            },
+            {
+              "value": "swimming",
+              "text": "Swimming",
+              "imageLink": "https://placehold.co/80x80/06b6d4/fff?text=Swim"
+            },
+            {
+              "value": "yoga",
+              "text": "Yoga",
+              "imageLink": "https://placehold.co/80x80/8b5cf6/fff?text=Yoga"
+            },
+            {
+              "value": "cycling",
+              "text": "Cycling",
+              "imageLink": "https://placehold.co/80x80/f97316/fff?text=Bike"
+            }
+          ],
+          "imageWidth": 80,
+          "imageHeight": 80
+        }
+      ]
+    },
+    {
+      "name": "page_rating_scales",
+      "title": "Rating & Scale Questions",
+      "elements": [
+        {
+          "type": "rating",
+          "name": "rating_numeric",
+          "title": "Numeric rating scale 0-10 (type: rating)",
+          "rateMin": 0,
+          "rateMax": 10,
+          "rateStep": 1,
+          "minRateDescription": "Not at all",
+          "maxRateDescription": "Extremely",
+          "isRequired": false
+        },
+        {
+          "type": "rating",
+          "name": "rating_stars",
+          "title": "Star rating (type: rating, rateType: stars)",
+          "rateType": "stars",
+          "rateMax": 5
+        },
+        {
+          "type": "rating",
+          "name": "rating_smileys",
+          "title": "Smiley rating (type: rating, rateType: smileys)",
+          "rateType": "smileys",
+          "rateMax": 5,
+          "scaleColorMode": "colored"
+        },
+        {
+          "type": "nouislider",
+          "name": "slider_pain",
+          "title": "Slider - pain intensity (type: nouislider)",
+          "description": "Drag the handle to rate your current pain level.",
+          "step": 1,
+          "rangeMin": 0,
+          "rangeMax": 10,
+          "pipsValues": [0, 2, 4, 6, 8, 10],
+          "pipsText": ["0", "2", "4", "6", "8", "10"]
+        }
+      ]
+    },
+    {
+      "name": "page_matrix",
+      "title": "Matrix / Grid Questions",
+      "elements": [
+        {
+          "type": "matrix",
+          "name": "matrix_wellbeing",
+          "title": "Matrix - single answer per row (type: matrix)",
+          "description": "Rate each area of wellbeing.",
+          "isRequired": false,
+          "rows": [
+            { "value": "physical",  "text": "Physical health" },
+            { "value": "mental",    "text": "Mental health" },
+            { "value": "social",    "text": "Social connections" },
+            { "value": "financial", "text": "Financial stability" }
+          ],
+          "columns": [
+            { "value": 1, "text": "Poor" },
+            { "value": 2, "text": "Fair" },
+            { "value": 3, "text": "Good" },
+            { "value": 4, "text": "Very good" },
+            { "value": 5, "text": "Excellent" }
+          ]
+        },
+        {
+          "type": "matrixdropdown",
+          "name": "matrixdropdown_goals",
+          "title": "Matrix dropdown - multiple column types per row (type: matrixdropdown)",
+          "description": "Assess each goal across different dimensions.",
+          "rows": [
+            "Reduce anxiety",
+            "Improve sleep",
+            "Increase exercise"
+          ],
+          "columns": [
+            {
+              "name": "priority",
+              "title": "Priority",
+              "cellType": "dropdown",
+              "choices": ["Low", "Medium", "High"]
+            },
+            {
+              "name": "progress",
+              "title": "Progress (0-100%)",
+              "cellType": "text",
+              "inputType": "number",
+              "min": 0,
+              "max": 100
+            },
+            {
+              "name": "on_track",
+              "title": "On track?",
+              "cellType": "boolean"
+            }
+          ]
+        },
+        {
+          "type": "matrixdynamic",
+          "name": "matrixdynamic_medications",
+          "title": "Dynamic matrix - add/remove rows (type: matrixdynamic)",
+          "description": "List each current medication. Use + Add Row to add more.",
+          "rowCount": 1,
+          "addRowText": "+ Add medication",
+          "removeRowText": "Remove",
+          "columns": [
+            {
+              "name": "medication_name",
+              "title": "Medication",
+              "cellType": "text",
+              "isRequired": false
+            },
+            {
+              "name": "dose",
+              "title": "Dose",
+              "cellType": "text"
+            },
+            {
+              "name": "frequency",
+              "title": "Frequency",
+              "cellType": "dropdown",
+              "choices": ["Once daily", "Twice daily", "As needed", "Weekly"]
+            },
+            {
+              "name": "prescriber",
+              "title": "Prescribing clinician",
+              "cellType": "text"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "page_panels",
+      "title": "Panels (Grouping & Repeating)",
+      "elements": [
+        {
+          "type": "panel",
+          "name": "panel_emergency_contact",
+          "title": "Static panel - grouped questions (type: panel)",
+          "description": "A panel groups related questions visually. It does not contribute a value to response data.",
+          "state": "expanded",
+          "elements": [
+            {
+              "type": "text",
+              "name": "ec_name",
+              "title": "Contact name"
+            },
+            {
+              "type": "text",
+              "name": "ec_relationship",
+              "title": "Relationship to client"
+            },
+            {
+              "type": "text",
+              "name": "ec_phone",
+              "title": "Phone number",
+              "inputType": "tel"
+            }
+          ]
+        },
+        {
+          "type": "paneldynamic",
+          "name": "paneldynamic_appointments",
+          "title": "Dynamic panel - repeating group (type: paneldynamic)",
+          "description": "Add a panel for each past appointment.",
+          "panelCount": 1,
+          "minPanelCount": 1,
+          "maxPanelCount": 5,
+          "panelAddText": "+ Add appointment",
+          "panelRemoveText": "Remove",
+          "templateTitle": "Appointment {panelIndex}",
+          "templateElements": [
+            {
+              "type": "text",
+              "name": "appt_date",
+              "title": "Date",
+              "inputType": "date",
+              "isRequired": false
+            },
+            {
+              "type": "text",
+              "name": "appt_provider",
+              "title": "Clinician"
+            },
+            {
+              "type": "comment",
+              "name": "appt_notes",
+              "title": "Notes",
+              "rows": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "page_conditional_logic",
+      "title": "Conditional Logic",
+      "elements": [
+        {
+          "type": "html",
+          "name": "intro_conditional",
+          "html": "<p>The questions below demonstrate <strong>visibleIf</strong>, <strong>requiredIf</strong>, and <strong>enableIf</strong> expressions.</p>"
+        },
+        {
+          "type": "boolean",
+          "name": "has_chronic_condition",
+          "title": "Do you have any diagnosed chronic conditions?",
+          "labelTrue": "Yes",
+          "labelFalse": "No"
+        },
+        {
+          "type": "checkbox",
+          "name": "chronic_conditions",
+          "title": "Which chronic conditions have you been diagnosed with?",
+          "visibleIf": "{has_chronic_condition} = true",
+          "requiredIf": "{has_chronic_condition} = true",
+          "choices": [
+            "Diabetes (Type 1)",
+            "Diabetes (Type 2)",
+            "Hypertension",
+            "Asthma / COPD",
+            "Cardiovascular disease",
+            "Chronic pain"
+          ],
+          "showOtherItem": true
+        },
+        {
+          "type": "radiogroup",
+          "name": "smoke_status",
+          "title": "Do you currently smoke?",
+          "choices": [
+            { "value": "yes",    "text": "Yes" },
+            { "value": "no",     "text": "No" },
+            { "value": "former", "text": "Former smoker" }
+          ]
+        },
+        {
+          "type": "text",
+          "name": "cigarettes_per_day",
+          "title": "How many cigarettes per day?",
+          "inputType": "number",
+          "min": 1,
+          "visibleIf": "{smoke_status} = 'yes'",
+          "requiredIf": "{smoke_status} = 'yes'"
+        },
+        {
+          "type": "text",
+          "name": "quit_year",
+          "title": "In what year did you quit?",
+          "inputType": "number",
+          "min": 1900,
+          "max": 2026,
+          "visibleIf": "{smoke_status} = 'former'",
+          "requiredIf": "{smoke_status} = 'former'"
+        }
+      ]
+    },
+    {
+      "name": "page_display_types",
+      "title": "Display & Calculated Elements",
+      "elements": [
+        {
+          "type": "html",
+          "name": "html_instructions",
+          "html": "<div style='background:#f0f9ff;border-left:4px solid #0078d4;padding:12px 16px;border-radius:4px'><strong>HTML element (type: html)</strong><br>This is a static HTML block. It is purely for display — it produces no value in response data. Use it for instructions, images, or rich text.</div>"
+        },
+        {
+          "type": "image",
+          "name": "image_sample",
+          "title": "Image element (type: image)",
+          "imageLink": "https://placehold.co/600x120/0078d4/fff?text=SurveyJS+Question+Types",
+          "imageWidth": "100%",
+          "imageHeight": "120px",
+          "imageFit": "contain"
+        },
+        {
+          "type": "rating",
+          "name": "rating_for_expression",
+          "title": "Rate your overall health today (used in calculated score below)",
+          "rateMin": 0,
+          "rateMax": 10,
+          "defaultValue": 5,
+          "isRequired": false
+        },
+        {
+          "type": "expression",
+          "name": "health_score_display",
+          "title": "Calculated expression (type: expression)",
+          "description": "Read-only. Calculated from the rating above * 10.",
+          "expression": "{rating_for_expression} * 10",
+          "displayStyle": "decimal",
+          "suffix": "/ 100"
+        }
+      ]
+    },
+    {
+      "name": "page_file_signature",
+      "title": "File & Signature",
+      "elements": [
+        {
+          "type": "file",
+          "name": "file_upload",
+          "title": "File upload (type: file)",
+          "description": "Upload one or more files. Max 4 MB each.",
+          "allowMultiple": true,
+          "maxSize": 4194304,
+          "acceptedTypes": ".pdf,.jpg,.jpeg,.png"
+        },
+        {
+          "type": "signaturepad",
+          "name": "signature",
+          "title": "Signature pad (type: signaturepad)",
+          "description": "Draw your signature in the box below.",
+          "isRequired": false,
+          "width": "100%",
+          "height": 160,
+          "penColor": "#1e293b",
+          "backgroundColor": "#f8fafc",
+          "allowClear": true
+        }
+      ]
+    },
+    {
+      "name": "page_summary",
+      "title": "Summary",
+      "elements": [
+        {
+          "type": "html",
+          "name": "summary_header",
+          "html": "<h3>Review your responses</h3><p>All questions on this page are <strong>read-only</strong> — they display your earlier answers for review.</p>"
+        },
+        {
+          "type": "expression",
+          "name": "summary_name",
+          "title": "Your name (from multipletext)",
+          "expression": "{multipletext_name.first_name} + ' ' + {multipletext_name.last_name}"
+        },
+        {
+          "type": "expression",
+          "name": "summary_health_score",
+          "title": "Health score",
+          "expression": "{rating_for_expression} * 10",
+          "displayStyle": "decimal",
+          "suffix": "/ 100"
+        }
+      ]
+    }
+  ]
+}

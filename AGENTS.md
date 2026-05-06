@@ -153,13 +153,16 @@ See [Docs/SurveyJS/](Docs/SurveyJS/README.md) for full per-package docs.
 ### UI Components
 - Reusable primitives live in `Frontend/src/components/ui/`. Use the `cn()` helper from `Frontend/src/lib/utils.ts` for className merging.
 - Use CVA variants + `asChild` (Radix Slot) pattern — see [`Button.tsx`](Frontend/src/components/ui/Button.tsx).
-- Form builder components live in `Frontend/src/components/formBuilder/`: `QuestionList`, `QuestionEditor`, `SurveyTitleEditor`, `AdvancedQuestionPlaceholder`. Barrel export via `index.ts`.
+- Form builder components live in `Frontend/src/components/formBuilder/`: `QuestionList`, `QuestionEditor`, `SurveyTitleEditor`, `AdvancedQuestionPlaceholder`, `ChoicesEditor`. Barrel export via `index.ts`.
+- `ChoicesEditor` supports both simple (plain textarea) and rich (`{value, text}` table) modes.
+- `QuestionEditor` supports 17 question types: `text`, `comment`, `radiogroup`, `checkbox`, `dropdown`, `rating`, `boolean`, `tagbox`, `imagepicker`, `multipletext`, `html`, `expression`, `matrix`, `matrixdropdown`, `matrixdynamic`, `panel`, `paneldynamic`.
 - Tailwind v4: theme values are CSS variables (e.g. `var(--color-primary)`) defined in `Frontend/src/index.css`.
 
 ### TypeScript
 - Strict mode + `noUnusedLocals` + `noUnusedParameters` — unused variables cause **build failures**.
 - `QuestionnaireType.surveyJson` is `object` (raw SurveyJS JSON). The old `questions: Question[]` array is **not** used for SurveyJS-powered forms.
 - `Questionnaire` (instance) has `answers: Record<string, unknown>`, `metrics?: Record<string, unknown>` (pre-computed calculatedValues stored at submit time; empty `{}` if not yet submitted or pre-PLAN-15), `surveyJsonSnapshot: object` (snapshot of the type's `surveyJson` taken at submit time; empty `{}` if not yet submitted), and `submittedAt: string | null` (null = not yet submitted).
+- **`formBuilder.ts` types**: `BuilderSurvey` has `{ title, pages: BuilderPage[], settings?: BuilderSurveySettings, _rawMeta? }`. `BuilderPage` has `{ name, title?, questions: AnyQuestion[] }`. `BuilderSurveySettings` has `{ description?, locale?, showProgressBar?, showQuestionNumbers?, checkErrorsMode?, completedHtml? }`. The old `BuilderSurvey.questions[]` flat field is **gone** — all questions live inside pages.
 - Import alias `@/` maps to `Frontend/src/`.
 
 ---
@@ -172,14 +175,14 @@ See [Docs/SurveyJS/](Docs/SurveyJS/README.md) for full per-package docs.
 - Mock API calls with `vi.mock('../api/<file>')` at the top of the test. See [`JsonEditorPage.test.tsx`](Frontend/src/test/JsonEditorPage.test.tsx) for the full pattern.
 - To mock a class used with `new` (e.g. `survey-core` `Model`), use `vi.hoisted()` + a `class` in the factory — arrow functions in `mockImplementation` are not constructors. See [`ResultsPage.test.tsx`](Frontend/src/test/ResultsPage.test.tsx) for the pattern.
 - Use exact string matching (`findByText('Pending')`) not regex (`/Pending/i`) when the regex could match multiple elements with similar text (e.g. badge vs. title).
-- **Current test count**: 171 frontend tests (19 files), 87 backend tests.
+- **Current test count**: 213 frontend tests (19 files), 87 backend tests.
 - **E2E**: Playwright tests in `Frontend/e2e/`. Base URL: `http://localhost:5173`.
 
 ### Frontend test files
 
 | File | Covers |
 |------|--------|
-| `formBuilder.test.ts` | `parseSurveyJson`, `buildSurveyJson`, `generateUniqueName` utilities |
+| `formBuilder.test.ts` | `parseSurveyJson`, `buildSurveyJson`, `generateUniqueName` utilities; covers all 17 supported types, multi-page, panel recursion, settings |
 | `QuestionList.test.tsx` | QuestionList component: render, add, delete, reorder |
 | `QuestionEditor.test.tsx` | QuestionEditor: type toggle shows/hides fields, onChange, duplicate name |
 | `metrics.test.ts` | `evaluateMetrics`, `metricsFromStored`, `formatLabel` utilities |
