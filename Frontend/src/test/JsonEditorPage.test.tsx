@@ -6,9 +6,13 @@ import { routeTree } from '../routeTree.gen'
 import type { QuestionnaireType } from '@/types'
 
 vi.mock('@/components/survey/SurveyRenderer', () => ({
-  SurveyRenderer: ({ surveyJson }: { surveyJson: object }) => (
-    <div data-testid="survey-renderer">{JSON.stringify(surveyJson)}</div>
+  SurveyRenderer: ({ surveyJson, theme }: { surveyJson: object; theme?: string }) => (
+    <div data-testid="survey-renderer" data-theme={theme}>
+      {JSON.stringify(surveyJson)}
+    </div>
   ),
+  SURVEY_THEMES: { Default: {}, Flat: {}, Plain: {}, Sharp: {}, Borderless: {}, Solid: {} },
+  DEFAULT_THEME_KEY: 'Default',
 }))
 vi.mock('@/hooks/useQuestionnaireTypes', () => ({
   useQuestionnaireType: vi.fn(),
@@ -204,5 +208,30 @@ describe('JsonEditorPage', () => {
     expect(
       screen.getByText(/fix the json errors before switching to visual mode/i),
     ).toBeInTheDocument()
+  })
+
+  // ---- Theme selector tests ----
+
+  it('renders the preview theme selector', async () => {
+    renderAt('/questionnaire-types/q1/json')
+    const select = await screen.findByTestId('preview-theme-select')
+    expect(select).toBeInTheDocument()
+  })
+
+  it('theme selector has expected options', async () => {
+    renderAt('/questionnaire-types/q1/json')
+    const select = (await screen.findByTestId('preview-theme-select')) as HTMLSelectElement
+    const optionValues = Array.from(select.options).map((o) => o.value)
+    expect(optionValues).toEqual(
+      expect.arrayContaining(['Default', 'Flat', 'Plain', 'Sharp', 'Borderless', 'Solid']),
+    )
+  })
+
+  it('changing the theme selector updates the theme prop on SurveyRenderer', async () => {
+    renderAt('/questionnaire-types/q1/json')
+    const select = (await screen.findByTestId('preview-theme-select')) as HTMLSelectElement
+    fireEvent.change(select, { target: { value: 'Flat' } })
+    const preview = screen.getByTestId('survey-renderer')
+    expect(preview.getAttribute('data-theme')).toBe('Flat')
   })
 })

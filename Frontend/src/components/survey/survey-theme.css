@@ -1,0 +1,44 @@
+/*
+ * Brand-aligned CSS variable overrides for SurveyJS defaultV2 / themed renders.
+ * Scoped to .sd-root-modern — the root class applied by all survey-core v2 themes.
+ * These values pull from the Tailwind v4 CSS variables defined in index.css.
+ */
+
+.sd-root-modern {
+  /* Primary colour — buttons, active state, checkboxes */
+  --sjs-primary-backcolor: var(--color-primary);
+  --sjs-primary-backcolor-dark: var(--color-primary);
+  --sjs-primary-forecolor: var(--color-primary-foreground);
+  --sjs-primary-forecolor-light: var(--color-primary-foreground);
+
+  /* General background / foreground */
+  --sjs-general-backcolor: var(--color-card);
+  --sjs-general-backcolor-dark: var(--color-background);
+  --sjs-general-backcolor-dim: var(--color-background);
+  --sjs-general-backcolor-dim-light: var(--color-muted);
+  --sjs-general-forecolor: var(--color-foreground);
+  --sjs-general-forecolor-light: var(--color-muted-foreground);
+  --sjs-general-dim-forecolor: var(--color-muted-foreground);
+  --sjs-general-dim-forecolor-light: var(--color-muted-foreground);
+
+  /* Borders */
+  --sjs-border-default: var(--color-border);
+  --sjs-border-light: var(--color-border);
+  --sjs-border-inside: var(--color-border);
+
+  /* Corner radius — matches --radius in index.css */
+  --sjs-corner-radius: var(--radius);
+
+  /* Typography */
+  font-family: var(--font-sans);
+}
+
+/* Horizontal options (radiogroup / checkbox with colCount: -1) */
+.sd-root-modern .sd-selectbase--row {
+  gap: 0.5rem 1.25rem; /* row-gap col-gap */
+  align-items: center;
+}
+
+.sd-root-modern .sd-selectbase--row .sd-item {
+  flex: 0 0 auto; /* don't stretch items */
+}

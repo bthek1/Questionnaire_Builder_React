@@ -6,7 +6,11 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
 import { Textarea } from '@/components/ui/Textarea'
-import { SurveyRenderer } from '@/components/survey/SurveyRenderer'
+import {
+  SurveyRenderer,
+  SURVEY_THEMES,
+  DEFAULT_THEME_KEY,
+} from '@/components/survey/SurveyRenderer'
 import {
   QuestionList,
   QuestionEditor,
@@ -124,6 +128,24 @@ function JsonEditor({ questionnaire, id }: JsonEditorProps) {
   // Derived preview JSON — no useEffect needed, just memoized derivation
   const visualPreviewJson = useMemo(() => buildSurveyJson(builderSurvey), [builderSurvey])
   const previewJson = mode === 'visual' ? visualPreviewJson : jsonPreviewJson
+
+  // Preview theme selector — persisted across page refreshes
+  const [previewTheme, setPreviewTheme] = useState<string>(() => {
+    try {
+      return localStorage.getItem('surveyPreviewTheme') ?? DEFAULT_THEME_KEY
+    } catch {
+      return DEFAULT_THEME_KEY
+    }
+  })
+
+  function handleThemeChange(key: string) {
+    setPreviewTheme(key)
+    try {
+      localStorage.setItem('surveyPreviewTheme', key)
+    } catch {
+      // localStorage unavailable (e.g. private browsing restrictions)
+    }
+  }
 
   // Rename state
   const [isRenaming, setIsRenaming] = useState(false)
@@ -589,9 +611,36 @@ function JsonEditor({ questionnaire, id }: JsonEditorProps) {
         )}
 
         <div className="space-y-2 overflow-auto p-4">
-          <h2 className="text-sm font-semibold text-gray-600">Preview</h2>
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="text-sm font-semibold text-gray-600">Preview</h2>
+            <div className="flex items-center gap-1.5">
+              <label
+                htmlFor="preview-theme-select"
+                className="text-xs text-[var(--color-muted-foreground)]"
+              >
+                Theme
+              </label>
+              <select
+                id="preview-theme-select"
+                data-testid="preview-theme-select"
+                value={previewTheme}
+                onChange={(e) => handleThemeChange(e.target.value)}
+                className="rounded border border-[var(--color-border)] bg-[var(--color-background)] px-2 py-0.5 text-xs"
+              >
+                {Object.keys(SURVEY_THEMES).map((key) => (
+                  <option key={key} value={key}>
+                    {key}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
           <div data-testid="survey-preview" className="rounded-lg border bg-white p-4">
-            <SurveyRenderer surveyJson={previewJson} onComplete={handlePreviewComplete} />
+            <SurveyRenderer
+              surveyJson={previewJson}
+              onComplete={handlePreviewComplete}
+              theme={previewTheme}
+            />
           </div>
         </div>
       </div>

@@ -88,4 +88,45 @@ describe('QuestionEditor', () => {
     render(<QuestionEditor question={textQuestion} onChange={onChange} />)
     expect(screen.queryByTestId('duplicate-name-error')).not.toBeInTheDocument()
   })
+
+  it('shows colCount select for radiogroup type', () => {
+    const onChange = vi.fn()
+    const radioQ: BuilderQuestion = {
+      ...textQuestion,
+      type: 'radiogroup',
+      choices: ['A', 'B'],
+      colCount: -1,
+    }
+    render(<QuestionEditor question={radioQ} onChange={onChange} />)
+    expect(screen.getByTestId('col-count-select')).toBeInTheDocument()
+  })
+
+  it('shows colCount select for checkbox type', () => {
+    const onChange = vi.fn()
+    const checkQ: BuilderQuestion = {
+      ...textQuestion,
+      type: 'checkbox',
+      choices: ['A'],
+      colCount: -1,
+    }
+    render(<QuestionEditor question={checkQ} onChange={onChange} />)
+    expect(screen.getByTestId('col-count-select')).toBeInTheDocument()
+  })
+
+  it('does not show colCount select for text type', () => {
+    const onChange = vi.fn()
+    render(<QuestionEditor question={textQuestion} onChange={onChange} />)
+    expect(screen.queryByTestId('col-count-select')).not.toBeInTheDocument()
+  })
+
+  it('does not show colCount select for dropdown type', () => {
+    const onChange = vi.fn()
+    const dropdownQ: BuilderQuestion = {
+      ...textQuestion,
+      type: 'dropdown',
+      choices: ['A'],
+    }
+    render(<QuestionEditor question={dropdownQ} onChange={onChange} />)
+    expect(screen.queryByTestId('col-count-select')).not.toBeInTheDocument()
+  })
 })

@@ -1239,3 +1239,111 @@ describe('buildSurveyJson — survey settings', () => {
     expect(result.description).toBeUndefined()
   })
 })
+
+// ---------------------------------------------------------------------------
+// Phase 19: colCount for radiogroup / checkbox
+// ---------------------------------------------------------------------------
+
+describe('parseSurveyJson — colCount', () => {
+  it('reads colCount from radiogroup element', () => {
+    const json = { elements: [{ type: 'radiogroup', name: 'q1', colCount: -1, choices: [] }] }
+    const survey = parseSurveyJson(json)
+    const q = survey.pages[0].questions[0] as BuilderQuestion
+    expect(q.colCount).toBe(-1)
+  })
+
+  it('reads colCount from checkbox element', () => {
+    const json = { elements: [{ type: 'checkbox', name: 'q1', colCount: 2, choices: [] }] }
+    const survey = parseSurveyJson(json)
+    const q = survey.pages[0].questions[0] as BuilderQuestion
+    expect(q.colCount).toBe(2)
+  })
+
+  it('leaves colCount undefined when absent', () => {
+    const json = { elements: [{ type: 'radiogroup', name: 'q1', choices: [] }] }
+    const survey = parseSurveyJson(json)
+    const q = survey.pages[0].questions[0] as BuilderQuestion
+    expect(q.colCount).toBeUndefined()
+  })
+})
+
+describe('buildSurveyJson — colCount', () => {
+  it('emits colCount: -1 for radiogroup', () => {
+    const survey: BuilderSurvey = {
+      title: '',
+      pages: [
+        {
+          name: 'page1',
+          questions: [
+            {
+              name: 'q1',
+              title: 'Q1',
+              type: 'radiogroup',
+              required: false,
+              choices: [],
+              colCount: -1,
+            },
+          ],
+        },
+      ],
+    }
+    const result = buildSurveyJson(survey) as Record<string, unknown>
+    const pages = result.pages as Array<Record<string, unknown>>
+    const elements = pages[0].elements as Array<Record<string, unknown>>
+    expect(elements[0].colCount).toBe(-1)
+  })
+
+  it('emits colCount: 2 for checkbox', () => {
+    const survey: BuilderSurvey = {
+      title: '',
+      pages: [
+        {
+          name: 'page1',
+          questions: [
+            {
+              name: 'q1',
+              title: 'Q1',
+              type: 'checkbox',
+              required: false,
+              choices: [],
+              colCount: 2,
+            },
+          ],
+        },
+      ],
+    }
+    const result = buildSurveyJson(survey) as Record<string, unknown>
+    const pages = result.pages as Array<Record<string, unknown>>
+    const elements = pages[0].elements as Array<Record<string, unknown>>
+    expect(elements[0].colCount).toBe(2)
+  })
+
+  it('does not emit colCount when undefined', () => {
+    const survey: BuilderSurvey = {
+      title: '',
+      pages: [
+        {
+          name: 'page1',
+          questions: [
+            { name: 'q1', title: 'Q1', type: 'radiogroup', required: false, choices: [] },
+          ],
+        },
+      ],
+    }
+    const result = buildSurveyJson(survey) as Record<string, unknown>
+    const pages = result.pages as Array<Record<string, unknown>>
+    const elements = pages[0].elements as Array<Record<string, unknown>>
+    expect(elements[0].colCount).toBeUndefined()
+  })
+
+  it('round-trips colCount through parse → build', () => {
+    const json = {
+      elements: [{ type: 'radiogroup', name: 'q1', colCount: -1, choices: ['A', 'B'] }],
+    }
+    const survey = parseSurveyJson(json)
+    const output = buildSurveyJson(survey) as Record<string, unknown>
+    const pages = output.pages as Array<Record<string, unknown>>
+    const elements = pages[0].elements as Array<Record<string, unknown>>
+    expect(elements[0].colCount).toBe(-1)
+  })
+})

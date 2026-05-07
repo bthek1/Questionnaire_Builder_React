@@ -1,6 +1,6 @@
 ---
-applyTo: "Frontend/src/components/survey/**,Frontend/src/routes/take/**,Frontend/src/routes/questionnaires/**"
-description: "Use when creating or modifying SurveyJS components (Survey Renderer) or any route that builds or takes a questionnaire."
+applyTo: 'Frontend/src/components/survey/**,Frontend/src/routes/take/**,Frontend/src/routes/questionnaires/**'
+description: 'Use when creating or modifying SurveyJS components (Survey Renderer) or any route that builds or takes a questionnaire.'
 ---
 
 # SurveyJS Integration Patterns
@@ -11,14 +11,15 @@ See [Docs/SurveyJS/README.md](../../Docs/SurveyJS/README.md) for an overview of 
 
 ## Package Responsibilities
 
-| What you need | Package | Import path |
-|---------------|---------|-------------|
+| What you need                   | Package           | Import path       |
+| ------------------------------- | ----------------- | ----------------- |
 | Render a survey to a respondent | `survey-react-ui` | `survey-react-ui` |
-| Data model / headless logic | `survey-core` | `survey-core` |
+| Data model / headless logic     | `survey-core`     | `survey-core`     |
 
 > **Note:** `survey-creator-react`, `survey-creator-core`, `survey-analytics`, and `survey-pdf` have been removed (commercial EULA). Use the JSON editor route (`/questionnaires/:id/json`) for building surveys. Response data is displayed in a plain table.
 
 Install:
+
 ```bash
 pnpm add survey-react-ui
 ```
@@ -30,9 +31,58 @@ pnpm add survey-react-ui
 Always import CSS in the component file, not globally in `index.css`:
 
 ```ts
-// Survey Renderer
-import 'survey-core/survey-core.css';
+// SurveyRenderer — base CSS + brand overrides (both must be imported in this order)
+import 'survey-core/survey-core.min.css'
+import './survey-theme.css'
 ```
+
+---
+
+## Theming
+
+SurveyJS v2 uses theme objects (not `StylesManager`). Themes are imported from `survey-core/themes`.
+
+```ts
+import { DefaultLight, FlatLight } from 'survey-core/themes'
+
+// Apply to a Model instance
+model.applyTheme(DefaultLight)
+```
+
+**Available themes** (light variants exported by name): `DefaultLight`, `FlatLight`, `PlainLight`, `SharpLight`, `BorderlessLight`, `SolidLight` (and corresponding `*Dark` / `*Panelless` variants).
+
+> **Do NOT import individual theme files** (e.g. `survey-core/themes/default-light`). The `./themes/*` subpath is not exported under the `import` condition in survey-core v2's package.json — Vite will error. Always import named exports from `survey-core/themes`.
+
+### `SurveyRenderer` theme props
+
+```tsx
+<SurveyRenderer
+  surveyJson={json}
+  onComplete={handleComplete}
+  theme="Flat" // optional — key from SURVEY_THEMES; defaults to 'Default'
+/>
+```
+
+- `SURVEY_THEMES` and `DEFAULT_THEME_KEY` are exported from `SurveyRenderer.tsx`.
+- If `surveyJson` contains a top-level `themeJson` object, it takes priority over the `theme` prop.
+
+### Per-survey theme in JSON
+
+```json
+{
+  "pages": [...],
+  "themeJson": {
+    "themeName": "custom",
+    "colorPalette": "light",
+    "isPanelless": false,
+    "cssVariables": {
+      "--sjs-primary-backcolor": "#002738"
+    }
+  }
+}
+```
+
+Generate `themeJson` blocks at https://surveyjs.io/create-free-survey (Theme tab → Export).
 
 ---
 
@@ -52,36 +102,37 @@ The `/questionnaires/:id/edit` route redirects to `/questionnaires/:id/json`.
 **This route is public — no auth required.**
 
 ```tsx
-import { useMemo } from 'react';
-import { Model } from 'survey-core';
-import { Survey } from 'survey-react-ui';
-import { submitResponse } from '@/api/responses';
-import 'survey-core/survey-core.css';
+import { useMemo } from 'react'
+import { Model } from 'survey-core'
+import { Survey } from 'survey-react-ui'
+import { submitResponse } from '@/api/responses'
+import 'survey-core/survey-core.css'
 
 interface Props {
-  questionnaireId: string;
-  surveyJson: object;
-  onComplete?: () => void;
+  questionnaireId: string
+  surveyJson: object
+  onComplete?: () => void
 }
 
 export default function SurveyRenderer({ questionnaireId, surveyJson, onComplete }: Props) {
   const survey = useMemo(() => {
-    const model = new Model(surveyJson);
+    const model = new Model(surveyJson)
 
     model.onComplete.add((sender) => {
       submitResponse(questionnaireId, sender.data)
         .then(() => onComplete?.())
-        .catch(console.error);
-    });
+        .catch(console.error)
+    })
 
-    return model;
-  }, [questionnaireId, surveyJson, onComplete]);
+    return model
+  }, [questionnaireId, surveyJson, onComplete])
 
-  return <Survey model={survey} />;
+  return <Survey model={survey} />
 }
 ```
 
 Key rules:
+
 - Create `Model` inside `useMemo` — never inside the render body (that would recreate it every render).
 - `sender.data` is the raw key→value response object; pass it directly to `submitResponse`.
 - The `/take/:id` route calls `getQuestionnaire(id)` **without** auth headers — the Axios interceptor only adds the token when it exists in `localStorage`, so no changes needed.
@@ -91,8 +142,8 @@ Key rules:
 ## Shareable URL
 
 ```ts
-const shareUrl = `${window.location.origin}/take/${id}`;
-navigator.clipboard.writeText(shareUrl);
+const shareUrl = `${window.location.origin}/take/${id}`
+navigator.clipboard.writeText(shareUrl)
 ```
 
 Expose this as a copy button on the questionnaire list page (`/questionnaires`).
@@ -113,12 +164,12 @@ The legacy `questions: Question[]` array is **not** used for SurveyJS forms.
 ```ts
 // src/types/index.ts — add this field
 export interface Questionnaire {
-  id: string;
-  title: string;
-  description?: string;
-  surveyJson: object;        // ← SurveyJS schema
-  createdAt: string;
-  updatedAt: string;
+  id: string
+  title: string
+  description?: string
+  surveyJson: object // ← SurveyJS schema
+  createdAt: string
+  updatedAt: string
 }
 ```
 
@@ -126,10 +177,10 @@ export interface Questionnaire {
 
 ```ts
 export interface QuestionnaireResponse {
-  id: string;
-  questionnaireId: string;
-  data: Record<string, unknown>; // ← raw sender.data from onComplete
-  submittedAt: string;
+  id: string
+  questionnaireId: string
+  data: Record<string, unknown> // ← raw sender.data from onComplete
+  submittedAt: string
 }
 ```
 
@@ -143,25 +194,24 @@ Follow the same query-key factory pattern as `useQuestionnaires.ts`:
 // src/hooks/useResponses.ts
 export const responseKeys = {
   all: (qId: string) => ['responses', qId] as const,
-};
+}
 
 export function useResponses(questionnaireId: string) {
   return useQuery({
     queryKey: responseKeys.all(questionnaireId),
     queryFn: () => getResponses(questionnaireId),
     enabled: !!questionnaireId,
-  });
+  })
 }
 
 export function useSubmitResponse(questionnaireId: string) {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (data: Record<string, unknown>) =>
-      submitResponse(questionnaireId, data),
+    mutationFn: (data: Record<string, unknown>) => submitResponse(questionnaireId, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: responseKeys.all(questionnaireId) });
+      queryClient.invalidateQueries({ queryKey: responseKeys.all(questionnaireId) })
     },
-  });
+  })
 }
 ```
 
@@ -169,11 +219,11 @@ export function useSubmitResponse(questionnaireId: string) {
 
 ## Common Pitfalls
 
-| Pitfall | Fix |
-|---------|-----|
-| `SurveyCreator` re-created on every render | Use `useState(() => new SurveyCreator(...))` |
-| Survey model re-created on every render | Use `useMemo(() => new Model(...), [...])` |
-| CSS not loading | Import CSS in the component file, not just `index.css` |
-| `VisualizationPanel` leaking DOM nodes | Always call `panel.clear()` in the `useEffect` cleanup |
-| Alert banner appearing | Set `haveCommercialLicense: true` in options once licensed |
-| SSR hydration errors | N/A for this Vite SPA, but never use `survey-react-ui` in a server component |
+| Pitfall                                    | Fix                                                                          |
+| ------------------------------------------ | ---------------------------------------------------------------------------- |
+| `SurveyCreator` re-created on every render | Use `useState(() => new SurveyCreator(...))`                                 |
+| Survey model re-created on every render    | Use `useMemo(() => new Model(...), [...])`                                   |
+| CSS not loading                            | Import CSS in the component file, not just `index.css`                       |
+| `VisualizationPanel` leaking DOM nodes     | Always call `panel.clear()` in the `useEffect` cleanup                       |
+| Alert banner appearing                     | Set `haveCommercialLicense: true` in options once licensed                   |
+| SSR hydration errors                       | N/A for this Vite SPA, but never use `survey-react-ui` in a server component |

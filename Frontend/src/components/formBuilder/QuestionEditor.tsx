@@ -75,6 +75,9 @@ export function QuestionEditor({ question, onChange, duplicateName }: QuestionEd
     if (CHOICE_TYPES.includes(newType) && !question.choices) {
       patch.choices = []
     }
+    if ((newType === 'radiogroup' || newType === 'checkbox') && question.colCount === undefined) {
+      patch.colCount = 0
+    }
     if (newType === 'rating') {
       patch.rateMin = question.rateMin ?? 1
       patch.rateMax = question.rateMax ?? 5
@@ -220,6 +223,27 @@ export function QuestionEditor({ question, onChange, duplicateName }: QuestionEd
               </div>
             )}
           </div>
+        </div>
+      )}
+
+      {/* Layout — colCount for radiogroup / checkbox */}
+      {(question.type === 'radiogroup' || question.type === 'checkbox') && (
+        <div className="space-y-1">
+          <Label htmlFor="q-col-count">Layout</Label>
+          <Select
+            value={String(question.colCount ?? 0)}
+            onValueChange={(v) => update({ colCount: Number(v) })}
+          >
+            <SelectTrigger id="q-col-count" data-testid="col-count-select">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="0">Horizontal (row)</SelectItem>
+              <SelectItem value="2">2 columns</SelectItem>
+              <SelectItem value="3">3 columns</SelectItem>
+              <SelectItem value="1">Vertical (default)</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       )}
 
