@@ -20,3 +20,32 @@ export interface Questionnaire {
   createdAt: string
   updatedAt: string
 }
+
+export interface BatteryType {
+  id: string
+  title: string
+  description?: string
+  questionnaireTypeIds: string[]
+  createdAt: string
+  updatedAt: string
+}
+
+export interface BatterySlot {
+  order: number
+  questionnaireId: string
+  shareToken: string
+  questionnaireTypeName: string
+  submittedAt: string | null
+}
+
+export interface Battery {
+  id: string
+  batteryTypeId: string
+  batteryTypeName: string
+  name: string
+  shareToken: string
+  questionnaires: BatterySlot[]
+  isComplete: boolean
+  createdAt: string
+  updatedAt: string
+}

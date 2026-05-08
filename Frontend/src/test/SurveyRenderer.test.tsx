@@ -13,6 +13,7 @@ vi.mock('survey-core', async () => {
   return {
     ...actual,
     Model: class {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       constructor(_json: unknown) {}
       onComplete = {
         add: (cb: (sender: { data: unknown }) => void) => {

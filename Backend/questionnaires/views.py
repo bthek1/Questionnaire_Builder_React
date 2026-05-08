@@ -8,9 +8,20 @@ from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from .models import QuestionnaireType, Questionnaire
+from .models import (
+    Battery,
+    BatteryType,
+    QuestionnaireType,
+    Questionnaire,
+    create_battery,
+)
 from .pdf import generate_response_pdf
-from .serializers import QuestionnaireSerializer, QuestionnaireTypeSerializer
+from .serializers import (
+    BatterySerializer,
+    BatteryTypeSerializer,
+    QuestionnaireSerializer,
+    QuestionnaireTypeSerializer,
+)
 
 
 class QuestionnaireTypeViewSet(viewsets.ModelViewSet):
@@ -91,3 +102,47 @@ class QuestionnaireViewSet(viewsets.ModelViewSet):
         http_response = HttpResponse(pdf_bytes, content_type="application/pdf")
         http_response["Content-Disposition"] = f'attachment; filename="{filename}"'
         return http_response
+
+
+class BatteryTypeViewSet(viewsets.ModelViewSet):
+    serializer_class = BatteryTypeSerializer
+    permission_classes = [permissions.AllowAny]
+    http_method_names = ["get", "post", "patch", "delete", "head", "options"]
+
+    def get_queryset(self):
+        return BatteryType.objects.all()
+
+
+class BatteryViewSet(viewsets.ModelViewSet):
+    serializer_class = BatterySerializer
+    permission_classes = [permissions.AllowAny]
+    http_method_names = ["get", "post", "delete", "head", "options"]
+
+    def get_queryset(self):
+        return (
+            Battery.objects.select_related("battery_type")
+            .prefetch_related("questionnaires__questionnaire_type")
+            .all()
+        )
+
+    def create(self, request, *args, **kwargs):
+        battery_type_id = request.data.get("battery_type") or request.data.get(
+            "batteryType"
+        )
+        name = request.data.get("name", "")
+        battery_type = get_object_or_404(BatteryType, pk=battery_type_id)
+        battery = create_battery(battery_type, name)
+        battery.refresh_from_db()
+        serializer = self.get_serializer(battery)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=False, methods=["get"], url_path=r"by-token/(?P<share_token>[^/.]+)")
+    def by_token(self, request, share_token=None):
+        instance = get_object_or_404(
+            Battery.objects.select_related("battery_type").prefetch_related(
+                "questionnaires__questionnaire_type"
+            ),
+            share_token=share_token,
+        )
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)

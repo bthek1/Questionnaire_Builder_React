@@ -12,10 +12,17 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as QuestionnairesIndexRouteImport } from './routes/questionnaires/index'
 import { Route as QuestionnaireTypesIndexRouteImport } from './routes/questionnaire-types/index'
+import { Route as BatteryTypesIndexRouteImport } from './routes/battery-types/index'
+import { Route as BatteriesIndexRouteImport } from './routes/batteries/index'
 import { Route as TakeIdRouteImport } from './routes/take/$id'
+import { Route as TakeBatteryShareTokenRouteImport } from './routes/take-battery/$shareToken'
 import { Route as QuestionnairesNewRouteImport } from './routes/questionnaires/new'
 import { Route as QuestionnaireTypesShareRouteImport } from './routes/questionnaire-types/share'
 import { Route as QuestionnaireTypesNewRouteImport } from './routes/questionnaire-types/new'
+import { Route as BatteryTypesNewRouteImport } from './routes/battery-types/new'
+import { Route as BatteryTypesIdRouteImport } from './routes/battery-types/$id'
+import { Route as BatteriesNewRouteImport } from './routes/batteries/new'
+import { Route as BatteriesIdRouteImport } from './routes/batteries/$id'
 import { Route as QuestionnairesIdIndexRouteImport } from './routes/questionnaires/$id/index'
 import { Route as QuestionnairesIdViewRouteImport } from './routes/questionnaires/$id/view'
 import { Route as QuestionnairesIdResultsRouteImport } from './routes/questionnaires/$id/results'
@@ -37,9 +44,24 @@ const QuestionnaireTypesIndexRoute = QuestionnaireTypesIndexRouteImport.update({
   path: '/questionnaire-types/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BatteryTypesIndexRoute = BatteryTypesIndexRouteImport.update({
+  id: '/battery-types/',
+  path: '/battery-types/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BatteriesIndexRoute = BatteriesIndexRouteImport.update({
+  id: '/batteries/',
+  path: '/batteries/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TakeIdRoute = TakeIdRouteImport.update({
   id: '/take/$id',
   path: '/take/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TakeBatteryShareTokenRoute = TakeBatteryShareTokenRouteImport.update({
+  id: '/take-battery/$shareToken',
+  path: '/take-battery/$shareToken',
   getParentRoute: () => rootRouteImport,
 } as any)
 const QuestionnairesNewRoute = QuestionnairesNewRouteImport.update({
@@ -55,6 +77,26 @@ const QuestionnaireTypesShareRoute = QuestionnaireTypesShareRouteImport.update({
 const QuestionnaireTypesNewRoute = QuestionnaireTypesNewRouteImport.update({
   id: '/questionnaire-types/new',
   path: '/questionnaire-types/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BatteryTypesNewRoute = BatteryTypesNewRouteImport.update({
+  id: '/battery-types/new',
+  path: '/battery-types/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BatteryTypesIdRoute = BatteryTypesIdRouteImport.update({
+  id: '/battery-types/$id',
+  path: '/battery-types/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BatteriesNewRoute = BatteriesNewRouteImport.update({
+  id: '/batteries/new',
+  path: '/batteries/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BatteriesIdRoute = BatteriesIdRouteImport.update({
+  id: '/batteries/$id',
+  path: '/batteries/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const QuestionnairesIdIndexRoute = QuestionnairesIdIndexRouteImport.update({
@@ -87,10 +129,17 @@ const QuestionnaireTypesIdJsonRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/batteries/$id': typeof BatteriesIdRoute
+  '/batteries/new': typeof BatteriesNewRoute
+  '/battery-types/$id': typeof BatteryTypesIdRoute
+  '/battery-types/new': typeof BatteryTypesNewRoute
   '/questionnaire-types/new': typeof QuestionnaireTypesNewRoute
   '/questionnaire-types/share': typeof QuestionnaireTypesShareRoute
   '/questionnaires/new': typeof QuestionnairesNewRoute
+  '/take-battery/$shareToken': typeof TakeBatteryShareTokenRoute
   '/take/$id': typeof TakeIdRoute
+  '/batteries/': typeof BatteriesIndexRoute
+  '/battery-types/': typeof BatteryTypesIndexRoute
   '/questionnaire-types/': typeof QuestionnaireTypesIndexRoute
   '/questionnaires/': typeof QuestionnairesIndexRoute
   '/questionnaire-types/$id/json': typeof QuestionnaireTypesIdJsonRoute
@@ -101,10 +150,17 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/batteries/$id': typeof BatteriesIdRoute
+  '/batteries/new': typeof BatteriesNewRoute
+  '/battery-types/$id': typeof BatteryTypesIdRoute
+  '/battery-types/new': typeof BatteryTypesNewRoute
   '/questionnaire-types/new': typeof QuestionnaireTypesNewRoute
   '/questionnaire-types/share': typeof QuestionnaireTypesShareRoute
   '/questionnaires/new': typeof QuestionnairesNewRoute
+  '/take-battery/$shareToken': typeof TakeBatteryShareTokenRoute
   '/take/$id': typeof TakeIdRoute
+  '/batteries': typeof BatteriesIndexRoute
+  '/battery-types': typeof BatteryTypesIndexRoute
   '/questionnaire-types': typeof QuestionnaireTypesIndexRoute
   '/questionnaires': typeof QuestionnairesIndexRoute
   '/questionnaire-types/$id/json': typeof QuestionnaireTypesIdJsonRoute
@@ -116,10 +172,17 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/batteries/$id': typeof BatteriesIdRoute
+  '/batteries/new': typeof BatteriesNewRoute
+  '/battery-types/$id': typeof BatteryTypesIdRoute
+  '/battery-types/new': typeof BatteryTypesNewRoute
   '/questionnaire-types/new': typeof QuestionnaireTypesNewRoute
   '/questionnaire-types/share': typeof QuestionnaireTypesShareRoute
   '/questionnaires/new': typeof QuestionnairesNewRoute
+  '/take-battery/$shareToken': typeof TakeBatteryShareTokenRoute
   '/take/$id': typeof TakeIdRoute
+  '/batteries/': typeof BatteriesIndexRoute
+  '/battery-types/': typeof BatteryTypesIndexRoute
   '/questionnaire-types/': typeof QuestionnaireTypesIndexRoute
   '/questionnaires/': typeof QuestionnairesIndexRoute
   '/questionnaire-types/$id/json': typeof QuestionnaireTypesIdJsonRoute
@@ -132,10 +195,17 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/batteries/$id'
+    | '/batteries/new'
+    | '/battery-types/$id'
+    | '/battery-types/new'
     | '/questionnaire-types/new'
     | '/questionnaire-types/share'
     | '/questionnaires/new'
+    | '/take-battery/$shareToken'
     | '/take/$id'
+    | '/batteries/'
+    | '/battery-types/'
     | '/questionnaire-types/'
     | '/questionnaires/'
     | '/questionnaire-types/$id/json'
@@ -146,10 +216,17 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/batteries/$id'
+    | '/batteries/new'
+    | '/battery-types/$id'
+    | '/battery-types/new'
     | '/questionnaire-types/new'
     | '/questionnaire-types/share'
     | '/questionnaires/new'
+    | '/take-battery/$shareToken'
     | '/take/$id'
+    | '/batteries'
+    | '/battery-types'
     | '/questionnaire-types'
     | '/questionnaires'
     | '/questionnaire-types/$id/json'
@@ -160,10 +237,17 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/batteries/$id'
+    | '/batteries/new'
+    | '/battery-types/$id'
+    | '/battery-types/new'
     | '/questionnaire-types/new'
     | '/questionnaire-types/share'
     | '/questionnaires/new'
+    | '/take-battery/$shareToken'
     | '/take/$id'
+    | '/batteries/'
+    | '/battery-types/'
     | '/questionnaire-types/'
     | '/questionnaires/'
     | '/questionnaire-types/$id/json'
@@ -175,10 +259,17 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  BatteriesIdRoute: typeof BatteriesIdRoute
+  BatteriesNewRoute: typeof BatteriesNewRoute
+  BatteryTypesIdRoute: typeof BatteryTypesIdRoute
+  BatteryTypesNewRoute: typeof BatteryTypesNewRoute
   QuestionnaireTypesNewRoute: typeof QuestionnaireTypesNewRoute
   QuestionnaireTypesShareRoute: typeof QuestionnaireTypesShareRoute
   QuestionnairesNewRoute: typeof QuestionnairesNewRoute
+  TakeBatteryShareTokenRoute: typeof TakeBatteryShareTokenRoute
   TakeIdRoute: typeof TakeIdRoute
+  BatteriesIndexRoute: typeof BatteriesIndexRoute
+  BatteryTypesIndexRoute: typeof BatteryTypesIndexRoute
   QuestionnaireTypesIndexRoute: typeof QuestionnaireTypesIndexRoute
   QuestionnairesIndexRoute: typeof QuestionnairesIndexRoute
   QuestionnaireTypesIdJsonRoute: typeof QuestionnaireTypesIdJsonRoute
@@ -211,11 +302,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof QuestionnaireTypesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/battery-types/': {
+      id: '/battery-types/'
+      path: '/battery-types'
+      fullPath: '/battery-types/'
+      preLoaderRoute: typeof BatteryTypesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/batteries/': {
+      id: '/batteries/'
+      path: '/batteries'
+      fullPath: '/batteries/'
+      preLoaderRoute: typeof BatteriesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/take/$id': {
       id: '/take/$id'
       path: '/take/$id'
       fullPath: '/take/$id'
       preLoaderRoute: typeof TakeIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/take-battery/$shareToken': {
+      id: '/take-battery/$shareToken'
+      path: '/take-battery/$shareToken'
+      fullPath: '/take-battery/$shareToken'
+      preLoaderRoute: typeof TakeBatteryShareTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/questionnaires/new': {
@@ -237,6 +349,34 @@ declare module '@tanstack/react-router' {
       path: '/questionnaire-types/new'
       fullPath: '/questionnaire-types/new'
       preLoaderRoute: typeof QuestionnaireTypesNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/battery-types/new': {
+      id: '/battery-types/new'
+      path: '/battery-types/new'
+      fullPath: '/battery-types/new'
+      preLoaderRoute: typeof BatteryTypesNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/battery-types/$id': {
+      id: '/battery-types/$id'
+      path: '/battery-types/$id'
+      fullPath: '/battery-types/$id'
+      preLoaderRoute: typeof BatteryTypesIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/batteries/new': {
+      id: '/batteries/new'
+      path: '/batteries/new'
+      fullPath: '/batteries/new'
+      preLoaderRoute: typeof BatteriesNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/batteries/$id': {
+      id: '/batteries/$id'
+      path: '/batteries/$id'
+      fullPath: '/batteries/$id'
+      preLoaderRoute: typeof BatteriesIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/questionnaires/$id/': {
@@ -279,10 +419,17 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  BatteriesIdRoute: BatteriesIdRoute,
+  BatteriesNewRoute: BatteriesNewRoute,
+  BatteryTypesIdRoute: BatteryTypesIdRoute,
+  BatteryTypesNewRoute: BatteryTypesNewRoute,
   QuestionnaireTypesNewRoute: QuestionnaireTypesNewRoute,
   QuestionnaireTypesShareRoute: QuestionnaireTypesShareRoute,
   QuestionnairesNewRoute: QuestionnairesNewRoute,
+  TakeBatteryShareTokenRoute: TakeBatteryShareTokenRoute,
   TakeIdRoute: TakeIdRoute,
+  BatteriesIndexRoute: BatteriesIndexRoute,
+  BatteryTypesIndexRoute: BatteryTypesIndexRoute,
   QuestionnaireTypesIndexRoute: QuestionnaireTypesIndexRoute,
   QuestionnairesIndexRoute: QuestionnairesIndexRoute,
   QuestionnaireTypesIdJsonRoute: QuestionnaireTypesIdJsonRoute,

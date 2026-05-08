@@ -25,6 +25,18 @@ export const Route = createRootRoute({
             >
               Questionnaires
             </Link>
+            <Link
+              to="/battery-types"
+              className="text-sm text-[#5b6268] transition-colors hover:text-[#333333] [&.active]:font-medium [&.active]:text-[var(--color-primary)]"
+            >
+              Battery Types
+            </Link>
+            <Link
+              to="/batteries"
+              className="text-sm text-[#5b6268] transition-colors hover:text-[#333333] [&.active]:font-medium [&.active]:text-[var(--color-primary)]"
+            >
+              Batteries
+            </Link>
           </nav>
         </header>
         <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8">

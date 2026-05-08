@@ -250,3 +250,111 @@ class TestResponsePdfView:
         r = Questionnaire.objects.create(questionnaire_type=q, answers={})
         response = api_client.get(pdf_url(r.id))
         assert response.status_code == 400
+
+
+# ── Battery endpoints ──────────────────────────────────────────────────────────
+
+from questionnaires.models import Battery, BatteryType, create_battery
+
+BATTERY_TYPES_URL = "/api/battery-types/"
+BATTERIES_URL = "/api/batteries/"
+
+
+def battery_type_detail_url(pk):
+    return f"/api/battery-types/{pk}/"
+
+
+def battery_detail_url(pk):
+    return f"/api/batteries/{pk}/"
+
+
+def battery_by_token_url(token):
+    return f"/api/batteries/by-token/{token}/"
+
+
+@pytest.mark.django_db
+class TestBatteryTypeViewSet:
+    def test_list_empty(self, api_client):
+        response = api_client.get(BATTERY_TYPES_URL)
+        assert response.status_code == 200
+        assert response.data == []
+
+    def test_create(self, api_client):
+        payload = {"title": "BT1", "questionnaireTypeIds": []}
+        response = api_client.post(BATTERY_TYPES_URL, payload, format="json")
+        assert response.status_code == 201
+        assert response.data["title"] == "BT1"
+        assert BatteryType.objects.count() == 1
+
+    def test_retrieve(self, api_client, db):
+        bt = BatteryType.objects.create(title="BT2")
+        response = api_client.get(battery_type_detail_url(bt.id))
+        assert response.status_code == 200
+        assert response.data["id"] == str(bt.id)
+
+    def test_partial_update(self, api_client, db):
+        bt = BatteryType.objects.create(title="Old Title")
+        response = api_client.patch(battery_type_detail_url(bt.id), {"title": "New Title"}, format="json")
+        assert response.status_code == 200
+        assert response.data["title"] == "New Title"
+
+    def test_destroy(self, api_client, db):
+        bt = BatteryType.objects.create(title="To Delete")
+        response = api_client.delete(battery_type_detail_url(bt.id))
+        assert response.status_code == 204
+        assert not BatteryType.objects.filter(id=bt.id).exists()
+
+
+@pytest.mark.django_db
+class TestBatteryViewSet:
+    def _setup(self, db):
+        qt1 = QuestionnaireType.objects.create(title="Survey A")
+        qt2 = QuestionnaireType.objects.create(title="Survey B")
+        bt = BatteryType.objects.create(
+            title="Two Survey Battery",
+            questionnaire_type_ids=[str(qt1.id), str(qt2.id)],
+        )
+        return bt, qt1, qt2
+
+    def test_list_empty(self, api_client):
+        response = api_client.get(BATTERIES_URL)
+        assert response.status_code == 200
+        assert response.data == []
+
+    def test_create_battery_creates_questionnaires(self, api_client, db):
+        bt, qt1, qt2 = self._setup(db)
+        response = api_client.post(BATTERIES_URL, {"battery_type": str(bt.id), "name": "Run 1"}, format="json")
+        assert response.status_code == 201
+        assert response.data["name"] == "Run 1"
+        battery_id = response.data["id"]
+        battery = Battery.objects.get(id=battery_id)
+        assert battery.questionnaires.count() == 2
+
+    def test_create_battery_correct_battery_order(self, api_client, db):
+        bt, qt1, qt2 = self._setup(db)
+        response = api_client.post(BATTERIES_URL, {"battery_type": str(bt.id)}, format="json")
+        assert response.status_code == 201
+        battery_id = response.data["id"]
+        battery = Battery.objects.get(id=battery_id)
+        orders = sorted(battery.questionnaires.values_list("battery_order", flat=True))
+        assert orders == [0, 1]
+
+    def test_by_token_returns_correct_shape(self, api_client, db):
+        bt, qt1, qt2 = self._setup(db)
+        battery = create_battery(bt, "Test")
+        response = api_client.get(battery_by_token_url(battery.share_token))
+        assert response.status_code == 200
+        assert response.data["id"] == str(battery.id)
+        assert "questionnaires" in response.data
+        assert len(response.data["questionnaires"]) == 2
+
+    def test_by_token_invalid_returns_404(self, api_client, db):
+        response = api_client.get(battery_by_token_url("00000000-0000-0000-0000-000000000000"))
+        assert response.status_code == 404
+
+    def test_destroy(self, api_client, db):
+        bt = BatteryType.objects.create(title="To Delete")
+        battery = create_battery(bt)
+        response = api_client.delete(battery_detail_url(battery.id))
+        assert response.status_code == 204
+        assert not Battery.objects.filter(id=battery.id).exists()

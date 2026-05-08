@@ -149,3 +149,85 @@ class TestQuestionnaireResponseSerializer:
         )
         assert serializer.is_valid(), serializer.errors
         assert serializer.validated_data.get("metrics") == {"score": 99}
+
+
+# ── Battery Serializers ────────────────────────────────────────────────────────
+
+from questionnaires.models import (
+    Battery,
+    BatteryType,
+    QuestionnaireType,
+    create_battery,
+)
+from questionnaires.serializers import BatteryTypeSerializer, BatterySerializer
+
+
+@pytest.mark.django_db
+class TestBatteryTypeSerializer:
+    def test_fields(self, db):
+        bt = BatteryType.objects.create(title="BT1", questionnaire_type_ids=[])
+        data = BatteryTypeSerializer(bt).data
+        assert set(data.keys()) == {
+            "id",
+            "title",
+            "description",
+            "questionnaireTypeIds",
+            "createdAt",
+            "updatedAt",
+        }
+
+    def test_camel_case_ids(self, db):
+        bt = BatteryType.objects.create(title="BT", questionnaire_type_ids=["abc"])
+        data = BatteryTypeSerializer(bt).data
+        assert "questionnaireTypeIds" in data
+        assert data["questionnaireTypeIds"] == ["abc"]
+
+    def test_round_trip_create(self, db):
+        serializer = BatteryTypeSerializer(
+            data={"title": "New BT", "questionnaireTypeIds": []}
+        )
+        assert serializer.is_valid(), serializer.errors
+        instance = serializer.save()
+        assert instance.title == "New BT"
+        assert instance.questionnaire_type_ids == []
+
+
+@pytest.mark.django_db
+class TestBatterySerializer:
+    def _make_battery_with_questionnaires(self, db):
+        qt1 = QuestionnaireType.objects.create(title="Q1")
+        qt2 = QuestionnaireType.objects.create(title="Q2")
+        bt = BatteryType.objects.create(
+            title="BT", questionnaire_type_ids=[str(qt1.id), str(qt2.id)]
+        )
+        return create_battery(bt, "Cohort A")
+
+    def test_fields(self, db):
+        battery = self._make_battery_with_questionnaires(db)
+        data = BatterySerializer(battery).data
+        assert "id" in data
+        assert "batteryTypeId" in data
+        assert "batteryTypeName" in data
+        assert "shareToken" in data
+        assert "questionnaires" in data
+        assert "isComplete" in data
+
+    def test_is_complete_false_when_not_all_submitted(self, db):
+        battery = self._make_battery_with_questionnaires(db)
+        data = BatterySerializer(battery).data
+        assert data["isComplete"] is False
+
+    def test_is_complete_true_when_all_submitted(self, db):
+        from django.utils import timezone
+
+        battery = self._make_battery_with_questionnaires(db)
+        battery.questionnaires.all().update(submitted_at=timezone.now())
+        battery.refresh_from_db()
+        data = BatterySerializer(battery).data
+        assert data["isComplete"] is True
+
+    def test_questionnaires_ordered_by_battery_order(self, db):
+        battery = self._make_battery_with_questionnaires(db)
+        data = BatterySerializer(battery).data
+        orders = [q["order"] for q in data["questionnaires"]]
+        assert orders == sorted(orders)

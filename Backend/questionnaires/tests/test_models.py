@@ -1,6 +1,12 @@
 import pytest
 
-from questionnaires.models import QuestionnaireType, Questionnaire
+from questionnaires.models import (
+    Battery,
+    BatteryType,
+    Questionnaire,
+    QuestionnaireType,
+    create_battery,
+)
 
 
 @pytest.mark.django_db
@@ -145,3 +151,75 @@ class TestQuestionnaireTypeRelatedName:
     def test_questionnaire_types_related_name(self, questionnaire_with_owner, user):
         assert user.questionnaire_types.count() == 1
         assert user.questionnaire_types.first().pk == questionnaire_with_owner.pk
+
+
+@pytest.mark.django_db
+class TestBatteryModels:
+    def _make_battery_type(self, qt_ids=None):
+        if qt_ids is None:
+            qt_ids = []
+        return BatteryType.objects.create(
+            title="My Battery", questionnaire_type_ids=qt_ids
+        )
+
+    def test_battery_type_str(self, db):
+        bt = BatteryType.objects.create(title="Demo Battery")
+        assert str(bt) == "Demo Battery"
+
+    def test_battery_str(self, db):
+        bt = BatteryType.objects.create(title="Demo Battery")
+        b = Battery.objects.create(battery_type=bt, name="Cohort A")
+        assert "Demo Battery" in str(b)
+        assert "Cohort A" in str(b)
+
+    def test_battery_str_fallback_to_token(self, db):
+        bt = BatteryType.objects.create(title="Demo Battery")
+        b = Battery.objects.create(battery_type=bt)
+        assert "Demo Battery" in str(b)
+        assert str(b.share_token) in str(b)
+
+    def test_create_battery_creates_questionnaires_in_order(self, db):
+        qt1 = QuestionnaireType.objects.create(title="Survey 1")
+        qt2 = QuestionnaireType.objects.create(title="Survey 2")
+        qt3 = QuestionnaireType.objects.create(title="Survey 3")
+        bt = BatteryType.objects.create(
+            title="Three Survey Battery",
+            questionnaire_type_ids=[str(qt1.id), str(qt2.id), str(qt3.id)],
+        )
+        battery = create_battery(bt, "Run A")
+        assert battery.pk is not None
+        qs = list(battery.questionnaires.order_by("battery_order"))
+        assert len(qs) == 3
+        assert qs[0].questionnaire_type_id == qt1.id
+        assert qs[1].questionnaire_type_id == qt2.id
+        assert qs[2].questionnaire_type_id == qt3.id
+
+    def test_create_battery_battery_order_sequential(self, db):
+        qt1 = QuestionnaireType.objects.create(title="Survey A")
+        qt2 = QuestionnaireType.objects.create(title="Survey B")
+        bt = BatteryType.objects.create(
+            title="Two Survey Battery",
+            questionnaire_type_ids=[str(qt1.id), str(qt2.id)],
+        )
+        battery = create_battery(bt)
+        orders = sorted(battery.questionnaires.values_list("battery_order", flat=True))
+        assert orders == [0, 1]
+
+    def test_deleting_battery_sets_questionnaire_battery_null(self, db):
+        qt = QuestionnaireType.objects.create(title="Survey X")
+        bt = BatteryType.objects.create(
+            title="Single Survey Battery",
+            questionnaire_type_ids=[str(qt.id)],
+        )
+        battery = create_battery(bt)
+        q_id = battery.questionnaires.first().id
+        battery.delete()
+        q = Questionnaire.objects.get(id=q_id)
+        assert q.battery is None
+
+    def test_create_battery_empty_questionnaire_type_ids(self, db):
+        bt = BatteryType.objects.create(
+            title="Empty Battery", questionnaire_type_ids=[]
+        )
+        battery = create_battery(bt)
+        assert battery.questionnaires.count() == 0

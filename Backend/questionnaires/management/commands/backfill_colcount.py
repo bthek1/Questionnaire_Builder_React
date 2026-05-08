@@ -32,9 +32,8 @@ def _patch_elements(elements: list) -> bool:
         # Recurse into panels
         for key in ("elements", "templateElements"):
             nested = el.get(key)
-            if isinstance(nested, list):
-                if _patch_elements(nested):
-                    changed = True
+            if isinstance(nested, list) and _patch_elements(nested):
+                changed = True
     return changed
 
 
@@ -48,14 +47,12 @@ def _patch_survey_json(survey_json: dict) -> bool:
     if isinstance(pages, list):
         for page in pages:
             elements = page.get("elements") if isinstance(page, dict) else None
-            if isinstance(elements, list):
-                if _patch_elements(elements):
-                    changed = True
+            if isinstance(elements, list) and _patch_elements(elements):
+                changed = True
     # Flat format
     elements = survey_json.get("elements")
-    if isinstance(elements, list):
-        if _patch_elements(elements):
-            changed = True
+    if isinstance(elements, list) and _patch_elements(elements):
+        changed = True
     return changed
 
 
@@ -71,7 +68,7 @@ class Command(BaseCommand):
             help="Show what would be changed without saving",
         )
 
-    def handle(self, *args, **options):
+    def handle(self, *_args, **options):
         dry_run: bool = options["dry_run"]
         prefix = "[DRY RUN] " if dry_run else ""
 
