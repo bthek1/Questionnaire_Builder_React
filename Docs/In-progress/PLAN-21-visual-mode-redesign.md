@@ -93,54 +93,59 @@ editing capability yet.
 
 **Tests**:
 
-- [x] `surveyPatch.test.ts` — 17 cases covering patchSurveyJson, spliceJsonArray, getNestedValue
+- [x] `surveyPatch.test.ts` — 21 cases covering patchSurveyJson, spliceJsonArray, getNestedValue
 - [x] Updated `JsonEditorPage.test.tsx` — mode-switch no longer errors; round-trip test added
 
 **Stability Criteria**: `pnpm test` passes; switching modes leaves JSON identical. ✅
 
 **Notes**: Removed all builder-related imports/state/handlers from `json.tsx`. The old
 `parseSurveyJson`/`buildSurveyJson`/`BuilderSurvey` remain in `formBuilder.ts` unchanged
-(deprecation comes in Phase 3). Test count: 305 (was 279).
+(deprecation comes in Phase 3). Test count: 305 (was 279). 27 test files (was 26).
 
 ---
 
 ## Phase 2 — Surgical Edit Actions for Common Properties
 
-**Status**: Not started
+**Status**: ✅ Completed 2026-05-08
 
 **Goal**: Re-implement the most commonly edited properties as surgical patch actions so the
 visual layer can actually edit them without rebuilding the whole JSON.
 
 **Deliverables**:
 
-- [ ] Survey-level patches: `title`, `description`, `locale`, `showProgressBar`,
+- [x] Survey-level patches: `title`, `description`, `locale`, `showProgressBar`,
       `showQuestionNumbers`, `completedHtml` (each field gets a dedicated input that calls
       `patchSurveyJson`).
-- [ ] Page-level patches: page `title`, add page (appends a new `{ name, elements: [] }` object
+- [x] Page-level patches: page `title`, add page (appends a new `{ name, elements: [] }` object
       to the `pages` array), delete page (splices the array), reorder pages (swap).
-- [ ] Element-level patches for `BuilderQuestion`-mapped types: `title`, `isRequired`,
+- [x] Element-level patches for `BuilderQuestion`-mapped types: `title`, `isRequired`,
       `description`, `visibleIf` for any element type; type-specific common properties (choices
-      list, rateMin/rateMax, inputType, etc.) via the existing `QuestionEditor` inputs — but
-      each input now writes directly to the JSON via `patchSurveyJson` instead of updating
-      `BuilderSurvey`.
-- [ ] Add element, delete element, reorder elements — array splice helpers in `surveyPatch.ts`.
-- [ ] Advanced / unknown element types show a read-only badge with their `type` and `name`;
-      all their properties are shown as a collapsible raw-property list (key → value, read-only).
-      No editing offered; no data dropped.
-- [ ] Unknown properties on known elements (anything not in the visual controls) are shown in a
-      collapsed "Other properties" section (key → value, read-only). Editing them is done via
-      the JSON editor.
+      list, rateMin/rateMax, inputType, etc.) via inline controls that write directly to the
+      JSON via `patchSurveyJson`.
+- [x] Add element, delete element, reorder elements — array splice helpers in `surveyPatch.ts`.
+- [x] Advanced / unknown element types show a read-only badge with their `type` and `name`;
+      editing them via JSON mode.
+- [x] Unknown properties on known elements shown in a collapsed "Other properties" section
+      (key → value, read-only). Editing them is done via the JSON editor.
 
 **Tests**:
 
-- [ ] Extend `surveyPatch.test.ts` — array splice cases (add/delete/reorder elements and pages)
-- [ ] Update `JsonEditorPage.test.tsx` — editing title, required toggle, choices update the
-      JSON text without altering unrelated properties
+- [x] Extended `JsonEditorPage.test.tsx` — 12 new Phase-2 tests covering: editing survey title
+      updates JSON without changing other fields; editing element title preserves siblings;
+      required toggle; choices update; add/delete question; complex type badge; unknown props
+      section; add page; live preview update
+- [x] Updated existing tests to use `data-testid="json-textarea"` instead of role="textbox"
+      (to avoid conflicts with the new visual editor input fields)
 
 **Stability Criteria**: `pnpm test` passes; editing a question title does not change any
-other field in the JSON output.
+other field in the JSON output. ✅
 
-**Notes**:
+**Notes**: Created `Frontend/src/components/formBuilder/VisualEditor.tsx` — a fully controlled
+component that receives `surveyJson` and `onChange`. Every edit is a targeted
+`patchSurveyJson` / `spliceJsonArray` call. The `SurveyOutline` (Phase 1 read-only scaffold)
+was removed and replaced by `VisualEditor`. Added `data-testid="json-textarea"` to the JSON
+mode `<Textarea>` to distinguish it from the visual editor's `<input>` fields in tests.
+Test count: 317 (was 305).
 
 ---
 

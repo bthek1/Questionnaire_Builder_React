@@ -11,6 +11,7 @@ import {
   DEFAULT_THEME_KEY,
 } from '@/components/survey/SurveyRenderer'
 import { cn } from '@/lib/utils'
+import { VisualEditor } from '@/components/formBuilder/VisualEditor'
 import type { QuestionnaireType } from '@/types'
 
 export const Route = createFileRoute('/questionnaire-types/$id/json')({
@@ -78,6 +79,13 @@ function JsonEditor({ questionnaire, id }: JsonEditorProps) {
 
   // no-op: preview is read-only, responses should not be submitted
   const handlePreviewComplete = useCallback(() => {}, [])
+
+  function handleVisualChange(newJson: object) {
+    const text = JSON.stringify(newJson, null, 2)
+    setSurveyJsonText(text)
+    setLastValidJson(newJson)
+    setSaved(false)
+  }
 
   function handleJsonChange(value: string) {
     setSurveyJsonText(value)
@@ -239,6 +247,7 @@ function JsonEditor({ questionnaire, id }: JsonEditorProps) {
         {/* Left pane */}
         {mode === 'json' ? (
           <Textarea
+            data-testid="json-textarea"
             value={surveyJsonText}
             onChange={(e) => handleJsonChange(e.target.value)}
             rows={40}
@@ -246,7 +255,10 @@ function JsonEditor({ questionnaire, id }: JsonEditorProps) {
             spellCheck={false}
           />
         ) : (
-          <SurveyOutline surveyJson={lastValidJson as Record<string, unknown>} />
+          <VisualEditor
+            surveyJson={lastValidJson as Record<string, unknown>}
+            onChange={handleVisualChange}
+          />
         )}
 
         <div className="space-y-2 overflow-auto p-4">
@@ -287,80 +299,4 @@ function JsonEditor({ questionnaire, id }: JsonEditorProps) {
   )
 }
 
-// ---------------------------------------------------------------------------
-// Read-only structural outline — Phase 1 visual mode
-// ---------------------------------------------------------------------------
 
-interface SurveyOutlineProps {
-  surveyJson: Record<string, unknown>
-}
-
-function SurveyOutline({ surveyJson }: SurveyOutlineProps) {
-  const title = typeof surveyJson.title === 'string' ? surveyJson.title : ''
-
-  // Support both paged format ({ pages: [...] }) and flat format ({ elements: [...] }).
-  const pages: Array<Record<string, unknown>> = Array.isArray(surveyJson.pages)
-    ? (surveyJson.pages as Array<Record<string, unknown>>)
-    : Array.isArray(surveyJson.elements)
-      ? [{ name: 'page1', elements: surveyJson.elements }]
-      : [{ name: 'page1', elements: [] }]
-
-  return (
-    <div data-testid="survey-outline" className="space-y-4 overflow-auto rounded-none border-r p-4">
-      {/* Survey title */}
-      <div>
-        <p className="text-xs text-[var(--color-muted-foreground)]">Survey title</p>
-        <p className="text-lg font-semibold">
-          {title || <span className="italic text-[var(--color-muted-foreground)]">(untitled)</span>}
-        </p>
-      </div>
-
-      {/* Pages */}
-      {pages.map((page, pi) => {
-        const pageName = typeof page.name === 'string' ? page.name : `page${pi + 1}`
-        const pageTitle = typeof page.title === 'string' ? page.title : undefined
-        const elements: Array<Record<string, unknown>> = Array.isArray(page.elements)
-          ? (page.elements as Array<Record<string, unknown>>)
-          : []
-
-        return (
-          <div key={pi} className="rounded-lg border border-[var(--color-border)] p-3">
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-foreground)]">
-              {pageTitle ?? pageName}
-            </p>
-            {elements.length === 0 ? (
-              <p className="text-sm italic text-[var(--color-muted-foreground)]">
-                No elements on this page
-              </p>
-            ) : (
-              <ul className="space-y-1">
-                {elements.map((el, ei) => {
-                  const elName = typeof el.name === 'string' ? el.name : `element${ei + 1}`
-                  const elType = typeof el.type === 'string' ? el.type : 'text'
-                  const elTitle = typeof el.title === 'string' ? el.title : ''
-                  return (
-                    <li key={ei} className="flex items-center gap-2 rounded px-2 py-1 text-sm">
-                      <span className="rounded bg-[var(--color-muted)] px-1.5 py-0.5 font-mono text-xs text-[var(--color-muted-foreground)]">
-                        {elType}
-                      </span>
-                      <span className="font-medium">{elTitle || elName}</span>
-                      {elTitle && elTitle !== elName && (
-                        <span className="text-xs text-[var(--color-muted-foreground)]">
-                          ({elName})
-                        </span>
-                      )}
-                    </li>
-                  )
-                })}
-              </ul>
-            )}
-          </div>
-        )
-      })}
-
-      <p className="text-xs text-[var(--color-muted-foreground)]">
-        Switch to JSON mode to edit the survey definition.
-      </p>
-    </div>
-  )
-}

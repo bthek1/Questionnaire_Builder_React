@@ -101,7 +101,7 @@ describe('JsonEditorPage', () => {
     // Switch to JSON mode first — page defaults to Visual
     const toggle = await screen.findByTestId('editor-mode-toggle')
     fireEvent.click(toggle.querySelector('button:last-child')!)
-    const textarea = (await screen.findByRole('textbox', { name: '' })) as HTMLTextAreaElement
+    const textarea = (await screen.findByTestId('json-textarea')) as HTMLTextAreaElement
     expect(textarea.value).toContain('"pages"')
   })
 
@@ -109,7 +109,7 @@ describe('JsonEditorPage', () => {
     renderAt('/questionnaire-types/q1/json')
     const toggle = await screen.findByTestId('editor-mode-toggle')
     fireEvent.click(toggle.querySelector('button:last-child')!)
-    const textarea = screen.getByRole('textbox', { name: '' }) as HTMLTextAreaElement
+    const textarea = screen.getByTestId('json-textarea') as HTMLTextAreaElement
     fireEvent.change(textarea, { target: { value: 'not json' } })
     const saveBtns = screen.getAllByRole('button', { name: /^save$/i })
     // The main Save button (not the rename form one)
@@ -140,7 +140,7 @@ describe('JsonEditorPage', () => {
     renderAt('/questionnaire-types/q1/json')
     const toggle = await screen.findByTestId('editor-mode-toggle')
     fireEvent.click(toggle.querySelector('button:last-child')!)
-    const textarea = screen.getByRole('textbox', { name: '' }) as HTMLTextAreaElement
+    const textarea = screen.getByTestId('json-textarea') as HTMLTextAreaElement
     const newJson = JSON.stringify({ pages: [{ name: 'p1' }] }, null, 2)
     fireEvent.change(textarea, { target: { value: newJson } })
     const preview = screen.getByTestId('survey-renderer')
@@ -151,7 +151,7 @@ describe('JsonEditorPage', () => {
     renderAt('/questionnaire-types/q1/json')
     const toggle = await screen.findByTestId('editor-mode-toggle')
     fireEvent.click(toggle.querySelector('button:last-child')!)
-    const textarea = screen.getByRole('textbox', { name: '' }) as HTMLTextAreaElement
+    const textarea = screen.getByTestId('json-textarea') as HTMLTextAreaElement
     const validJson = JSON.stringify({ pages: [{ name: 'before' }] }, null, 2)
     fireEvent.change(textarea, { target: { value: validJson } })
     fireEvent.change(textarea, { target: { value: 'not json' } })
@@ -173,14 +173,14 @@ describe('JsonEditorPage', () => {
     renderAt('/questionnaire-types/q1/json')
     await screen.findByTestId('editor-mode-toggle')
     // textarea should not be present in visual mode
-    expect(screen.queryByRole('textbox', { name: '' })).not.toBeInTheDocument()
+    expect(screen.queryByTestId('json-textarea')).not.toBeInTheDocument()
   })
 
   it('switching to JSON mode shows the textarea', async () => {
     renderAt('/questionnaire-types/q1/json')
     const toggle = await screen.findByTestId('editor-mode-toggle')
     fireEvent.click(toggle.querySelector('button:last-child')!)
-    expect(screen.getByRole('textbox', { name: '' })).toBeInTheDocument()
+    expect(screen.getByTestId('json-textarea')).toBeInTheDocument()
   })
 
   it('switching back to Visual mode hides the textarea', async () => {
@@ -188,10 +188,10 @@ describe('JsonEditorPage', () => {
     const toggle = await screen.findByTestId('editor-mode-toggle')
     // go to JSON
     fireEvent.click(toggle.querySelector('button:last-child')!)
-    expect(screen.getByRole('textbox', { name: '' })).toBeInTheDocument()
+    expect(screen.getByTestId('json-textarea')).toBeInTheDocument()
     // back to Visual
     fireEvent.click(toggle.querySelector('button:first-child')!)
-    expect(screen.queryByRole('textbox', { name: '' })).not.toBeInTheDocument()
+    expect(screen.queryByTestId('json-textarea')).not.toBeInTheDocument()
   })
 
   it('switching to Visual mode with invalid JSON does not show an error and succeeds', async () => {
@@ -199,11 +199,11 @@ describe('JsonEditorPage', () => {
     const toggle = await screen.findByTestId('editor-mode-toggle')
     // switch to JSON
     fireEvent.click(toggle.querySelector('button:last-child')!)
-    const textarea = screen.getByRole('textbox', { name: '' })
+    const textarea = screen.getByTestId('json-textarea')
     fireEvent.change(textarea, { target: { value: 'not valid json' } })
     // switching back to Visual always succeeds — no error, no blocking
     fireEvent.click(toggle.querySelector('button:first-child')!)
-    expect(screen.queryByRole('textbox', { name: '' })).not.toBeInTheDocument()
+    expect(screen.queryByTestId('json-textarea')).not.toBeInTheDocument()
     // the structural outline should be shown
     expect(screen.getByTestId('survey-outline')).toBeInTheDocument()
   })
@@ -223,13 +223,13 @@ describe('JsonEditorPage', () => {
     const toggle = await screen.findByTestId('editor-mode-toggle')
     // Switch to JSON — capture text
     fireEvent.click(toggle.querySelector('button:last-child')!)
-    const textarea = screen.getByRole('textbox', { name: '' }) as HTMLTextAreaElement
+    const textarea = screen.getByTestId('json-textarea') as HTMLTextAreaElement
     const jsonBefore = textarea.value
     // Switch back to Visual
     fireEvent.click(toggle.querySelector('button:first-child')!)
     // Switch to JSON again
     fireEvent.click(toggle.querySelector('button:last-child')!)
-    const textareaAfter = screen.getByRole('textbox', { name: '' }) as HTMLTextAreaElement
+    const textareaAfter = screen.getByTestId('json-textarea') as HTMLTextAreaElement
     expect(textareaAfter.value).toBe(jsonBefore)
   })
 
@@ -256,5 +256,279 @@ describe('JsonEditorPage', () => {
     fireEvent.change(select, { target: { value: 'Flat' } })
     const preview = screen.getByTestId('survey-renderer')
     expect(preview.getAttribute('data-theme')).toBe('Flat')
+  })
+
+  // ---- Visual editor (Phase 2) ----
+
+  it('renders survey-outline in visual mode', async () => {
+    renderAt('/questionnaire-types/q1/json')
+    const outline = await screen.findByTestId('survey-outline')
+    expect(outline).toBeInTheDocument()
+  })
+
+  it('renders survey settings section in visual mode', async () => {
+    renderAt('/questionnaire-types/q1/json')
+    const settings = await screen.findByTestId('survey-settings')
+    expect(settings).toBeInTheDocument()
+  })
+
+  it('editing survey title in visual mode updates the JSON text', async () => {
+    const surveyWithTitle: QuestionnaireType = {
+      ...testQuestionnaire,
+      surveyJson: {
+        title: 'Old title',
+        pages: [{ name: 'p1', elements: [] }],
+        description: 'Keep me',
+      },
+    }
+    mockUseQuestionnaire.mockReturnValue({ data: surveyWithTitle, isLoading: false })
+    renderAt('/questionnaire-types/q1/json')
+
+    const titleInput = await screen.findByTestId('survey-title-input')
+    fireEvent.change(titleInput, { target: { value: 'New title' } })
+
+    // Switch to JSON to verify
+    const toggle = screen.getByTestId('editor-mode-toggle')
+    fireEvent.click(toggle.querySelector('button:last-child')!)
+    const textarea = screen.getByTestId('json-textarea') as HTMLTextAreaElement
+    const parsed = JSON.parse(textarea.value)
+    expect(parsed.title).toBe('New title')
+    // Sibling keys must be unaffected
+    expect(parsed.description).toBe('Keep me')
+    expect(parsed.pages).toBeDefined()
+  })
+
+  it('editing element title in visual mode does not change other element properties', async () => {
+    const surveyWithElement: QuestionnaireType = {
+      ...testQuestionnaire,
+      surveyJson: {
+        title: 'Survey',
+        pages: [
+          {
+            name: 'p1',
+            elements: [
+              { type: 'text', name: 'q1', title: 'Old', isRequired: true, description: 'Hint' },
+            ],
+          },
+        ],
+      },
+    }
+    mockUseQuestionnaire.mockReturnValue({ data: surveyWithElement, isLoading: false })
+    renderAt('/questionnaire-types/q1/json')
+
+    // Expand element 0
+    const expandBtn = await screen.findByTestId('element-expand-btn-0')
+    fireEvent.click(expandBtn)
+
+    // Edit title
+    const titleInput = screen.getByTestId('element-title-input-0')
+    fireEvent.change(titleInput, { target: { value: 'New question title' } })
+
+    // Switch to JSON
+    const toggle = screen.getByTestId('editor-mode-toggle')
+    fireEvent.click(toggle.querySelector('button:last-child')!)
+    const textarea = screen.getByTestId('json-textarea') as HTMLTextAreaElement
+    const parsed = JSON.parse(textarea.value)
+    const el = parsed.pages[0].elements[0]
+    expect(el.title).toBe('New question title')
+    // Unchanged fields must be preserved
+    expect(el.isRequired).toBe(true)
+    expect(el.description).toBe('Hint')
+    expect(el.name).toBe('q1')
+    expect(el.type).toBe('text')
+  })
+
+  it('toggling required checkbox in visual mode updates isRequired in JSON', async () => {
+    const surveyWithElement: QuestionnaireType = {
+      ...testQuestionnaire,
+      surveyJson: {
+        pages: [
+          {
+            name: 'p1',
+            elements: [{ type: 'text', name: 'q1', title: 'Q1' }],
+          },
+        ],
+      },
+    }
+    mockUseQuestionnaire.mockReturnValue({ data: surveyWithElement, isLoading: false })
+    renderAt('/questionnaire-types/q1/json')
+
+    const expandBtn = await screen.findByTestId('element-expand-btn-0')
+    fireEvent.click(expandBtn)
+
+    const checkbox = screen.getByTestId('element-required-checkbox-0') as HTMLInputElement
+    expect(checkbox.checked).toBe(false)
+    fireEvent.click(checkbox)
+
+    // Switch to JSON
+    const toggle = screen.getByTestId('editor-mode-toggle')
+    fireEvent.click(toggle.querySelector('button:last-child')!)
+    const textarea = screen.getByTestId('json-textarea') as HTMLTextAreaElement
+    const parsed = JSON.parse(textarea.value)
+    expect(parsed.pages[0].elements[0].isRequired).toBe(true)
+  })
+
+  it('editing choices in visual mode updates choices array in JSON', async () => {
+    const surveyWithRadio: QuestionnaireType = {
+      ...testQuestionnaire,
+      surveyJson: {
+        pages: [
+          {
+            name: 'p1',
+            elements: [{ type: 'radiogroup', name: 'q1', title: 'Pick one', choices: ['A', 'B'] }],
+          },
+        ],
+      },
+    }
+    mockUseQuestionnaire.mockReturnValue({ data: surveyWithRadio, isLoading: false })
+    renderAt('/questionnaire-types/q1/json')
+
+    const expandBtn = await screen.findByTestId('element-expand-btn-0')
+    fireEvent.click(expandBtn)
+
+    const choicesTextarea = screen.getByTestId('choices-textarea') as HTMLTextAreaElement
+    fireEvent.change(choicesTextarea, { target: { value: 'X\nY\nZ' } })
+
+    // Switch to JSON
+    const toggle = screen.getByTestId('editor-mode-toggle')
+    fireEvent.click(toggle.querySelector('button:last-child')!)
+    const textarea = screen.getByTestId('json-textarea') as HTMLTextAreaElement
+    const parsed = JSON.parse(textarea.value)
+    expect(parsed.pages[0].elements[0].choices).toEqual(['X', 'Y', 'Z'])
+    // Other element properties must be unchanged
+    expect(parsed.pages[0].elements[0].title).toBe('Pick one')
+  })
+
+  it('add question button appends a new element to the page', async () => {
+    const surveyWithPage: QuestionnaireType = {
+      ...testQuestionnaire,
+      surveyJson: { pages: [{ name: 'p1', elements: [] }] },
+    }
+    mockUseQuestionnaire.mockReturnValue({ data: surveyWithPage, isLoading: false })
+    renderAt('/questionnaire-types/q1/json')
+
+    const addBtn = await screen.findByTestId('add-question-btn-0')
+    fireEvent.click(addBtn)
+
+    // Switch to JSON to verify
+    const toggle = screen.getByTestId('editor-mode-toggle')
+    fireEvent.click(toggle.querySelector('button:last-child')!)
+    const textarea = screen.getByTestId('json-textarea') as HTMLTextAreaElement
+    const parsed = JSON.parse(textarea.value)
+    expect(parsed.pages[0].elements.length).toBe(1)
+  })
+
+  it('delete question button removes the element from the page', async () => {
+    const surveyWithElement: QuestionnaireType = {
+      ...testQuestionnaire,
+      surveyJson: {
+        pages: [
+          {
+            name: 'p1',
+            elements: [{ type: 'text', name: 'q1', title: 'To delete' }],
+          },
+        ],
+      },
+    }
+    mockUseQuestionnaire.mockReturnValue({ data: surveyWithElement, isLoading: false })
+    renderAt('/questionnaire-types/q1/json')
+
+    const deleteBtn = await screen.findByRole('button', { name: 'Delete question' })
+    fireEvent.click(deleteBtn)
+
+    // Switch to JSON
+    const toggle = screen.getByTestId('editor-mode-toggle')
+    fireEvent.click(toggle.querySelector('button:last-child')!)
+    const textarea = screen.getByTestId('json-textarea') as HTMLTextAreaElement
+    const parsed = JSON.parse(textarea.value)
+    expect(parsed.pages[0].elements.length).toBe(0)
+  })
+
+  it('complex element types show read-only badge instead of edit controls', async () => {
+    const surveyWithMatrix: QuestionnaireType = {
+      ...testQuestionnaire,
+      surveyJson: {
+        pages: [
+          {
+            name: 'p1',
+            elements: [{ type: 'matrix', name: 'q1', title: 'Matrix' }],
+          },
+        ],
+      },
+    }
+    mockUseQuestionnaire.mockReturnValue({ data: surveyWithMatrix, isLoading: false })
+    renderAt('/questionnaire-types/q1/json')
+
+    const expandBtn = await screen.findByTestId('element-expand-btn-0')
+    fireEvent.click(expandBtn)
+
+    expect(screen.getByTestId('complex-type-badge-0')).toBeInTheDocument()
+    expect(screen.queryByTestId('element-title-input-0')).not.toBeInTheDocument()
+  })
+
+  it('unknown element properties are shown in Other properties section', async () => {
+    const surveyWithUnknown: QuestionnaireType = {
+      ...testQuestionnaire,
+      surveyJson: {
+        pages: [
+          {
+            name: 'p1',
+            elements: [
+              {
+                type: 'text',
+                name: 'q1',
+                title: 'Q1',
+                defaultValueExpression: 'today()',
+                validators: [{ type: 'email' }],
+              },
+            ],
+          },
+        ],
+      },
+    }
+    mockUseQuestionnaire.mockReturnValue({ data: surveyWithUnknown, isLoading: false })
+    renderAt('/questionnaire-types/q1/json')
+
+    const expandBtn = await screen.findByTestId('element-expand-btn-0')
+    fireEvent.click(expandBtn)
+
+    const otherSection = screen.getByTestId('other-properties')
+    expect(otherSection).toBeInTheDocument()
+  })
+
+  it('add page button appends a new page to a paged survey', async () => {
+    const surveyPaged: QuestionnaireType = {
+      ...testQuestionnaire,
+      surveyJson: {
+        pages: [{ name: 'p1', elements: [] }],
+      },
+    }
+    mockUseQuestionnaire.mockReturnValue({ data: surveyPaged, isLoading: false })
+    renderAt('/questionnaire-types/q1/json')
+
+    const addPageBtn = await screen.findByTestId('add-page-btn')
+    fireEvent.click(addPageBtn)
+
+    const toggle = screen.getByTestId('editor-mode-toggle')
+    fireEvent.click(toggle.querySelector('button:last-child')!)
+    const textarea = screen.getByTestId('json-textarea') as HTMLTextAreaElement
+    const parsed = JSON.parse(textarea.value)
+    expect(parsed.pages.length).toBe(2)
+  })
+
+  it('visual edits update the live preview without mode switching', async () => {
+    const surveyWithTitle: QuestionnaireType = {
+      ...testQuestionnaire,
+      surveyJson: { title: 'Original', pages: [{ name: 'p1', elements: [] }] },
+    }
+    mockUseQuestionnaire.mockReturnValue({ data: surveyWithTitle, isLoading: false })
+    renderAt('/questionnaire-types/q1/json')
+
+    const titleInput = await screen.findByTestId('survey-title-input')
+    fireEvent.change(titleInput, { target: { value: 'Updated live' } })
+
+    // Preview should reflect the updated JSON
+    const preview = screen.getByTestId('survey-renderer')
+    expect(preview.textContent).toContain('Updated live')
   })
 })
