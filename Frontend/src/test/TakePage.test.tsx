@@ -20,6 +20,7 @@ vi.mock('@/components/survey/SurveyRenderer', () => ({
 vi.mock('@/hooks/useQuestionnaires', () => ({
   useQuestionnaireByToken: vi.fn(),
   useSubmitAnswers: vi.fn(),
+  usePriorAnswers: vi.fn().mockReturnValue({ data: undefined }),
   useQuestionnaires: vi.fn(),
   useCreateQuestionnaire: vi.fn(),
   useDeleteQuestionnaire: vi.fn(),

@@ -11,6 +11,11 @@ vi.mock('@/hooks/useBatteries', () => ({
   useCreateBattery: vi.fn().mockReturnValue({ mutate: vi.fn(), isPending: false }),
   useBattery: vi.fn().mockReturnValue({ data: undefined, isLoading: false }),
   useBatteryByToken: vi.fn(),
+  batteryKeys: {
+    all: ['batteries'] as const,
+    detail: (id: string) => ['batteries', id] as const,
+    byToken: (token: string) => ['batteries', 'token', token] as const,
+  },
 }))
 
 vi.mock('@/hooks/useBatteryTypes', () => ({
@@ -35,6 +40,7 @@ vi.mock('@/hooks/useQuestionnaires', () => ({
   useQuestionnaire: vi.fn().mockReturnValue({ data: undefined, isLoading: false }),
   useQuestionnaireByToken: vi.fn(),
   useSubmitAnswers: vi.fn(),
+  usePriorAnswers: vi.fn().mockReturnValue({ data: undefined }),
   useUpdateQuestionnaire: vi.fn().mockReturnValue({ mutate: vi.fn(), isPending: false }),
 }))
 
@@ -45,6 +51,7 @@ vi.mock('@/components/survey/SurveyRenderer', () => ({
     </div>
   ),
   SURVEY_THEMES: {},
+  DEFAULT_THEME_KEY: 'Default',
 }))
 
 vi.mock('@/components/survey/SurveyDashboard', () => ({
@@ -52,7 +59,7 @@ vi.mock('@/components/survey/SurveyDashboard', () => ({
 }))
 
 vi.mock('@/lib/metrics', () => ({
-  evaluateMetrics: vi.fn().mockReturnValue({}),
+  evaluateMetrics: vi.fn().mockReturnValue([]),
 }))
 
 import { useBatteryByToken } from '@/hooks/useBatteries'
@@ -316,7 +323,7 @@ describe('TakeBatteryPage', () => {
     })
 
     await waitFor(() => {
-      expect(screen.getByText(/battery instances/i)).toBeInTheDocument()
+      expect(screen.getByRole('heading', { name: /batteries/i })).toBeInTheDocument()
     }, { timeout: 5000 })
   })
 
@@ -345,12 +352,16 @@ describe('TakeBatteryPage', () => {
       },
       isLoading: false,
     })
+
+    let capturedOnSuccess: (() => void) | undefined
     mockSubmitMutate.mockImplementation(
-      (_data: unknown, { onSuccess }: { onSuccess: () => void }) => onSuccess(),
+      (_data: unknown, { onSuccess }: { onSuccess: () => void }) => {
+        capturedOnSuccess = onSuccess
+      },
     )
 
     const { queryClient } = renderAt('/take-battery/tok-abc')
-    const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries')
+    const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries').mockResolvedValue()
 
     const submitBtn = await screen.findByRole('button', { name: /submit survey/i })
 
@@ -358,10 +369,13 @@ describe('TakeBatteryPage', () => {
       fireEvent.click(submitBtn)
     })
 
-    await waitFor(() => {
-      expect(invalidateSpy).toHaveBeenCalledWith(
-        expect.objectContaining({ queryKey: ['batteries', 'token', 'tok-abc'] }),
-      )
+    // onSuccess is captured — now call it
+    await act(async () => {
+      capturedOnSuccess?.()
     })
+
+    expect(invalidateSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ queryKey: ['batteries', 'token', 'tok-abc'] }),
+    )
   })
 })

@@ -1,7 +1,8 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createFileRoute } from '@tanstack/react-router'
-import { useCallback, useState } from 'react'
-import { useBatteryByToken } from '@/hooks/useBatteries'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { useCallback } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
+import { useBatteryByToken, batteryKeys } from '@/hooks/useBatteries'
 import { useQuestionnaireByToken, useSubmitAnswers } from '@/hooks/useQuestionnaires'
 import { SurveyRenderer } from '@/components/survey/SurveyRenderer'
 import { evaluateMetrics } from '@/lib/metrics'
@@ -14,10 +15,23 @@ export const Route = createFileRoute('/take-battery/$shareToken')({
 function TakeBatteryPage() {
   const { shareToken } = Route.useParams()
   const { data: battery, isLoading, isError } = useBatteryByToken(shareToken)
+  const navigate = useNavigate()
+  const queryClient = useQueryClient()
 
   const unsubmitted =
     battery?.questionnaires.filter((q) => !q.submittedAt).sort((a, b) => a.order - b.order) ?? []
   const currentSlot: BatterySlot | undefined = unsubmitted[0]
+
+  const handleSlotSubmitted = useCallback(
+    (isLast: boolean) => {
+      if (isLast) {
+        void navigate({ to: '/batteries' })
+      } else {
+        void queryClient.invalidateQueries({ queryKey: batteryKeys.byToken(shareToken) })
+      }
+    },
+    [navigate, queryClient, shareToken],
+  )
 
   if (isLoading) {
     return (
@@ -51,6 +65,7 @@ function TakeBatteryPage() {
 
   const total = battery.questionnaires.length
   const completed = total - unsubmitted.length
+  const isLast = unsubmitted.length === 1
 
   return (
     <div className="space-y-4">
@@ -62,19 +77,20 @@ function TakeBatteryPage() {
           {currentSlot.questionnaireTypeName}
         </span>
       </div>
-      <SlotSurvey slot={currentSlot} />
+      <SlotSurvey slot={currentSlot} isLast={isLast} onSubmitted={handleSlotSubmitted} />
     </div>
   )
 }
 
 interface SlotSurveyProps {
   slot: BatterySlot
+  isLast: boolean
+  onSubmitted: (isLast: boolean) => void
 }
 
-function SlotSurvey({ slot }: SlotSurveyProps) {
+function SlotSurvey({ slot, isLast, onSubmitted }: SlotSurveyProps) {
   const { data: instance, isLoading } = useQuestionnaireByToken(slot.shareToken)
   const submitAnswers = useSubmitAnswers(slot.shareToken)
-  const [submitted, setSubmitted] = useState(false)
 
   const handleComplete = useCallback(
     (data: object) => {
@@ -82,9 +98,9 @@ function SlotSurvey({ slot }: SlotSurveyProps) {
       const surveyJson = instance?.questionnaireType?.surveyJson
       const metricResults = surveyJson ? evaluateMetrics(surveyJson, answers) : []
       const metrics = Object.fromEntries(metricResults.map((m) => [m.name, m.value]))
-      submitAnswers.mutate({ answers, metrics }, { onSuccess: () => setSubmitted(true) })
+      submitAnswers.mutate({ answers, metrics }, { onSuccess: () => onSubmitted(isLast) })
     },
-    [submitAnswers, instance],
+    [submitAnswers, instance, isLast, onSubmitted],
   )
 
   if (isLoading) {
@@ -99,8 +115,7 @@ function SlotSurvey({ slot }: SlotSurveyProps) {
     return <p className="text-red-600">Failed to load survey.</p>
   }
 
-  if (submitted) {
-    // Parent will re-render and advance to next slot once query invalidation completes.
+  if (submitAnswers.isPending || submitAnswers.isSuccess) {
     return (
       <div className="flex min-h-[40vh] items-center justify-center">
         <span className="text-[var(--color-muted-foreground)]">Submitting…</span>
