@@ -531,4 +531,88 @@ describe('JsonEditorPage', () => {
     const preview = screen.getByTestId('survey-renderer')
     expect(preview.textContent).toContain('Updated live')
   })
+
+  // ---- Phase 3: Mode Switch Integrity ----
+
+  it('round-trip: JSON with unmapped properties is identical after Visual→JSON→Visual→JSON', async () => {
+    const complexSurvey: QuestionnaireType = {
+      ...testQuestionnaire,
+      surveyJson: {
+        title: 'Complex survey',
+        pages: [
+          {
+            name: 'p1',
+            elements: [
+              {
+                type: 'text',
+                name: 'q1',
+                title: 'Name',
+                defaultValueExpression: 'today()',
+                validators: [{ type: 'email' }],
+              },
+            ],
+          },
+        ],
+        triggers: [{ type: 'complete', expression: '{q1} notempty' }],
+        calculatedValues: [{ name: 'score', expression: '1 + 1' }],
+        logo: 'logo.png',
+      },
+    }
+    mockUseQuestionnaire.mockReturnValue({ data: complexSurvey, isLoading: false })
+    renderAt('/questionnaire-types/q1/json')
+
+    const toggle = await screen.findByTestId('editor-mode-toggle')
+    // Visual → JSON: capture first snapshot
+    fireEvent.click(toggle.querySelector('button:last-child')!)
+    const firstSnapshot = (screen.getByTestId('json-textarea') as HTMLTextAreaElement).value
+
+    // JSON → Visual → JSON: verify identical
+    fireEvent.click(toggle.querySelector('button:first-child')!)
+    fireEvent.click(toggle.querySelector('button:last-child')!)
+    const secondSnapshot = (screen.getByTestId('json-textarea') as HTMLTextAreaElement).value
+
+    expect(secondSnapshot).toBe(firstSnapshot)
+
+    // Verify unmapped properties are intact
+    const parsed = JSON.parse(secondSnapshot)
+    expect(parsed.triggers).toBeDefined()
+    expect(parsed.calculatedValues).toBeDefined()
+    expect(parsed.logo).toBe('logo.png')
+    expect(parsed.pages[0].elements[0].defaultValueExpression).toBe('today()')
+    expect(parsed.pages[0].elements[0].validators).toHaveLength(1)
+  })
+
+  it('shows unknown-props badge when survey has unmapped top-level properties', async () => {
+    const surveyWithExtras: QuestionnaireType = {
+      ...testQuestionnaire,
+      surveyJson: {
+        title: 'Survey',
+        pages: [{ name: 'p1', elements: [] }],
+        triggers: [{ type: 'complete' }],
+      },
+    }
+    mockUseQuestionnaire.mockReturnValue({ data: surveyWithExtras, isLoading: false })
+    renderAt('/questionnaire-types/q1/json')
+
+    const badge = await screen.findByTestId('unknown-props-badge')
+    expect(badge).toBeInTheDocument()
+    expect(badge.textContent).toContain('Unknown properties are preserved')
+  })
+
+  it('does not show unknown-props badge when survey has only known top-level properties', async () => {
+    const surveyKnownOnly: QuestionnaireType = {
+      ...testQuestionnaire,
+      surveyJson: {
+        title: 'Survey',
+        description: 'Desc',
+        pages: [{ name: 'p1', elements: [] }],
+      },
+    }
+    mockUseQuestionnaire.mockReturnValue({ data: surveyKnownOnly, isLoading: false })
+    renderAt('/questionnaire-types/q1/json')
+
+    await screen.findByTestId('survey-outline')
+    expect(screen.queryByTestId('unknown-props-badge')).not.toBeInTheDocument()
+  })
 })
+

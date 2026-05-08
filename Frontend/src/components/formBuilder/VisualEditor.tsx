@@ -61,6 +61,20 @@ const COMPLEX_TYPES = new Set([
 
 const KNOWN_SIMPLE_TYPES = new Set(Object.keys(TYPE_EXTRA_PROPS))
 
+// Top-level survey properties explicitly rendered by SurveySettings.
+// Any survey-level key outside this set triggers the "unknown properties" badge.
+const KNOWN_SURVEY_PROPS = new Set([
+  'title',
+  'description',
+  'locale',
+  'showProgressBar',
+  'showQuestionNumbers',
+  'checkErrorsMode',
+  'completedHtml',
+  'pages',
+  'elements',
+])
+
 // ---------------------------------------------------------------------------
 // VisualEditor
 // ---------------------------------------------------------------------------
@@ -137,8 +151,22 @@ export function VisualEditor({ surveyJson, onChange }: VisualEditorProps) {
     patch(base, value)
   }
 
+  const hasUnknownSurveyProps = Object.keys(surveyJson).some(
+    (k) => !KNOWN_SURVEY_PROPS.has(k),
+  )
+
   return (
     <div data-testid="survey-outline" className="space-y-4 overflow-auto border-r p-4">
+      {/* Info badge shown only when the survey contains unknown top-level properties */}
+      {hasUnknownSurveyProps && (
+        <div
+          data-testid="unknown-props-badge"
+          className="rounded-md border border-[var(--color-border)] bg-[var(--color-muted)] px-3 py-2 text-xs text-[var(--color-muted-foreground)]"
+        >
+          Unknown properties are preserved but not shown here. Use JSON mode to edit them.
+        </div>
+      )}
+
       {/* Survey-level settings */}
       <SurveySettings surveyJson={surveyJson} onPatch={patch} />
 

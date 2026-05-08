@@ -40,7 +40,8 @@ Use `pnpm`, not `npm` or `yarn`.
 | Response analytics | `survey-analytics` | `Frontend/src/components/survey/SurveyDashboard.tsx` |
 | PDF export | `survey-pdf` | used inside results page |
 | Metrics utility | Pure functions | `Frontend/src/lib/metrics.ts` |
-| Form builder conversion | Pure functions | `Frontend/src/lib/formBuilder.ts` |
+| Form builder conversion | Deprecated utilities | `Frontend/src/lib/formBuilder.ts` — `parseSurveyJson`/`buildSurveyJson`/`BuilderSurvey` are `@deprecated`; the save pipeline no longer uses them |
+| Visual editor patch helpers | Pure functions | `Frontend/src/lib/surveyPatch.ts` — `patchSurveyJson`, `spliceJsonArray`, `getNestedValue` |
 | Type API | Axios | `Frontend/src/api/questionnaireTypes.ts` |
 | Instance API | Axios | `Frontend/src/api/questionnaires.ts` |
 | Type hooks | TanStack React Query | `Frontend/src/hooks/useQuestionnaireTypes.ts` |
@@ -167,7 +168,9 @@ See [Docs/SurveyJS/](Docs/SurveyJS/README.md) for full per-package docs.
 ### UI Components
 - Reusable primitives live in `Frontend/src/components/ui/`. Use the `cn()` helper from `Frontend/src/lib/utils.ts` for className merging.
 - Use CVA variants + `asChild` (Radix Slot) pattern — see [`Button.tsx`](Frontend/src/components/ui/Button.tsx).
-- Form builder components live in `Frontend/src/components/formBuilder/`: `QuestionList`, `QuestionEditor`, `SurveyTitleEditor`, `AdvancedQuestionPlaceholder`, `ChoicesEditor`. Barrel export via `index.ts`.
+- The visual form builder uses a **patch-based architecture** (PLAN-21): the raw `surveyJson` object is the single source of truth. Visual mode reads from it directly and applies targeted patches via `patchSurveyJson` / `spliceJsonArray`. No parse→rebuild round-trips occur.
+- The main visual editor component is `Frontend/src/components/formBuilder/VisualEditor.tsx` — fully controlled, receives `surveyJson` + `onChange(newJson)`. Unknown properties (not in its known-prop sets) are never modified.
+- Legacy form builder components (`QuestionList`, `QuestionEditor`, `SurveyTitleEditor`, `AdvancedQuestionPlaceholder`, `ChoicesEditor`) remain in `Frontend/src/components/formBuilder/` but are no longer used by the live editor. The barrel `index.ts` still exports them.
 - `ChoicesEditor` supports both simple (plain textarea) and rich (`{value, text}` table) modes.
 - `QuestionEditor` supports 17 question types: `text`, `comment`, `radiogroup`, `checkbox`, `dropdown`, `rating`, `boolean`, `tagbox`, `imagepicker`, `multipletext`, `html`, `expression`, `matrix`, `matrixdropdown`, `matrixdynamic`, `panel`, `paneldynamic`.
 - Tailwind v4: theme values are CSS variables (e.g. `var(--color-primary)`) defined in `Frontend/src/index.css`.
@@ -176,7 +179,8 @@ See [Docs/SurveyJS/](Docs/SurveyJS/README.md) for full per-package docs.
 - Strict mode + `noUnusedLocals` + `noUnusedParameters` — unused variables cause **build failures**.
 - `QuestionnaireType.surveyJson` is `object` (raw SurveyJS JSON). The old `questions: Question[]` array is **not** used for SurveyJS-powered forms.
 - `Questionnaire` (instance) has `answers: Record<string, unknown>`, `metrics?: Record<string, unknown>` (pre-computed calculatedValues stored at submit time; empty `{}` if not yet submitted or pre-PLAN-15), `surveyJsonSnapshot: object` (snapshot of the type's `surveyJson` taken at submit time; empty `{}` if not yet submitted), and `submittedAt: string | null` (null = not yet submitted).
-- **`formBuilder.ts` types**: `BuilderSurvey` has `{ title, pages: BuilderPage[], settings?: BuilderSurveySettings, _rawMeta? }`. `BuilderPage` has `{ name, title?, questions: AnyQuestion[] }`. `BuilderSurveySettings` has `{ description?, locale?, showProgressBar?, showQuestionNumbers?, checkErrorsMode?, completedHtml? }`. The old `BuilderSurvey.questions[]` flat field is **gone** — all questions live inside pages.
+- **`formBuilder.ts` types** (`@deprecated` — do not use in new code): `BuilderSurvey`, `BuilderPage`, `BuilderSurveySettings`, `BuilderQuestion`, `AdvancedQuestion`, `AnyQuestion` are kept only for existing test compatibility. `parseSurveyJson` and `buildSurveyJson` are likewise `@deprecated`.
+- **`surveyPatch.ts`**: `patchSurveyJson(json, path, value)` returns a new object with one field updated; `spliceJsonArray(json, arrayPath, index, deleteCount, ...items)` returns a new object with an array mutated; `getNestedValue(obj, path)` reads without modifying.
 - `BuilderQuestion` has `colCount?: number` for `radiogroup`/`checkbox` layout control (`-1` = horizontal row, `0` = vertical, `2`/`3` = N-column grid).
 - Import alias `@/` maps to `Frontend/src/`.
 
@@ -190,14 +194,15 @@ See [Docs/SurveyJS/](Docs/SurveyJS/README.md) for full per-package docs.
 - Mock API calls with `vi.mock('../api/<file>')` at the top of the test. See [`JsonEditorPage.test.tsx`](Frontend/src/test/JsonEditorPage.test.tsx) for the full pattern.
 - To mock a class used with `new` (e.g. `survey-core` `Model`), use `vi.hoisted()` + a `class` in the factory — arrow functions in `mockImplementation` are not constructors. See [`ResultsPage.test.tsx`](Frontend/src/test/ResultsPage.test.tsx) for the pattern.
 - Use exact string matching (`findByText('Pending')`) not regex (`/Pending/i`) when the regex could match multiple elements with similar text (e.g. badge vs. title).
-- **Current test count**: 279 frontend tests (26 files), 112 backend tests.
+- **Current test count**: 320 frontend tests (27 files), 112 backend tests.
 - **E2E**: Playwright tests in `Frontend/e2e/`. Base URL: `http://localhost:5173`.
 
 ### Frontend test files
 
 | File | Covers |
 |------|--------|
-| `formBuilder.test.ts` | `parseSurveyJson`, `buildSurveyJson`, `generateUniqueName` utilities; covers all 17 supported types, multi-page, panel recursion, settings |
+| `formBuilder.test.ts` | `parseSurveyJson`, `buildSurveyJson`, `generateUniqueName` utilities (deprecated pipeline kept for test coverage); covers all 17 supported types, multi-page, panel recursion, settings |
+| `surveyPatch.test.ts` | `patchSurveyJson`, `spliceJsonArray`, `getNestedValue` — 21 cases covering nested objects, array indices, sibling preservation |
 | `QuestionList.test.tsx` | QuestionList component: render, add, delete, reorder |
 | `QuestionEditor.test.tsx` | QuestionEditor: type toggle shows/hides fields, onChange, duplicate name |
 | `metrics.test.ts` | `evaluateMetrics`, `metricsFromStored`, `formatLabel` utilities |
