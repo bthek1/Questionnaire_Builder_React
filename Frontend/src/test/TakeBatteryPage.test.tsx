@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, act, fireEvent } from '@testing-library/react'
 import { vi, beforeEach } from 'vitest'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { RouterProvider, createRouter, createMemoryHistory } from '@tanstack/react-router'
@@ -116,16 +116,17 @@ function renderAt(path: string) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   const history = createMemoryHistory({ initialEntries: [path] })
   const router = createRouter({ routeTree, history })
-  return render(
+  const result = render(
     <QueryClientProvider client={queryClient}>
       <RouterProvider router={router} />
     </QueryClientProvider>,
   )
+  return { ...result, queryClient }
 }
 
 beforeEach(() => {
   vi.clearAllMocks()
-  mockUseSubmitAnswers.mockReturnValue({ mutate: mockSubmitMutate, isPending: false })
+  mockUseSubmitAnswers.mockReturnValue({ mutate: mockSubmitMutate, isPending: false, isSuccess: false })
   mockUseQuestionnaireByToken.mockReturnValue({ data: undefined, isLoading: false })
 })
 
@@ -183,6 +184,184 @@ describe('TakeBatteryPage', () => {
     await screen.findByText(/survey 1 of 2/i)
     await waitFor(() => {
       expect(screen.getByTestId('survey-renderer')).toBeInTheDocument()
+    })
+  })
+
+  it('shows Submitting spinner while mutation is pending', async () => {
+    mockUseBatteryByToken.mockReturnValue({
+      data: pendingBattery,
+      isLoading: false,
+      isError: false,
+    })
+    mockUseSubmitAnswers.mockReturnValue({ mutate: vi.fn(), isPending: true, isSuccess: false })
+    mockUseQuestionnaireByToken.mockReturnValue({
+      data: {
+        id: 'q1',
+        questionnaireTypeId: 'qt1',
+        questionnaireType: {
+          id: 'qt1',
+          surveyJson: { pages: [{ elements: [{ type: 'text', name: 'q1' }] }] },
+          createdAt: '',
+          updatedAt: '',
+        },
+        name: '',
+        shareToken: 'qt1',
+        answers: {},
+        submittedAt: null,
+        createdAt: '',
+        updatedAt: '',
+      },
+      isLoading: false,
+    })
+    renderAt('/take-battery/tok-abc')
+    await screen.findByText(/submitting…/i)
+    expect(screen.queryByTestId('survey-renderer')).not.toBeInTheDocument()
+  })
+
+  it('shows the next unsubmitted slot when earlier slots are already submitted', async () => {
+    const partialBattery = {
+      ...pendingBattery,
+      questionnaires: [
+        {
+          order: 0,
+          questionnaireId: 'q1',
+          shareToken: 'qt1',
+          questionnaireTypeName: 'Survey 1',
+          submittedAt: '2024-01-01T00:00:00Z',
+        },
+        {
+          order: 1,
+          questionnaireId: 'q2',
+          shareToken: 'qt2',
+          questionnaireTypeName: 'Survey 2',
+          submittedAt: null,
+        },
+      ],
+    }
+    mockUseBatteryByToken.mockReturnValue({
+      data: partialBattery,
+      isLoading: false,
+      isError: false,
+    })
+    mockUseQuestionnaireByToken.mockReturnValue({
+      data: {
+        id: 'q2',
+        questionnaireTypeId: 'qt2',
+        questionnaireType: {
+          id: 'qt2',
+          surveyJson: { pages: [{ elements: [{ type: 'text', name: 'q2' }] }] },
+          createdAt: '',
+          updatedAt: '',
+        },
+        name: '',
+        shareToken: 'qt2',
+        answers: {},
+        submittedAt: null,
+        createdAt: '',
+        updatedAt: '',
+      },
+      isLoading: false,
+    })
+    renderAt('/take-battery/tok-abc')
+    await screen.findByText(/survey 2 of 2/i)
+    expect(screen.getByTestId('survey-renderer')).toBeInTheDocument()
+  })
+
+  it('navigates to /batteries after submitting the last questionnaire', async () => {
+    const lastSlotBattery = {
+      ...pendingBattery,
+      questionnaires: [
+        {
+          order: 0,
+          questionnaireId: 'q1',
+          shareToken: 'qt1',
+          questionnaireTypeName: 'Survey 1',
+          submittedAt: null,
+        },
+      ],
+    }
+    mockUseBatteryByToken.mockReturnValue({
+      data: lastSlotBattery,
+      isLoading: false,
+      isError: false,
+    })
+    mockUseQuestionnaireByToken.mockReturnValue({
+      data: {
+        id: 'q1',
+        questionnaireTypeId: 'qt1',
+        questionnaireType: {
+          id: 'qt1',
+          surveyJson: { pages: [{ elements: [{ type: 'text', name: 'q1' }] }] },
+          createdAt: '',
+          updatedAt: '',
+        },
+        name: '',
+        shareToken: 'qt1',
+        answers: {},
+        submittedAt: null,
+        createdAt: '',
+        updatedAt: '',
+      },
+      isLoading: false,
+    })
+    mockSubmitMutate.mockImplementation(
+      (_data: unknown, { onSuccess }: { onSuccess: () => void }) => onSuccess(),
+    )
+
+    renderAt('/take-battery/tok-abc')
+    const submitBtn = await screen.findByRole('button', { name: /submit survey/i })
+
+    await act(async () => {
+      fireEvent.click(submitBtn)
+    })
+
+    await waitFor(() => {
+      expect(screen.getByText(/battery instances/i)).toBeInTheDocument()
+    }, { timeout: 5000 })
+  })
+
+  it('calls invalidateQueries for battery token after submitting a non-last questionnaire', async () => {
+    mockUseBatteryByToken.mockReturnValue({
+      data: pendingBattery,
+      isLoading: false,
+      isError: false,
+    })
+    mockUseQuestionnaireByToken.mockReturnValue({
+      data: {
+        id: 'q1',
+        questionnaireTypeId: 'qt1',
+        questionnaireType: {
+          id: 'qt1',
+          surveyJson: { pages: [{ elements: [{ type: 'text', name: 'q1' }] }] },
+          createdAt: '',
+          updatedAt: '',
+        },
+        name: '',
+        shareToken: 'qt1',
+        answers: {},
+        submittedAt: null,
+        createdAt: '',
+        updatedAt: '',
+      },
+      isLoading: false,
+    })
+    mockSubmitMutate.mockImplementation(
+      (_data: unknown, { onSuccess }: { onSuccess: () => void }) => onSuccess(),
+    )
+
+    const { queryClient } = renderAt('/take-battery/tok-abc')
+    const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries')
+
+    const submitBtn = await screen.findByRole('button', { name: /submit survey/i })
+
+    await act(async () => {
+      fireEvent.click(submitBtn)
+    })
+
+    await waitFor(() => {
+      expect(invalidateSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ queryKey: ['batteries', 'token', 'tok-abc'] }),
+      )
     })
   })
 })

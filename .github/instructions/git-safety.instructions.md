@@ -1,5 +1,5 @@
 ---
-description: "ALWAYS ACTIVE - Git operation safety rules. Prohibits all write git operations (add, commit, push, merge, checkout). Use for any task that modifies files or could lead to git operations."
+description: "ALWAYS ACTIVE - Git operation safety rules. Prohibits all write git operations (add, commit, push, merge, checkout, stash). Use for any task that modifies files or could lead to git operations."
 applyTo: "**/*"
 ---
 
@@ -16,9 +16,13 @@ These rules are **mandatory and non-negotiable**.
 | `git push`              | NEVER - absolutely prohibited |
 | `git merge`             | NEVER - absolutely prohibited |
 | `git checkout <branch>` | NEVER - absolutely prohibited |
+| `git stash`             | NEVER - absolutely prohibited |
+| `git stash pop`         | NEVER - absolutely prohibited |
+| `git stash drop`        | NEVER - absolutely prohibited |
 | `git status`            | OK - read-only                |
 | `git diff`              | OK - read-only                |
 | `git log`               | OK - read-only                |
+| `git stash list`        | OK - read-only                |
 
 **Why**: The user must retain full control over version control. Automatic git commits can cause conflicts, loss of work, failed pushes, or unintended branches.
 
@@ -31,4 +35,4 @@ These rules are **mandatory and non-negotiable**.
 
 ## Violation Consequence
 
-Running `git add`, `git commit`, `git push`, `git merge`, or `git checkout` violates the fundamental safety contract of this project.
+Running `git add`, `git commit`, `git push`, `git merge`, `git checkout`, or `git stash` (pop/drop/apply) violates the fundamental safety contract of this project.

@@ -3,6 +3,7 @@ import {
   getQuestionnaires,
   getQuestionnaire,
   getQuestionnaireByToken,
+  getPriorAnswers,
   createQuestionnaire,
   updateQuestionnaire,
   deleteQuestionnaire,
@@ -14,6 +15,7 @@ export const questionnaireKeys = {
   all: ['questionnaires'] as const,
   detail: (id: string) => ['questionnaires', id] as const,
   byToken: (token: string) => ['questionnaires', 'token', token] as const,
+  priorAnswers: (token: string) => ['questionnaires', 'prior-answers', token] as const,
 }
 
 export function useQuestionnaires() {
@@ -67,6 +69,15 @@ export function useDeleteQuestionnaire() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: questionnaireKeys.all })
     },
+  })
+}
+
+export function usePriorAnswers(shareToken: string | undefined) {
+  return useQuery({
+    queryKey: questionnaireKeys.priorAnswers(shareToken ?? ''),
+    queryFn: () => getPriorAnswers(shareToken!),
+    enabled: !!shareToken,
+    staleTime: Infinity,
   })
 }
 

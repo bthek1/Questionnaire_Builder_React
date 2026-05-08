@@ -1,7 +1,11 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createFileRoute } from '@tanstack/react-router'
 import { useCallback, useState } from 'react'
-import { useQuestionnaireByToken, useSubmitAnswers } from '@/hooks/useQuestionnaires'
+import {
+  useQuestionnaireByToken,
+  useSubmitAnswers,
+  usePriorAnswers,
+} from '@/hooks/useQuestionnaires'
 import { SurveyRenderer } from '@/components/survey/SurveyRenderer'
 import { evaluateMetrics } from '@/lib/metrics'
 
@@ -12,6 +16,7 @@ export const Route = createFileRoute('/take/$id')({
 function TakePage() {
   const { id: shareToken } = Route.useParams()
   const { data: instance, isLoading, isError } = useQuestionnaireByToken(shareToken)
+  const { data: priorAnswers } = usePriorAnswers(shareToken)
   const submitAnswers = useSubmitAnswers(shareToken)
   const [submitted, setSubmitted] = useState(false)
 
@@ -108,7 +113,11 @@ function TakePage() {
   return (
     <div className="max-w-2xl mx-auto">
       {title && <h1 className="mb-6 text-2xl font-semibold">{title}</h1>}
-      <SurveyRenderer surveyJson={surveyJson} onComplete={handleComplete} />
+      <SurveyRenderer
+        surveyJson={surveyJson}
+        onComplete={handleComplete}
+        priorAnswers={priorAnswers}
+      />
     </div>
   )
 }

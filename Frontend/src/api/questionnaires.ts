@@ -38,6 +38,13 @@ export async function deleteQuestionnaire(id: string): Promise<void> {
   await apiClient.delete(`/questionnaires/${id}/`)
 }
 
+export async function getPriorAnswers(shareToken: string): Promise<Record<string, unknown>> {
+  const { data } = await apiClient.get<{ answers: Record<string, unknown> }>(
+    `/questionnaires/by-token/${shareToken}/prior-answers/`,
+  )
+  return data.answers
+}
+
 export async function submitAnswers(
   shareToken: string,
   answers: Record<string, unknown>,

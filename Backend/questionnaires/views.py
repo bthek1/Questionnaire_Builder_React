@@ -56,6 +56,30 @@ class QuestionnaireViewSet(viewsets.ModelViewSet):
 
     @action(
         detail=False,
+        methods=["get"],
+        url_path=r"by-token/(?P<share_token>[^/.]+)/prior-answers",
+    )
+    def prior_answers(self, request, share_token=None):
+        """Return the most recently submitted answers for the same QuestionnaireType,
+        excluding the current questionnaire.  Used to pre-fill repeated assessments."""
+        current = get_object_or_404(
+            Questionnaire.objects.select_related("questionnaire_type"),
+            share_token=share_token,
+        )
+        prior = (
+            Questionnaire.objects.filter(
+                questionnaire_type=current.questionnaire_type,
+                submitted_at__isnull=False,
+            )
+            .exclude(pk=current.pk)
+            .order_by("-submitted_at")
+            .first()
+        )
+        answers = prior.answers if prior else {}
+        return Response({"answers": answers})
+
+    @action(
+        detail=False,
         methods=["patch"],
         url_path=r"by-token/(?P<share_token>[^/.]+)/submit",
     )
