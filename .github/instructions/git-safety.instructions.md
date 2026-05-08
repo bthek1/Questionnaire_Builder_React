@@ -1,6 +1,6 @@
 ---
-description: "ALWAYS ACTIVE - Git operation safety rules. Prohibits all write git operations (add, commit, push, merge, checkout, stash). Use for any task that modifies files or could lead to git operations."
-applyTo: "**/*"
+description: 'ALWAYS ACTIVE - Git operation safety rules. Prohibits all write git operations (add, commit, push, merge, checkout, stash). Use for any task that modifies files or could lead to git operations.'
+applyTo: '**/*'
 ---
 
 # Git Safety Rules

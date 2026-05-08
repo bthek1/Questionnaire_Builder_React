@@ -194,20 +194,43 @@ describe('JsonEditorPage', () => {
     expect(screen.queryByRole('textbox', { name: '' })).not.toBeInTheDocument()
   })
 
-  it('invalid JSON in JSON mode: switching to Visual shows an error banner', async () => {
+  it('switching to Visual mode with invalid JSON does not show an error and succeeds', async () => {
     renderAt('/questionnaire-types/q1/json')
     const toggle = await screen.findByTestId('editor-mode-toggle')
     // switch to JSON
     fireEvent.click(toggle.querySelector('button:last-child')!)
     const textarea = screen.getByRole('textbox', { name: '' })
     fireEvent.change(textarea, { target: { value: 'not valid json' } })
-    // try switching back to Visual
+    // switching back to Visual always succeeds — no error, no blocking
     fireEvent.click(toggle.querySelector('button:first-child')!)
-    // should still be in JSON mode and show error
-    expect(screen.getByRole('textbox', { name: '' })).toBeInTheDocument()
-    expect(
-      screen.getByText(/fix the json errors before switching to visual mode/i),
-    ).toBeInTheDocument()
+    expect(screen.queryByRole('textbox', { name: '' })).not.toBeInTheDocument()
+    // the structural outline should be shown
+    expect(screen.getByTestId('survey-outline')).toBeInTheDocument()
+  })
+
+  it('mode-switch Visual→JSON→Visual does not change the JSON string', async () => {
+    const surveyWithExtras: QuestionnaireType = {
+      ...testQuestionnaire,
+      surveyJson: {
+        title: 'Round-trip survey',
+        pages: [{ name: 'p1', elements: [{ type: 'text', name: 'q1', title: 'Q1' }] }],
+        triggers: [{ type: 'complete' }],
+        logo: 'logo.png',
+      },
+    }
+    mockUseQuestionnaire.mockReturnValue({ data: surveyWithExtras, isLoading: false })
+    renderAt('/questionnaire-types/q1/json')
+    const toggle = await screen.findByTestId('editor-mode-toggle')
+    // Switch to JSON — capture text
+    fireEvent.click(toggle.querySelector('button:last-child')!)
+    const textarea = screen.getByRole('textbox', { name: '' }) as HTMLTextAreaElement
+    const jsonBefore = textarea.value
+    // Switch back to Visual
+    fireEvent.click(toggle.querySelector('button:first-child')!)
+    // Switch to JSON again
+    fireEvent.click(toggle.querySelector('button:last-child')!)
+    const textareaAfter = screen.getByRole('textbox', { name: '' }) as HTMLTextAreaElement
+    expect(textareaAfter.value).toBe(jsonBefore)
   })
 
   // ---- Theme selector tests ----

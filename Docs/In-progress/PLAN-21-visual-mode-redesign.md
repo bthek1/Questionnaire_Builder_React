@@ -70,7 +70,7 @@ Key implications:
 
 ## Phase 1 — Shared JSON State & Read-Only Visual Scaffold
 
-**Status**: Not started
+**Status**: ✅ Completed 2026-05-08
 
 **Goal**: Establish a single `surveyJson` state used by both modes; visual mode renders a
 read-only structural outline of the survey (title, pages, question names/types) without any
@@ -78,27 +78,29 @@ editing capability yet.
 
 **Deliverables**:
 
-- [ ] Replace the dual `text` + `builderSurvey` states in `json.tsx` with a single
+- [x] Replace the dual `text` + `builderSurvey` states in `json.tsx` with a single
       `surveyJsonText: string` state (the canonical source). Both modes read from the same
       parsed value.
-- [ ] Add a pure helper `patchSurveyJson(json, path, value)` in `lib/surveyPatch.ts` that
+- [x] Add a pure helper `patchSurveyJson(json, path, value)` in `lib/surveyPatch.ts` that
       returns a new JSON object with one field updated at the given dot-notation or index path,
-      leaving all other fields untouched.
-- [ ] Visual mode renders a structural outline: survey title (read-only label), list of pages,
+      leaving all other fields untouched. Also added `spliceJsonArray` and `getNestedValue`.
+- [x] Visual mode renders a structural outline: survey title (read-only label), list of pages,
       list of element names and types per page. No editing controls yet.
-- [ ] Switching Visual ↔ JSON no longer calls `parseSurveyJson` / `buildSurveyJson`. The
+- [x] Switching Visual ↔ JSON no longer calls `parseSurveyJson` / `buildSurveyJson`. The
       text in the JSON editor and the object driving the visual view are always the same.
-- [ ] Add unit tests for `patchSurveyJson` covering: nested objects, array indices,
+- [x] Add unit tests for `patchSurveyJson` covering: nested objects, array indices,
       preserving sibling keys, no-op when value is unchanged.
 
 **Tests**:
 
-- [ ] `surveyPatch.test.ts` — at least 10 cases covering all patch scenarios
-- [ ] Update `JsonEditorPage.test.tsx` — mode-switch must not change the JSON string
+- [x] `surveyPatch.test.ts` — 17 cases covering patchSurveyJson, spliceJsonArray, getNestedValue
+- [x] Updated `JsonEditorPage.test.tsx` — mode-switch no longer errors; round-trip test added
 
-**Stability Criteria**: `pnpm test` passes; switching modes leaves JSON identical.
+**Stability Criteria**: `pnpm test` passes; switching modes leaves JSON identical. ✅
 
-**Notes**:
+**Notes**: Removed all builder-related imports/state/handlers from `json.tsx`. The old
+`parseSurveyJson`/`buildSurveyJson`/`BuilderSurvey` remain in `formBuilder.ts` unchanged
+(deprecation comes in Phase 3). Test count: 305 (was 279).
 
 ---
 
