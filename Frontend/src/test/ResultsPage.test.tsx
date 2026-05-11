@@ -68,7 +68,7 @@ const submittedInstance: Questionnaire = {
   questionnaireType: {
     id: 'qt1',
     title: 'Health Check',
-    surveyJson: surveyJsonWithCalc,
+    questionnaireJson: surveyJsonWithCalc,
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
   },
@@ -90,7 +90,7 @@ const pendingInstance: Questionnaire = {
   questionnaireType: {
     id: 'qt2',
     title: 'Pending Survey',
-    surveyJson: { pages: [] },
+    questionnaireJson: { pages: [] },
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
   },
@@ -255,7 +255,7 @@ describe('ResultsPage', () => {
     const instanceWithSnapshot: Questionnaire = {
       ...submittedInstance,
       surveyJsonSnapshot: snapshotJson,
-      questionnaireType: { ...submittedInstance.questionnaireType!, surveyJson: liveJson },
+      questionnaireType: { ...submittedInstance.questionnaireType!, questionnaireJson: liveJson },
     }
     mockUseQuestionnaire.mockReturnValue({
       data: instanceWithSnapshot,
@@ -276,7 +276,7 @@ describe('ResultsPage', () => {
     const instanceNoSnapshot: Questionnaire = {
       ...submittedInstance,
       surveyJsonSnapshot: undefined,
-      questionnaireType: { ...submittedInstance.questionnaireType!, surveyJson: liveJson },
+      questionnaireType: { ...submittedInstance.questionnaireType!, questionnaireJson: liveJson },
     }
     mockUseQuestionnaire.mockReturnValue({
       data: instanceNoSnapshot,

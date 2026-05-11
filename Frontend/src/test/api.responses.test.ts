@@ -27,7 +27,7 @@ const mockDelete = apiClient.delete as ReturnType<typeof vi.fn>
 const mockType: QuestionnaireType = {
   id: 'qt1',
   title: 'Test Survey',
-  surveyJson: { pages: [] },
+  questionnaireJson: { pages: [] },
   createdAt: '2024-01-01T00:00:00Z',
   updatedAt: '2024-01-01T00:00:00Z',
 }

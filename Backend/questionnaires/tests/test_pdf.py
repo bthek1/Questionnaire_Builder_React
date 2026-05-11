@@ -11,7 +11,7 @@ class TestResponsePdfTemplate:
 
     def test_template_contains_questionnaire_title(self, questionnaire, response_for):
         questions = _resolve_questions(
-            questionnaire.survey_json,
+            questionnaire.questionnaire_json,
             response_for.answers_json
             if isinstance(response_for.answers_json, dict)
             else {},
@@ -28,7 +28,7 @@ class TestResponsePdfTemplate:
 
     def test_template_contains_question_title(self, questionnaire, response_for):
         questions = _resolve_questions(
-            questionnaire.survey_json,
+            questionnaire.questionnaire_json,
             response_for.answers_json
             if isinstance(response_for.answers_json, dict)
             else {},
@@ -46,12 +46,12 @@ class TestResponsePdfTemplate:
     def test_empty_answer_renders_dash(self, db):
         q = QuestionnaireType.objects.create(
             title="Dash Test",
-            survey_json={
+            questionnaire_json={
                 "pages": [{"elements": [{"type": "text", "name": "q1", "title": "Q1"}]}]
             },
         )
         r = Questionnaire.objects.create(questionnaire_type=q, answers_json={})
-        questions = _resolve_questions(q.survey_json, {})
+        questions = _resolve_questions(q.questionnaire_json, {})
         html = render_to_string(
             "questionnaires/response_pdf.html",
             {"questionnaire": q, "response": r, "questions": questions},
@@ -69,16 +69,16 @@ class TestGenerateResponsePdf:
         result = generate_response_pdf(questionnaire, response_for)
         assert len(result) > 100
 
-    def test_raises_on_empty_survey_json(self, db):
-        q = QuestionnaireType.objects.create(title="Empty", survey_json={})
+    def test_raises_on_empty_questionnaire_json(self, db):
+        q = QuestionnaireType.objects.create(title="Empty", questionnaire_json={})
         r = Questionnaire.objects.create(questionnaire_type=q, answers_json={})
-        with pytest.raises(ValueError, match="survey_json is empty"):
+        with pytest.raises(ValueError, match="questionnaire_json is empty"):
             generate_response_pdf(q, r)
 
     def test_empty_answers_do_not_raise(self, db):
         q = QuestionnaireType.objects.create(
             title="Survey",
-            survey_json={
+            questionnaire_json={
                 "pages": [{"elements": [{"type": "text", "name": "q1", "title": "Q1"}]}]
             },
         )

@@ -23,8 +23,8 @@ function TakePage() {
   const handleComplete = useCallback(
     (data: object) => {
       const answers = data as Record<string, unknown>
-      const surveyJson = instance?.questionnaireType?.surveyJson
-      const metricResults = surveyJson ? evaluateMetrics(surveyJson, answers) : []
+      const questionnaireJson = instance?.questionnaireType?.questionnaireJson
+      const metricResults = questionnaireJson ? evaluateMetrics(questionnaireJson, answers) : []
       const metrics = Object.fromEntries(metricResults.map((m) => [m.name, m.value]))
       submitAnswers.mutate(
         { answers, metrics },
@@ -95,11 +95,11 @@ function TakePage() {
     )
   }
 
-  // Use the live surveyJson here — the take page renders the current form for submission.
+  // Use the live questionnaireJson here — the take page renders the current form for submission.
   // The snapshot (surveyJsonSnapshot) is only used post-submission in the results page
   // to ensure historical answers remain interpretable even if the type definition changes.
-  const surveyJson = instance.questionnaireType?.surveyJson
-  if (!surveyJson) {
+  const questionnaireJson = instance.questionnaireType?.questionnaireJson
+  if (!questionnaireJson) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
         <p className="text-[var(--color-muted-foreground)]">
@@ -109,12 +109,38 @@ function TakePage() {
     )
   }
 
+  // Prepend the recipient page (if set) as the first page of the survey.
+  // Recipient question names are prefixed `recipient__` to avoid collisions.
+  // recipientJson may be either a full page descriptor { name, elements: [...] }
+  // or a single element object { type, name, ... } — normalise to a page in both cases.
+  const recipientRaw = instance.questionnaireType?.recipientJson
+  const recipientPage = recipientRaw
+    ? 'elements' in (recipientRaw as Record<string, unknown>)
+      ? recipientRaw // already a page descriptor
+      : { name: 'recipient_page', elements: [recipientRaw] } // wrap bare element
+    : null
+
+  let mergedSurveyJson: object
+  if (recipientPage) {
+    const mainJson = questionnaireJson as Record<string, unknown>
+    // SurveyJS supports two formats: { pages: [...] } or flat { elements: [...] }.
+    // When merging, we always produce the pages format. If the survey uses the flat
+    // format, promote its elements into a single page so they are not lost.
+    const mainPages: unknown[] = Array.isArray(mainJson.pages)
+      ? mainJson.pages
+      : [{ name: 'page1', elements: mainJson.elements ?? [] }]
+    const { elements: _e, pages: _p, ...restJson } = mainJson
+    mergedSurveyJson = { ...restJson, pages: [recipientPage, ...mainPages] }
+  } else {
+    mergedSurveyJson = questionnaireJson
+  }
+
   const title = instance.questionnaireType?.title
   return (
     <div className="max-w-2xl mx-auto">
       {title && <h1 className="mb-6 text-2xl font-semibold">{title}</h1>}
       <SurveyRenderer
-        surveyJson={surveyJson}
+        surveyJson={mergedSurveyJson}
         onComplete={handleComplete}
         priorAnswers={priorAnswers}
       />

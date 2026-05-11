@@ -14,21 +14,18 @@ class TestQuestionnaireModel:
     def test_creation_defaults(self):
         q = QuestionnaireType.objects.create(title="My Survey")
         assert q.pk is not None
-        assert q.survey_json == {}
-        assert q.description is None
+        assert q.questionnaire_json == {}
         assert q.owner is None
 
     def test_creation_with_all_fields(self, user):
         q = QuestionnaireType.objects.create(
             title="Full Survey",
-            description="Desc",
             owner=user,
-            survey_json={"pages": []},
+            questionnaire_json={"pages": []},
         )
         assert q.title == "Full Survey"
-        assert q.description == "Desc"
         assert q.owner == user
-        assert q.survey_json == {"pages": []}
+        assert q.questionnaire_json == {"pages": []}
 
     def test_id_is_uuid(self, questionnaire):
         import uuid
@@ -151,6 +148,32 @@ class TestQuestionnaireTypeRelatedName:
     def test_questionnaire_types_related_name(self, questionnaire_with_owner, user):
         assert user.questionnaire_types.count() == 1
         assert user.questionnaire_types.first().pk == questionnaire_with_owner.pk
+
+
+@pytest.mark.django_db
+class TestQuestionnaireTypeRecipientJson:
+    def test_recipient_json_defaults_to_none(self, db):
+        q = QuestionnaireType.objects.create(title="Test")
+        assert q.recipient_json is None
+
+    def test_recipient_json_stores_and_retrieves_dict(self, db):
+        page_descriptor = {
+            "name": "recipient_page",
+            "elements": [
+                {
+                    "type": "radiogroup",
+                    "name": "recipient__respondent_type",
+                    "title": "Who is completing this questionnaire?",
+                    "isRequired": True,
+                    "choices": [{"value": "myself", "text": "Myself"}],
+                }
+            ],
+        }
+        q = QuestionnaireType.objects.create(
+            title="Test", recipient_json=page_descriptor
+        )
+        q.refresh_from_db()
+        assert q.recipient_json == page_descriptor
 
 
 @pytest.mark.django_db

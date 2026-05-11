@@ -95,8 +95,8 @@ function SlotSurvey({ slot, isLast, onSubmitted }: SlotSurveyProps) {
   const handleComplete = useCallback(
     (data: object) => {
       const answers = data as Record<string, unknown>
-      const surveyJson = instance?.questionnaireType?.surveyJson
-      const metricResults = surveyJson ? evaluateMetrics(surveyJson, answers) : []
+      const questionnaireJson = instance?.questionnaireType?.questionnaireJson
+      const metricResults = questionnaireJson ? evaluateMetrics(questionnaireJson, answers) : []
       const metrics = Object.fromEntries(metricResults.map((m) => [m.name, m.value]))
       submitAnswers.mutate({ answers, metrics }, { onSuccess: () => onSubmitted(isLast) })
     },
@@ -123,10 +123,10 @@ function SlotSurvey({ slot, isLast, onSubmitted }: SlotSurveyProps) {
     )
   }
 
-  const surveyJson = instance.questionnaireType?.surveyJson
-  if (!surveyJson) {
+  const questionnaireJson = instance.questionnaireType?.questionnaireJson
+  if (!questionnaireJson) {
     return <p className="text-red-600">Survey has no questions.</p>
   }
 
-  return <SurveyRenderer surveyJson={surveyJson} onComplete={handleComplete} />
+  return <SurveyRenderer surveyJson={questionnaireJson} onComplete={handleComplete} />
 }

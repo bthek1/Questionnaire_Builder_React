@@ -98,20 +98,18 @@ describe('NewQuestionnairePage', () => {
     expect(mutateAsync).not.toHaveBeenCalled()
   })
 
-  it('calls mutateAsync with title and description when form is submitted', async () => {
+  it('calls mutateAsync with title when form is submitted', async () => {
     const mutateAsync = vi.fn().mockResolvedValueOnce(createdQuestionnaire)
     mockUseCreateQuestionnaire.mockReturnValue({ mutateAsync, isPending: false, isError: false })
     renderAt('/questionnaire-types/new')
 
     await userEvent.type(await screen.findByLabelText(/title/i), 'My New Survey')
-    await userEvent.type(screen.getByLabelText(/description/i), 'An optional description')
     fireEvent.click(screen.getByRole('button', { name: /create/i }))
 
     await waitFor(() =>
       expect(mutateAsync).toHaveBeenCalledWith(
         expect.objectContaining({
           title: 'My New Survey',
-          description: 'An optional description',
         }),
       ),
     )

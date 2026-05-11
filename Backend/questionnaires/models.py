@@ -38,8 +38,8 @@ class QuestionnaireType(models.Model):
         related_name="questionnaire_types",
     )
     title = models.CharField(max_length=255)
-    description = models.TextField(blank=True, null=True)
-    survey_json = models.JSONField(default=dict, blank=True)
+    questionnaire_json = models.JSONField(default=dict, blank=True)
+    recipient_json = models.JSONField(default=None, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

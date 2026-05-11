@@ -21,8 +21,7 @@ def user(db):
 def questionnaire(db):
     return QuestionnaireType.objects.create(
         title="Test Questionnaire",
-        description="A test description",
-        survey_json={
+        questionnaire_json={
             "pages": [
                 {"elements": [{"type": "text", "name": "q1", "title": "Question 1"}]}
             ]  # noqa: E501
@@ -34,9 +33,8 @@ def questionnaire(db):
 def questionnaire_with_owner(db, user):
     return QuestionnaireType.objects.create(
         title="Owned Questionnaire",
-        description="Owned by a user",
         owner=user,
-        survey_json={"pages": []},
+        questionnaire_json={"pages": []},
     )
 
 

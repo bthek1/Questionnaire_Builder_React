@@ -147,7 +147,7 @@ When `recipient_json` is non-null, the `/take/` route merges it as the first pag
 
 ## Phase 4: Frontend — JSON Editor Exposes recipientJson
 
-**Status**: Not started
+**Status**: ✅ Completed 2026-05-11
 
 **Goal**: Allow questionnaire builders to set/clear `recipient_json` via the JSON editor split-view page (`/questionnaire-types/:id/json`). No separate UI control is needed — the existing Raw JSON mode already lets authors edit `surveyJson`; a parallel text area for `recipientJson` is sufficient.
 
@@ -177,7 +177,7 @@ When `recipient_json` is non-null, the `/take/` route merges it as the first pag
 
 ## Phase 5: Verify & Cleanup
 
-**Status**: Not started
+**Status**: ✅ Completed 2026-05-11
 
 **Goal**: Full stack clean — build, lint, all tests pass.
 

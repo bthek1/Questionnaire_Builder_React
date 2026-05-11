@@ -6,7 +6,6 @@ import { useCreateQuestionnaireType } from '@/hooks/useQuestionnaireTypes'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
-import { Textarea } from '@/components/ui/Textarea'
 
 export const Route = createFileRoute('/questionnaire-types/new')({
   component: NewQuestionnairePage,
@@ -19,7 +18,7 @@ interface Template {
   label: string
   description: string
   icon: React.ReactNode
-  surveyJson: object
+  questionnaireJson: object
 }
 
 const TEMPLATES: Template[] = [
@@ -28,14 +27,14 @@ const TEMPLATES: Template[] = [
     label: 'Blank',
     description: 'Start from scratch',
     icon: <FileText className="h-5 w-5" />,
-    surveyJson: { pages: [{ name: 'page1', elements: [] }] },
+    questionnaireJson: { pages: [{ name: 'page1', elements: [] }] },
   },
   {
     id: 'satisfaction',
     label: 'Customer Satisfaction',
     description: 'NPS + open feedback',
     icon: <Star className="h-5 w-5" />,
-    surveyJson: {
+    questionnaireJson: {
       pages: [
         {
           name: 'page1',
@@ -65,7 +64,7 @@ const TEMPLATES: Template[] = [
     label: 'Event Feedback',
     description: 'Rating + comments',
     icon: <MessageSquare className="h-5 w-5" />,
-    surveyJson: {
+    questionnaireJson: {
       pages: [
         {
           name: 'page1',
@@ -93,7 +92,7 @@ const TEMPLATES: Template[] = [
     label: 'Quiz',
     description: 'Multiple-choice questions',
     icon: <HelpCircle className="h-5 w-5" />,
-    surveyJson: {
+    questionnaireJson: {
       pages: [
         {
           name: 'page1',
@@ -117,7 +116,6 @@ function NewQuestionnairePage() {
   const navigate = useNavigate()
   const createQuestionnaire = useCreateQuestionnaireType()
   const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
   const [selectedTemplate, setSelectedTemplate] = useState('blank')
   const [titleTouched, setTitleTouched] = useState(false)
 
@@ -136,8 +134,7 @@ function NewQuestionnairePage() {
     const template = TEMPLATES.find((t) => t.id === selectedTemplate)
     const created = await createQuestionnaire.mutateAsync({
       title: title.trim(),
-      description: description.trim() || undefined,
-      surveyJson: template?.surveyJson,
+      questionnaireJson: template?.questionnaireJson,
     })
     navigate({ to: '/questionnaire-types/$id/json', params: { id: created.id } })
   }
@@ -186,17 +183,6 @@ function NewQuestionnairePage() {
                 {title.length}/{TITLE_MAX}
               </p>
             </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="description">Description</Label>
-            <Textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Optional — briefly describe the purpose of this questionnaire"
-              rows={3}
-            />
           </div>
         </div>
 

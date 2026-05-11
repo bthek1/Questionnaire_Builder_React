@@ -174,7 +174,7 @@ describe('TakeBatteryPage', () => {
         questionnaireType: {
           id: 'qt1',
           title: 'Survey 1',
-          surveyJson: { pages: [{ elements: [{ type: 'text', name: 'q1' }] }] },
+          questionnaireJson: { pages: [{ elements: [{ type: 'text', name: 'q1' }] }] },
           createdAt: '',
           updatedAt: '',
         },
@@ -207,7 +207,7 @@ describe('TakeBatteryPage', () => {
         questionnaireTypeId: 'qt1',
         questionnaireType: {
           id: 'qt1',
-          surveyJson: { pages: [{ elements: [{ type: 'text', name: 'q1' }] }] },
+          questionnaireJson: { pages: [{ elements: [{ type: 'text', name: 'q1' }] }] },
           createdAt: '',
           updatedAt: '',
         },
@@ -256,7 +256,7 @@ describe('TakeBatteryPage', () => {
         questionnaireTypeId: 'qt2',
         questionnaireType: {
           id: 'qt2',
-          surveyJson: { pages: [{ elements: [{ type: 'text', name: 'q2' }] }] },
+          questionnaireJson: { pages: [{ elements: [{ type: 'text', name: 'q2' }] }] },
           createdAt: '',
           updatedAt: '',
         },
@@ -298,7 +298,7 @@ describe('TakeBatteryPage', () => {
         questionnaireTypeId: 'qt1',
         questionnaireType: {
           id: 'qt1',
-          surveyJson: { pages: [{ elements: [{ type: 'text', name: 'q1' }] }] },
+          questionnaireJson: { pages: [{ elements: [{ type: 'text', name: 'q1' }] }] },
           createdAt: '',
           updatedAt: '',
         },
@@ -339,7 +339,7 @@ describe('TakeBatteryPage', () => {
         questionnaireTypeId: 'qt1',
         questionnaireType: {
           id: 'qt1',
-          surveyJson: { pages: [{ elements: [{ type: 'text', name: 'q1' }] }] },
+          questionnaireJson: { pages: [{ elements: [{ type: 'text', name: 'q1' }] }] },
           createdAt: '',
           updatedAt: '',
         },

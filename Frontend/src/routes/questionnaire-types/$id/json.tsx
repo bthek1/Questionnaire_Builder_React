@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useMemo } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useQuestionnaireType, useUpdateQuestionnaireType } from '@/hooks/useQuestionnaireTypes'
 import { Button } from '@/components/ui/Button'
@@ -42,7 +42,7 @@ interface JsonEditorProps {
 
 function JsonEditor({ questionnaire, id }: JsonEditorProps) {
   const updateQuestionnaire = useUpdateQuestionnaireType(id)
-  const initialJson = questionnaire?.surveyJson ?? {}
+  const initialJson = questionnaire?.questionnaireJson ?? {}
 
   // Single canonical state — both modes read from this string.
   const [surveyJsonText, setSurveyJsonText] = useState(() => JSON.stringify(initialJson, null, 2))
@@ -77,6 +77,42 @@ function JsonEditor({ questionnaire, id }: JsonEditorProps) {
   const [renameTitle, setRenameTitle] = useState(questionnaire?.title ?? '')
   const renameError = !renameTitle.trim() ? 'Title is required' : ''
 
+  // Recipient JSON state
+  const RECIPIENT_STARTER = JSON.stringify(
+    {
+      name: 'recipient_page',
+      elements: [
+        {
+          type: 'radiogroup',
+          name: 'recipient__respondent_type',
+          title: 'Who is completing this questionnaire?',
+          isRequired: true,
+          choices: [],
+        },
+      ],
+    },
+    null,
+    2,
+  )
+  const initialRecipientJson = questionnaire?.recipientJson ?? null
+  const [recipientJsonText, setRecipientJsonText] = useState(() =>
+    initialRecipientJson ? JSON.stringify(initialRecipientJson, null, 2) : RECIPIENT_STARTER,
+  )
+  const [recipientParseError, setRecipientParseError] = useState<string | null>(null)
+  const [recipientSaved, setRecipientSaved] = useState(false)
+  const [lastValidRecipientJson, setLastValidRecipientJson] = useState<Record<
+    string,
+    unknown
+  > | null>(initialRecipientJson)
+  const [recipientOpen, setRecipientOpen] = useState(!!initialRecipientJson)
+
+  // Merge recipient page into preview when present
+  const previewSurveyJson = useMemo(() => {
+    if (!lastValidRecipientJson) return lastValidJson
+    const main = lastValidJson as { pages?: unknown[] }
+    return { ...main, pages: [lastValidRecipientJson, ...(main.pages ?? [])] }
+  }, [lastValidJson, lastValidRecipientJson])
+
   // no-op: preview is read-only, responses should not be submitted
   const handlePreviewComplete = useCallback(() => {}, [])
 
@@ -99,6 +135,43 @@ function JsonEditor({ questionnaire, id }: JsonEditorProps) {
     }
   }
 
+  function handleRecipientJsonChange(value: string) {
+    setRecipientJsonText(value)
+    setRecipientSaved(false)
+    try {
+      const parsed = JSON.parse(value)
+      setRecipientParseError(null)
+      setLastValidRecipientJson(parsed as Record<string, unknown>)
+    } catch {
+      setRecipientParseError('Invalid JSON')
+    }
+  }
+
+  function handleSaveRecipient() {
+    try {
+      const parsed = JSON.parse(recipientJsonText)
+      updateQuestionnaire.mutate(
+        { recipientJson: parsed as Record<string, unknown> },
+        { onSuccess: () => setRecipientSaved(true) },
+      )
+    } catch {
+      setRecipientParseError('Invalid JSON')
+    }
+  }
+
+  function handleClearRecipient() {
+    updateQuestionnaire.mutate(
+      { recipientJson: null },
+      {
+        onSuccess: () => {
+          setLastValidRecipientJson(null)
+          setRecipientJsonText(RECIPIENT_STARTER)
+          setRecipientSaved(true)
+        },
+      },
+    )
+  }
+
   // Switching modes never touches the JSON — the text is always the canonical source.
   function handleModeToggle(newMode: 'visual' | 'json') {
     if (newMode === mode) return
@@ -108,7 +181,7 @@ function JsonEditor({ questionnaire, id }: JsonEditorProps) {
   function handleSave() {
     try {
       const parsed = JSON.parse(surveyJsonText)
-      updateQuestionnaire.mutate({ surveyJson: parsed }, { onSuccess: () => setSaved(true) })
+      updateQuestionnaire.mutate({ questionnaireJson: parsed }, { onSuccess: () => setSaved(true) })
     } catch {
       setParseError('Invalid JSON')
     }
@@ -288,15 +361,77 @@ function JsonEditor({ questionnaire, id }: JsonEditorProps) {
           </div>
           <div data-testid="survey-preview" className="rounded-lg border bg-white p-4">
             <SurveyRenderer
-              surveyJson={lastValidJson}
+              surveyJson={previewSurveyJson}
               onComplete={handlePreviewComplete}
               theme={previewTheme}
             />
           </div>
         </div>
       </div>
+
+      {/* Recipient JSON section */}
+      <div
+        data-testid="recipient-json-section"
+        className="rounded-lg border border-[var(--color-border)] bg-[var(--color-background)]"
+      >
+        <button
+          type="button"
+          onClick={() => setRecipientOpen((o) => !o)}
+          className="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-semibold text-[var(--color-foreground)] hover:bg-gray-50"
+        >
+          <span>Recipient JSON {lastValidRecipientJson ? '(active)' : '(not set)'}</span>
+          <span className="text-xs text-[var(--color-muted-foreground)]">
+            {recipientOpen ? '▲ collapse' : '▼ expand'}
+          </span>
+        </button>
+        {recipientOpen && (
+          <div className="space-y-3 border-t border-[var(--color-border)] p-4">
+            <p className="text-xs text-[var(--color-muted-foreground)]">
+              Define a page shown to respondents <strong>before</strong> the main survey. All
+              element names must start with <code className="font-mono">recipient__</code> (e.g.{' '}
+              <code className="font-mono">recipient__respondent_type</code>) to avoid collisions
+              with survey question names.
+            </p>
+            {recipientParseError && (
+              <div className="rounded-md border border-red-300 bg-red-50 px-4 py-2 text-sm text-red-700">
+                {recipientParseError}
+              </div>
+            )}
+            {recipientSaved && (
+              <div className="rounded-md border border-green-300 bg-green-50 px-4 py-2 text-sm text-green-700">
+                Recipient JSON saved.
+              </div>
+            )}
+            <Textarea
+              data-testid="recipient-json-textarea"
+              value={recipientJsonText}
+              onChange={(e) => handleRecipientJsonChange(e.target.value)}
+              rows={16}
+              className="font-mono text-xs"
+              spellCheck={false}
+            />
+            <div className="flex gap-2">
+              <Button
+                data-testid="save-recipient-btn"
+                onClick={handleSaveRecipient}
+                disabled={!!recipientParseError || updateQuestionnaire.isPending}
+                size="sm"
+              >
+                Save recipient
+              </Button>
+              <Button
+                data-testid="clear-recipient-btn"
+                onClick={handleClearRecipient}
+                disabled={updateQuestionnaire.isPending}
+                size="sm"
+                variant="outline"
+              >
+                Clear recipient
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
-
-

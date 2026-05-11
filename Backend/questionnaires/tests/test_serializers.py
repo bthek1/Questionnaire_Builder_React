@@ -13,16 +13,16 @@ class TestQuestionnaireSerializer:
         assert set(data.keys()) == {
             "id",
             "title",
-            "description",
-            "surveyJson",
+            "questionnaireJson",
+            "recipientJson",
             "createdAt",
             "updatedAt",
         }
 
-    def test_survey_json_camel_case(self, questionnaire):
+    def test_questionnaire_json_camel_case(self, questionnaire):
         data = QuestionnaireTypeSerializer(questionnaire).data
-        assert "surveyJson" in data
-        assert "survey_json" not in data
+        assert "questionnaireJson" in data
+        assert "questionnaire_json" not in data
         assert "questions" not in data
 
     def test_created_at_camel_case(self, questionnaire):
@@ -48,7 +48,7 @@ class TestQuestionnaireSerializer:
         assert not serializer.is_valid()
         assert "title" in serializer.errors
 
-    def test_survey_json_not_required(self):
+    def test_questionnaire_json_not_required(self):
         serializer = QuestionnaireTypeSerializer(data={"title": "No JSON"})
         assert serializer.is_valid(), serializer.errors
 
@@ -60,13 +60,13 @@ class TestQuestionnaireSerializer:
         instance = serializer.save()
         assert instance.title == "Updated"
 
-    def test_survey_json_saves_to_snake_case_field(self, db):
+    def test_questionnaire_json_saves_to_snake_case_field(self, db):
         serializer = QuestionnaireTypeSerializer(
-            data={"title": "Test", "surveyJson": {"pages": []}}
+            data={"title": "Test", "questionnaireJson": {"pages": []}}
         )
         assert serializer.is_valid(), serializer.errors
         instance = serializer.save()
-        assert instance.survey_json == {"pages": []}
+        assert instance.questionnaire_json == {"pages": []}
 
 
 @pytest.mark.django_db

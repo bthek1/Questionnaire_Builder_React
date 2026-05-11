@@ -1,8 +1,8 @@
 export interface QuestionnaireType {
   id: string
   title: string
-  description?: string
-  surveyJson?: object
+  questionnaireJson?: object
+  recipientJson?: Record<string, unknown> | null
   createdAt: string
   updatedAt: string
 }

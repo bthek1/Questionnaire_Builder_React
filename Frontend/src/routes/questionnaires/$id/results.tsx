@@ -15,7 +15,8 @@ function ResultsPage() {
 
   const metrics = useMemo((): MetricResult[] => {
     // Prefer the snapshot taken at submit time; fall back to the live type definition
-    const surveyJson = instance?.surveyJsonSnapshot ?? instance?.questionnaireType?.surveyJson
+    const surveyJson =
+      instance?.surveyJsonSnapshot ?? instance?.questionnaireType?.questionnaireJson
     if (!surveyJson || !instance?.answers) return []
 
     const storedMetrics = instance.metrics
@@ -97,5 +98,3 @@ function ResultsPage() {
     </div>
   )
 }
-
-

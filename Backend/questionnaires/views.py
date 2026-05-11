@@ -95,7 +95,7 @@ class QuestionnaireViewSet(viewsets.ModelViewSet):
             )
         instance.answers_json = request.data.get("answers", {})
         instance.questionnaire_json_snapshot = (
-            instance.questionnaire_type.survey_json or {}
+            instance.questionnaire_type.questionnaire_json or {}
         )
         instance.metrics_json = request.data.get("metrics", {})
         instance.submitted_at = timezone.now()

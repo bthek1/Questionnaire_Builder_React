@@ -92,11 +92,23 @@ class BatterySerializer(serializers.ModelSerializer):
 class QuestionnaireTypeSerializer(serializers.ModelSerializer):
     createdAt = serializers.DateTimeField(source="created_at", read_only=True)  # noqa: N815
     updatedAt = serializers.DateTimeField(source="updated_at", read_only=True)  # noqa: N815
-    surveyJson = serializers.JSONField(source="survey_json", required=False)  # noqa: N815
+    questionnaireJson = serializers.JSONField(
+        source="questionnaire_json", required=False
+    )  # noqa: N815
+    recipientJson = serializers.JSONField(
+        source="recipient_json", required=False, allow_null=True
+    )  # noqa: N815
 
     class Meta:
         model = QuestionnaireType
-        fields = ["id", "title", "description", "surveyJson", "createdAt", "updatedAt"]
+        fields = [
+            "id",
+            "title",
+            "questionnaireJson",
+            "recipientJson",
+            "createdAt",
+            "updatedAt",
+        ]
         read_only_fields = ["id", "createdAt", "updatedAt"]
 
 

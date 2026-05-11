@@ -10,8 +10,18 @@ vi.mock('@/lib/metrics', () => ({
 }))
 
 vi.mock('@/components/survey/SurveyRenderer', () => ({
-  SurveyRenderer: ({ onComplete }: { onComplete: (data: object) => void }) => (
-    <button data-testid="survey-renderer" onClick={() => onComplete({ q1: 'answer' })}>
+  SurveyRenderer: ({
+    surveyJson,
+    onComplete,
+  }: {
+    surveyJson: object
+    onComplete: (data: object) => void
+  }) => (
+    <button
+      data-testid="survey-renderer"
+      data-survey-json={JSON.stringify(surveyJson)}
+      onClick={() => onComplete({ q1: 'answer' })}
+    >
       Complete Survey
     </button>
   ),
@@ -56,7 +66,7 @@ const instanceWithSurvey: Questionnaire = {
   questionnaireType: {
     id: 'q1',
     title: 'My Test Survey',
-    surveyJson: { pages: [{ name: 'page1', elements: [{ type: 'text', name: 'q1' }] }] },
+    questionnaireJson: { pages: [{ name: 'page1', elements: [{ type: 'text', name: 'q1' }] }] },
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
   },
@@ -249,5 +259,101 @@ describe('TakePage', () => {
         expect.any(Object),
       ),
     )
+  })
+
+  it('wraps a bare element recipientJson into a recipient page', async () => {
+    const instanceWithBareElement = {
+      ...instanceWithSurvey,
+      questionnaireType: {
+        ...instanceWithSurvey.questionnaireType!,
+        recipientJson: { type: 'radiogroup', name: 'recipient__respondent_type', choices: ['A'] },
+      },
+    }
+    mockUseQuestionnaireByToken.mockReturnValue({
+      data: instanceWithBareElement,
+      isLoading: false,
+      isError: false,
+    })
+    mockUseSubmitAnswers.mockReturnValue({ mutate: vi.fn(), isError: false, reset: vi.fn() })
+    renderAt('/take/token-abc')
+    const renderer = await screen.findByTestId('survey-renderer')
+    const json = JSON.parse(renderer.getAttribute('data-survey-json')!)
+    expect(json.pages[0].name).toBe('recipient_page')
+    expect(json.pages[0].elements[0].type).toBe('radiogroup')
+    expect(json.pages[1].name).toBe('page1')
+  })
+
+  it('promotes flat elements survey to pages when merging recipient', async () => {
+    const instanceFlatSurvey = {
+      ...instanceWithSurvey,
+      questionnaireType: {
+        ...instanceWithSurvey.questionnaireType!,
+        questionnaireJson: { title: 'Flat survey', elements: [{ type: 'text', name: 'q1' }] },
+        recipientJson: {
+          name: 'recipient_page',
+          elements: [{ type: 'radiogroup', name: 'recipient__respondent_type' }],
+        },
+      },
+    }
+    mockUseQuestionnaireByToken.mockReturnValue({
+      data: instanceFlatSurvey,
+      isLoading: false,
+      isError: false,
+    })
+    mockUseSubmitAnswers.mockReturnValue({ mutate: vi.fn(), isError: false, reset: vi.fn() })
+    renderAt('/take/token-abc')
+    const renderer = await screen.findByTestId('survey-renderer')
+    const json = JSON.parse(renderer.getAttribute('data-survey-json')!)
+    // Must have 2 pages — recipient first, promoted main page second
+    expect(json.pages).toHaveLength(2)
+    expect(json.pages[0].name).toBe('recipient_page')
+    expect(json.pages[1].elements[0].name).toBe('q1')
+    // flat elements key must not appear alongside pages
+    expect(json.elements).toBeUndefined()
+  })
+
+  it('prepends recipient page when recipientJson is set', async () => {
+    const instanceWithRecipient = {
+      ...instanceWithSurvey,
+      questionnaireType: {
+        ...instanceWithSurvey.questionnaireType!,
+        recipientJson: {
+          name: 'recipient_page',
+          elements: [{ type: 'radiogroup', name: 'recipient__respondent_type' }],
+        },
+      },
+    }
+    mockUseQuestionnaireByToken.mockReturnValue({
+      data: instanceWithRecipient,
+      isLoading: false,
+      isError: false,
+    })
+    mockUseSubmitAnswers.mockReturnValue({ mutate: vi.fn(), isError: false, reset: vi.fn() })
+    renderAt('/take/token-abc')
+    const renderer = await screen.findByTestId('survey-renderer')
+    const json = JSON.parse(renderer.getAttribute('data-survey-json')!)
+    expect(json.pages[0].name).toBe('recipient_page')
+    expect(json.pages[1].name).toBe('page1')
+  })
+
+  it('does not prepend recipient page when recipientJson is null', async () => {
+    const instanceWithoutRecipient = {
+      ...instanceWithSurvey,
+      questionnaireType: {
+        ...instanceWithSurvey.questionnaireType!,
+        recipientJson: null,
+      },
+    }
+    mockUseQuestionnaireByToken.mockReturnValue({
+      data: instanceWithoutRecipient,
+      isLoading: false,
+      isError: false,
+    })
+    mockUseSubmitAnswers.mockReturnValue({ mutate: vi.fn(), isError: false, reset: vi.fn() })
+    renderAt('/take/token-abc')
+    const renderer = await screen.findByTestId('survey-renderer')
+    const json = JSON.parse(renderer.getAttribute('data-survey-json')!)
+    expect(json.pages).toHaveLength(1)
+    expect(json.pages[0].name).toBe('page1')
   })
 })

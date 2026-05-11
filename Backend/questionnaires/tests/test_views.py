@@ -45,7 +45,7 @@ class TestQuestionnaireTypeListCreate:
         assert response.data[0]["title"] == questionnaire.title
 
     def test_create_valid(self, api_client):
-        payload = {"title": "New Survey", "surveyJson": {"pages": []}}
+        payload = {"title": "New Survey", "questionnaireJson": {"pages": []}}
         response = api_client.post(TYPES_LIST_URL, payload, format="json")
         assert response.status_code == 201
         assert response.data["title"] == "New Survey"
@@ -56,19 +56,42 @@ class TestQuestionnaireTypeListCreate:
         assert response.status_code == 400
         assert "title" in response.data
 
-    def test_create_sets_survey_json(self, api_client):
-        payload = {"title": "Survey", "surveyJson": {"pages": [{"elements": []}]}}
+    def test_create_sets_questionnaire_json(self, api_client):
+        payload = {
+            "title": "Survey",
+            "questionnaireJson": {"pages": [{"elements": []}]},
+        }
         response = api_client.post(TYPES_LIST_URL, payload, format="json")
         assert response.status_code == 201
         q = QuestionnaireType.objects.get(id=response.data["id"])
-        assert q.survey_json == {"pages": [{"elements": []}]}
+        assert q.questionnaire_json == {"pages": [{"elements": []}]}
 
     def test_create_returns_camel_case_fields(self, api_client):
         payload = {"title": "Camel Survey"}
         response = api_client.post(TYPES_LIST_URL, payload, format="json")
-        assert "surveyJson" in response.data
+        assert "questionnaireJson" in response.data
         assert "createdAt" in response.data
         assert "updatedAt" in response.data
+
+    def test_create_with_recipient_json(self, api_client):
+        page = {
+            "name": "recipient_page",
+            "elements": [
+                {
+                    "type": "radiogroup",
+                    "name": "recipient__respondent_type",
+                    "title": "Who?",
+                    "isRequired": True,
+                    "choices": [],
+                }
+            ],
+        }
+        payload = {"title": "Survey With Recipient", "recipientJson": page}
+        response = api_client.post(TYPES_LIST_URL, payload, format="json")
+        assert response.status_code == 201
+        assert response.data["recipientJson"] == page
+        q = QuestionnaireType.objects.get(id=response.data["id"])
+        assert q.recipient_json == page
 
 
 @pytest.mark.django_db
@@ -92,14 +115,16 @@ class TestQuestionnaireTypeRetrieveUpdateDelete:
         questionnaire.refresh_from_db()
         assert questionnaire.title == "Patched"
 
-    def test_patch_survey_json(self, api_client, questionnaire):
+    def test_patch_questionnaire_json(self, api_client, questionnaire):
         new_json = {"pages": [{"elements": [{"type": "checkbox", "name": "q2"}]}]}
         response = api_client.patch(
-            type_detail_url(questionnaire.id), {"surveyJson": new_json}, format="json"
+            type_detail_url(questionnaire.id),
+            {"questionnaireJson": new_json},
+            format="json",
         )
         assert response.status_code == 200
         questionnaire.refresh_from_db()
-        assert questionnaire.survey_json == new_json
+        assert questionnaire.questionnaire_json == new_json
 
     def test_delete_removes_questionnaire_type(self, api_client, questionnaire):
         response = api_client.delete(type_detail_url(questionnaire.id))
@@ -111,6 +136,30 @@ class TestQuestionnaireTypeRetrieveUpdateDelete:
             type_detail_url(questionnaire.id), {"title": "No PUT"}, format="json"
         )
         assert response.status_code == 405
+
+    def test_recipient_json_null_by_default(self, api_client, questionnaire):
+        response = api_client.get(type_detail_url(questionnaire.id))
+        assert response.status_code == 200
+        assert response.data["recipientJson"] is None
+
+    def test_patch_recipient_json(self, api_client, questionnaire):
+        page = {"name": "recipient_page", "elements": []}
+        response = api_client.patch(
+            type_detail_url(questionnaire.id), {"recipientJson": page}, format="json"
+        )
+        assert response.status_code == 200
+        questionnaire.refresh_from_db()
+        assert questionnaire.recipient_json == page
+
+    def test_patch_recipient_json_null_clears_field(self, api_client, questionnaire):
+        questionnaire.recipient_json = {"name": "recipient_page", "elements": []}
+        questionnaire.save()
+        response = api_client.patch(
+            type_detail_url(questionnaire.id), {"recipientJson": None}, format="json"
+        )
+        assert response.status_code == 200
+        questionnaire.refresh_from_db()
+        assert questionnaire.recipient_json is None
 
 
 # ── Questionnaire instance endpoints ──────────────────────────────────────────
@@ -171,13 +220,15 @@ class TestQuestionnaireInstanceByToken:
         assert response_for.answers_json == {"q1": "hello"}
         assert response_for.submitted_at is not None
 
-    def test_submit_sets_survey_json_snapshot(
+    def test_submit_sets_questionnaire_json_snapshot(
         self, api_client, response_for, questionnaire
     ):
         url = submit_url(response_for.share_token)
         api_client.patch(url, {"answers": {"q1": "hello"}}, format="json")
         response_for.refresh_from_db()
-        assert response_for.questionnaire_json_snapshot == questionnaire.survey_json
+        assert (
+            response_for.questionnaire_json_snapshot == questionnaire.questionnaire_json
+        )
 
     def test_submit_snapshot_in_response_body(
         self, api_client, response_for, questionnaire
@@ -185,7 +236,7 @@ class TestQuestionnaireInstanceByToken:
         url = submit_url(response_for.share_token)
         response = api_client.patch(url, {"answers": {"q1": "hello"}}, format="json")
         assert response.status_code == 200
-        assert response.data["surveyJsonSnapshot"] == questionnaire.survey_json
+        assert response.data["surveyJsonSnapshot"] == questionnaire.questionnaire_json
 
     def test_submit_returns_409_on_resubmission(self, api_client, response_for):
         url = submit_url(response_for.share_token)
@@ -245,8 +296,8 @@ class TestResponsePdfView:
         response = api_client.get(pdf_url(uuid.uuid4()))
         assert response.status_code == 404
 
-    def test_empty_survey_json_returns_400(self, api_client, db):
-        q = QuestionnaireType.objects.create(title="Empty", survey_json={})
+    def test_empty_questionnaire_json_returns_400(self, api_client, db):
+        q = QuestionnaireType.objects.create(title="Empty", questionnaire_json={})
         r = Questionnaire.objects.create(questionnaire_type=q, answers_json={})
         response = api_client.get(pdf_url(r.id))
         assert response.status_code == 400

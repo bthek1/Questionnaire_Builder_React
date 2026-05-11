@@ -100,9 +100,9 @@ def generate_response_pdf(
     Raises ValueError if survey_json is empty.
     Returns PDF bytes (non-empty on success).
     """
-    survey_json = questionnaire.survey_json or {}
+    survey_json = questionnaire.questionnaire_json or {}
     if not survey_json:
-        raise ValueError("survey_json is empty — cannot generate PDF")
+        raise ValueError("questionnaire_json is empty — cannot generate PDF")
 
     answers = response.answers_json if isinstance(response.answers_json, dict) else {}
     questions = _resolve_questions(survey_json, answers)

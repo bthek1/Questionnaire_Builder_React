@@ -56,7 +56,7 @@ const mockUseDeleteQuestionnairesInst = useDeleteQuestionnaire as ReturnType<typ
 const testQuestionnaire: QuestionnaireType = {
   id: 'q1',
   title: 'My Test Survey',
-  surveyJson: { pages: [] },
+  questionnaireJson: { pages: [] },
   createdAt: '2024-01-01T00:00:00Z',
   updatedAt: '2024-01-01T00:00:00Z',
 }
@@ -124,7 +124,7 @@ describe('JsonEditorPage', () => {
     const saveBtns = screen.getAllByRole('button', { name: /^save$/i })
     fireEvent.click(saveBtns[saveBtns.length - 1])
     expect(mockMutate).toHaveBeenCalledWith(
-      expect.objectContaining({ surveyJson: expect.any(Object) }),
+      expect.objectContaining({ questionnaireJson: expect.any(Object) }),
       expect.any(Object),
     )
   })
@@ -211,7 +211,7 @@ describe('JsonEditorPage', () => {
   it('mode-switch Visual→JSON→Visual does not change the JSON string', async () => {
     const surveyWithExtras: QuestionnaireType = {
       ...testQuestionnaire,
-      surveyJson: {
+      questionnaireJson: {
         title: 'Round-trip survey',
         pages: [{ name: 'p1', elements: [{ type: 'text', name: 'q1', title: 'Q1' }] }],
         triggers: [{ type: 'complete' }],
@@ -275,7 +275,7 @@ describe('JsonEditorPage', () => {
   it('editing survey title in visual mode updates the JSON text', async () => {
     const surveyWithTitle: QuestionnaireType = {
       ...testQuestionnaire,
-      surveyJson: {
+      questionnaireJson: {
         title: 'Old title',
         pages: [{ name: 'p1', elements: [] }],
         description: 'Keep me',
@@ -301,7 +301,7 @@ describe('JsonEditorPage', () => {
   it('editing element title in visual mode does not change other element properties', async () => {
     const surveyWithElement: QuestionnaireType = {
       ...testQuestionnaire,
-      surveyJson: {
+      questionnaireJson: {
         title: 'Survey',
         pages: [
           {
@@ -341,7 +341,7 @@ describe('JsonEditorPage', () => {
   it('toggling required checkbox in visual mode updates isRequired in JSON', async () => {
     const surveyWithElement: QuestionnaireType = {
       ...testQuestionnaire,
-      surveyJson: {
+      questionnaireJson: {
         pages: [
           {
             name: 'p1',
@@ -371,7 +371,7 @@ describe('JsonEditorPage', () => {
   it('editing choices in visual mode updates choices array in JSON', async () => {
     const surveyWithRadio: QuestionnaireType = {
       ...testQuestionnaire,
-      surveyJson: {
+      questionnaireJson: {
         pages: [
           {
             name: 'p1',
@@ -402,7 +402,7 @@ describe('JsonEditorPage', () => {
   it('add question button appends a new element to the page', async () => {
     const surveyWithPage: QuestionnaireType = {
       ...testQuestionnaire,
-      surveyJson: { pages: [{ name: 'p1', elements: [] }] },
+      questionnaireJson: { pages: [{ name: 'p1', elements: [] }] },
     }
     mockUseQuestionnaire.mockReturnValue({ data: surveyWithPage, isLoading: false })
     renderAt('/questionnaire-types/q1/json')
@@ -421,7 +421,7 @@ describe('JsonEditorPage', () => {
   it('delete question button removes the element from the page', async () => {
     const surveyWithElement: QuestionnaireType = {
       ...testQuestionnaire,
-      surveyJson: {
+      questionnaireJson: {
         pages: [
           {
             name: 'p1',
@@ -447,7 +447,7 @@ describe('JsonEditorPage', () => {
   it('complex element types show read-only badge instead of edit controls', async () => {
     const surveyWithMatrix: QuestionnaireType = {
       ...testQuestionnaire,
-      surveyJson: {
+      questionnaireJson: {
         pages: [
           {
             name: 'p1',
@@ -469,7 +469,7 @@ describe('JsonEditorPage', () => {
   it('unknown element properties are shown in Other properties section', async () => {
     const surveyWithUnknown: QuestionnaireType = {
       ...testQuestionnaire,
-      surveyJson: {
+      questionnaireJson: {
         pages: [
           {
             name: 'p1',
@@ -499,7 +499,7 @@ describe('JsonEditorPage', () => {
   it('add page button appends a new page to a paged survey', async () => {
     const surveyPaged: QuestionnaireType = {
       ...testQuestionnaire,
-      surveyJson: {
+      questionnaireJson: {
         pages: [{ name: 'p1', elements: [] }],
       },
     }
@@ -519,7 +519,7 @@ describe('JsonEditorPage', () => {
   it('visual edits update the live preview without mode switching', async () => {
     const surveyWithTitle: QuestionnaireType = {
       ...testQuestionnaire,
-      surveyJson: { title: 'Original', pages: [{ name: 'p1', elements: [] }] },
+      questionnaireJson: { title: 'Original', pages: [{ name: 'p1', elements: [] }] },
     }
     mockUseQuestionnaire.mockReturnValue({ data: surveyWithTitle, isLoading: false })
     renderAt('/questionnaire-types/q1/json')
@@ -537,7 +537,7 @@ describe('JsonEditorPage', () => {
   it('round-trip: JSON with unmapped properties is identical after Visual→JSON→Visual→JSON', async () => {
     const complexSurvey: QuestionnaireType = {
       ...testQuestionnaire,
-      surveyJson: {
+      questionnaireJson: {
         title: 'Complex survey',
         pages: [
           {
@@ -585,7 +585,7 @@ describe('JsonEditorPage', () => {
   it('shows unknown-props badge when survey has unmapped top-level properties', async () => {
     const surveyWithExtras: QuestionnaireType = {
       ...testQuestionnaire,
-      surveyJson: {
+      questionnaireJson: {
         title: 'Survey',
         pages: [{ name: 'p1', elements: [] }],
         triggers: [{ type: 'complete' }],
@@ -602,7 +602,7 @@ describe('JsonEditorPage', () => {
   it('does not show unknown-props badge when survey has only known top-level properties', async () => {
     const surveyKnownOnly: QuestionnaireType = {
       ...testQuestionnaire,
-      surveyJson: {
+      questionnaireJson: {
         title: 'Survey',
         description: 'Desc',
         pages: [{ name: 'p1', elements: [] }],
@@ -614,5 +614,46 @@ describe('JsonEditorPage', () => {
     await screen.findByTestId('survey-outline')
     expect(screen.queryByTestId('unknown-props-badge')).not.toBeInTheDocument()
   })
-})
 
+  // ---- Recipient JSON section ----
+
+  it('shows recipient json editor section', async () => {
+    renderAt('/questionnaire-types/q1/json')
+    expect(await screen.findByTestId('recipient-json-section')).toBeInTheDocument()
+  })
+
+  it('save recipient json calls patch with recipientJson', async () => {
+    renderAt('/questionnaire-types/q1/json')
+
+    // Expand the recipient section
+    const toggle = await screen.findByTestId('recipient-json-section')
+    fireEvent.click(toggle.querySelector('button')!)
+
+    const textarea = screen.getByTestId('recipient-json-textarea') as HTMLTextAreaElement
+    const recipientPage = {
+      name: 'recipient_page',
+      elements: [{ type: 'radiogroup', name: 'recipient__respondent_type', choices: ['Self'] }],
+    }
+    fireEvent.change(textarea, { target: { value: JSON.stringify(recipientPage) } })
+
+    fireEvent.click(screen.getByTestId('save-recipient-btn'))
+    expect(mockMutate).toHaveBeenCalledWith(
+      expect.objectContaining({ recipientJson: recipientPage }),
+      expect.any(Object),
+    )
+  })
+
+  it('clear recipient json patches null', async () => {
+    renderAt('/questionnaire-types/q1/json')
+
+    // Expand the recipient section
+    const toggle = await screen.findByTestId('recipient-json-section')
+    fireEvent.click(toggle.querySelector('button')!)
+
+    fireEvent.click(screen.getByTestId('clear-recipient-btn'))
+    expect(mockMutate).toHaveBeenCalledWith(
+      expect.objectContaining({ recipientJson: null }),
+      expect.any(Object),
+    )
+  })
+})

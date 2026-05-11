@@ -118,7 +118,9 @@ function QuestionnairesInstancePage() {
               </thead>
               <tbody className="divide-y">
                 {filtered.map((inst) => {
-                  const surveyJson = inst.questionnaireType?.surveyJson as Record<string, unknown> | undefined
+                  const surveyJson = inst.questionnaireType?.questionnaireJson as
+                    | Record<string, unknown>
+                    | undefined
                   const hasMetrics =
                     inst.submittedAt &&
                     Object.keys(inst.answers).length > 0 &&
@@ -126,55 +128,58 @@ function QuestionnairesInstancePage() {
                     (surveyJson!.calculatedValues as unknown[]).length > 0
 
                   return (
-                  <tr key={inst.id} className="bg-[var(--color-card)] hover:bg-[var(--color-muted)]">
-                    {!selectedTypeId && (
-                      <td className="px-4 py-3 font-medium">
-                        {inst.questionnaireType?.title ?? inst.questionnaireTypeId}
-                      </td>
-                    )}
-                    <td className="px-4 py-3 text-[var(--color-muted-foreground)]">
-                      {inst.name || <span className="italic opacity-50">—</span>}
-                    </td>
-                    <td className="px-4 py-3">
-                      {inst.submittedAt ? (
-                        <span className="inline-flex items-center rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700">
-                          Submitted
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center rounded-full bg-yellow-50 px-2.5 py-0.5 text-xs font-medium text-yellow-700">
-                          Pending
-                        </span>
+                    <tr
+                      key={inst.id}
+                      className="bg-[var(--color-card)] hover:bg-[var(--color-muted)]"
+                    >
+                      {!selectedTypeId && (
+                        <td className="px-4 py-3 font-medium">
+                          {inst.questionnaireType?.title ?? inst.questionnaireTypeId}
+                        </td>
                       )}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center justify-end gap-2">
-                        <Button asChild size="sm" variant="outline">
-                          <Link to="/questionnaires/$id/view" params={{ id: inst.id }}>
-                            View
-                          </Link>
-                        </Button>
-                        <CopyButton
-                          id={inst.shareToken}
-                          label="Copy Link"
-                          shareUrl={`${window.location.origin}/take/${inst.shareToken}`}
-                        />
-                        {hasMetrics && (
+                      <td className="px-4 py-3 text-[var(--color-muted-foreground)]">
+                        {inst.name || <span className="italic opacity-50">—</span>}
+                      </td>
+                      <td className="px-4 py-3">
+                        {inst.submittedAt ? (
+                          <span className="inline-flex items-center rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700">
+                            Submitted
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center rounded-full bg-yellow-50 px-2.5 py-0.5 text-xs font-medium text-yellow-700">
+                            Pending
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center justify-end gap-2">
                           <Button asChild size="sm" variant="outline">
-                            <Link to="/questionnaires/$id/results" params={{ id: inst.id }}>
-                              Results
+                            <Link to="/questionnaires/$id/view" params={{ id: inst.id }}>
+                              View
                             </Link>
                           </Button>
-                        )}
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => setPendingDelete(inst.id)}
-                        >
-                          Delete
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
+                          <CopyButton
+                            id={inst.shareToken}
+                            label="Copy Link"
+                            shareUrl={`${window.location.origin}/take/${inst.shareToken}`}
+                          />
+                          {hasMetrics && (
+                            <Button asChild size="sm" variant="outline">
+                              <Link to="/questionnaires/$id/results" params={{ id: inst.id }}>
+                                Results
+                              </Link>
+                            </Button>
+                          )}
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => setPendingDelete(inst.id)}
+                          >
+                            Delete
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
                   )
                 })}
               </tbody>
