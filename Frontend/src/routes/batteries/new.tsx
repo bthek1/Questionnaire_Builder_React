@@ -19,78 +19,71 @@ export const Route = createFileRoute('/batteries/new')({
 
 function NewBatteryPage() {
   const navigate = useNavigate()
-  const { batteryTypeId: preselectedTypeId } = useSearch({ from: '/batteries/new' })
-  const { data: batteryTypes, isLoading: typesLoading } = useBatteryTypes()
+  const { batteryTypeId: preselectedId } = useSearch({ from: '/batteries/new' })
+  const { data: batteryTypes, isLoading } = useBatteryTypes()
   const createBattery = useCreateBattery()
 
-  const [typeId, setTypeId] = useState(preselectedTypeId ?? '')
+  const [batteryTypeId, setBatteryTypeId] = useState(preselectedId ?? '')
   const [name, setName] = useState('')
   const [error, setError] = useState<string | null>(null)
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!typeId) {
+    if (!batteryTypeId) {
       setError('Please select a battery type.')
       return
     }
     setError(null)
     createBattery.mutate(
-      { battery_type: typeId, name: name.trim() || undefined },
+      { battery_type: batteryTypeId, name: name.trim() || undefined },
       {
-        onSuccess: (battery) => navigate({ to: '/batteries/$id', params: { id: battery.id } }),
+        onSuccess: (b) => navigate({ to: '/batteries/$id', params: { id: b.id } }),
       },
     )
   }
 
   return (
     <div className="mx-auto max-w-md space-y-6">
-      <h1 className="text-2xl font-semibold">New Battery</h1>
+      <h1 className="text-2xl font-semibold">Deploy Battery</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-1.5">
-          <Label htmlFor="type">Battery Type</Label>
-          {typesLoading ? (
+          <Label htmlFor="battery-type">Battery Type</Label>
+          {isLoading ? (
             <div className="h-9 animate-pulse rounded-md bg-[var(--color-muted)]" />
           ) : (
             <select
-              id="type"
-              value={typeId}
-              onChange={(e) => setTypeId(e.target.value)}
+              id="battery-type"
+              value={batteryTypeId}
+              onChange={(e) => setBatteryTypeId(e.target.value)}
               className="w-full rounded-md border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
             >
               <option value="">Select a battery type…</option>
-              {batteryTypes?.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.title}
+              {batteryTypes?.map((bt) => (
+                <option key={bt.id} value={bt.id}>
+                  {bt.title}
                 </option>
               ))}
             </select>
           )}
         </div>
-
         <div className="space-y-1.5">
           <Label htmlFor="name">Name (optional)</Label>
           <Input
             id="name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="e.g. Cohort A"
+            placeholder="e.g. Cohort A – May 2026"
           />
         </div>
-
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p className="text-xs text-red-500">{error}</p>}
         {createBattery.isError && (
-          <p className="text-sm text-red-600">Failed to create battery. Please try again.</p>
+          <p className="text-xs text-red-500">Failed to deploy. Please try again.</p>
         )}
-
-        <div className="flex gap-3">
-          <Button type="submit" disabled={createBattery.isPending}>
-            {createBattery.isPending ? 'Creating…' : 'Create Battery'}
+        <div className="flex gap-2">
+          <Button type="submit" disabled={!batteryTypeId || createBattery.isPending}>
+            {createBattery.isPending ? 'Deploying…' : 'Deploy'}
           </Button>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => navigate({ to: '/batteries' })}
-          >
+          <Button type="button" variant="outline" onClick={() => navigate({ to: '/batteries' })}>
             Cancel
           </Button>
         </div>
