@@ -168,7 +168,7 @@ class TestQuestionnaireInstanceByToken:
         response = api_client.patch(url, payload, format="json")
         assert response.status_code == 200
         response_for.refresh_from_db()
-        assert response_for.answers == {"q1": "hello"}
+        assert response_for.answers_json == {"q1": "hello"}
         assert response_for.submitted_at is not None
 
     def test_submit_sets_survey_json_snapshot(
@@ -177,7 +177,7 @@ class TestQuestionnaireInstanceByToken:
         url = submit_url(response_for.share_token)
         api_client.patch(url, {"answers": {"q1": "hello"}}, format="json")
         response_for.refresh_from_db()
-        assert response_for.survey_json_snapshot == questionnaire.survey_json
+        assert response_for.questionnaire_json_snapshot == questionnaire.survey_json
 
     def test_submit_snapshot_in_response_body(
         self, api_client, response_for, questionnaire
@@ -200,7 +200,7 @@ class TestQuestionnaireInstanceByToken:
         response = api_client.patch(url, payload, format="json")
         assert response.status_code == 200
         response_for.refresh_from_db()
-        assert response_for.metrics == {"total_score": 42}
+        assert response_for.metrics_json == {"total_score": 42}
 
     def test_submit_metrics_in_response_body(self, api_client, response_for):
         url = submit_url(response_for.share_token)
@@ -216,7 +216,7 @@ class TestQuestionnaireInstanceByToken:
         response = api_client.patch(url, {"answers": {"q1": "hello"}}, format="json")
         assert response.status_code == 200
         response_for.refresh_from_db()
-        assert response_for.metrics == {}
+        assert response_for.metrics_json == {}
 
 
 @pytest.mark.django_db
@@ -247,7 +247,7 @@ class TestResponsePdfView:
 
     def test_empty_survey_json_returns_400(self, api_client, db):
         q = QuestionnaireType.objects.create(title="Empty", survey_json={})
-        r = Questionnaire.objects.create(questionnaire_type=q, answers={})
+        r = Questionnaire.objects.create(questionnaire_type=q, answers_json={})
         response = api_client.get(pdf_url(r.id))
         assert response.status_code == 400
 
@@ -294,7 +294,9 @@ class TestBatteryTypeViewSet:
 
     def test_partial_update(self, api_client, db):
         bt = BatteryType.objects.create(title="Old Title")
-        response = api_client.patch(battery_type_detail_url(bt.id), {"title": "New Title"}, format="json")
+        response = api_client.patch(
+            battery_type_detail_url(bt.id), {"title": "New Title"}, format="json"
+        )
         assert response.status_code == 200
         assert response.data["title"] == "New Title"
 
@@ -323,7 +325,9 @@ class TestBatteryViewSet:
 
     def test_create_battery_creates_questionnaires(self, api_client, db):
         bt, qt1, qt2 = self._setup(db)
-        response = api_client.post(BATTERIES_URL, {"battery_type": str(bt.id), "name": "Run 1"}, format="json")
+        response = api_client.post(
+            BATTERIES_URL, {"battery_type": str(bt.id), "name": "Run 1"}, format="json"
+        )
         assert response.status_code == 201
         assert response.data["name"] == "Run 1"
         battery_id = response.data["id"]
@@ -332,7 +336,9 @@ class TestBatteryViewSet:
 
     def test_create_battery_correct_battery_order(self, api_client, db):
         bt, qt1, qt2 = self._setup(db)
-        response = api_client.post(BATTERIES_URL, {"battery_type": str(bt.id)}, format="json")
+        response = api_client.post(
+            BATTERIES_URL, {"battery_type": str(bt.id)}, format="json"
+        )
         assert response.status_code == 201
         battery_id = response.data["id"]
         battery = Battery.objects.get(id=battery_id)
@@ -349,7 +355,9 @@ class TestBatteryViewSet:
         assert len(response.data["questionnaires"]) == 2
 
     def test_by_token_invalid_returns_404(self, api_client, db):
-        response = api_client.get(battery_by_token_url("00000000-0000-0000-0000-000000000000"))
+        response = api_client.get(
+            battery_by_token_url("00000000-0000-0000-0000-000000000000")
+        )
         assert response.status_code == 404
 
     def test_destroy(self, api_client, db):

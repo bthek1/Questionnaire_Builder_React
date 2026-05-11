@@ -110,9 +110,10 @@ class QuestionnaireSerializer(serializers.ModelSerializer):
     shareToken = serializers.UUIDField(source="share_token", read_only=True)  # noqa: N815
     submittedAt = serializers.DateTimeField(source="submitted_at", read_only=True)  # noqa: N815
     surveyJsonSnapshot = serializers.JSONField(
-        source="survey_json_snapshot", read_only=True
+        source="questionnaire_json_snapshot", read_only=True
     )  # noqa: N815
-    metrics = serializers.JSONField(required=False, default=dict)
+    answers = serializers.JSONField(source="answers_json", required=False, default=dict)  # noqa: N815
+    metrics = serializers.JSONField(source="metrics_json", required=False, default=dict)
     createdAt = serializers.DateTimeField(source="created_at", read_only=True)  # noqa: N815
     updatedAt = serializers.DateTimeField(source="updated_at", read_only=True)  # noqa: N815
 

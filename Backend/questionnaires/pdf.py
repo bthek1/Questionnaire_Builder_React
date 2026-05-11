@@ -104,7 +104,7 @@ def generate_response_pdf(
     if not survey_json:
         raise ValueError("survey_json is empty — cannot generate PDF")
 
-    answers = response.answers if isinstance(response.answers, dict) else {}
+    answers = response.answers_json if isinstance(response.answers_json, dict) else {}
     questions = _resolve_questions(survey_json, answers)
 
     html_string = render_to_string(

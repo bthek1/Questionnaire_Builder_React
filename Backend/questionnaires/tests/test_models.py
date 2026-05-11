@@ -70,10 +70,10 @@ class TestQuestionnaireResponseModel:
     def test_creation_defaults(self, questionnaire):
         r = Questionnaire.objects.create(
             questionnaire_type=questionnaire,
-            answers={"q1": "hello"},
+            answers_json={"q1": "hello"},
         )
         assert r.pk is not None
-        assert r.answers == {"q1": "hello"}
+        assert r.answers_json == {"q1": "hello"}
         assert r.submitted_at is None
         assert r.created_at is not None
         assert r.updated_at is not None
@@ -99,20 +99,20 @@ class TestQuestionnaireResponseModel:
     def test_related_name_instances(self, questionnaire, response_for):
         assert questionnaire.instances.count() == 1
 
-    def test_answers_default_is_dict(self, questionnaire):
+    def test_answers_json_default_is_dict(self, questionnaire):
         r = Questionnaire.objects.create(questionnaire_type=questionnaire)
-        assert r.answers == {}
+        assert r.answers_json == {}
 
-    def test_survey_json_snapshot_default_is_empty_dict(self, questionnaire):
+    def test_questionnaire_json_snapshot_default_is_empty_dict(self, questionnaire):
         r = Questionnaire.objects.create(questionnaire_type=questionnaire)
-        assert r.survey_json_snapshot == {}
+        assert r.questionnaire_json_snapshot == {}
 
-    def test_survey_json_snapshot_not_set_when_unsubmitted(self, questionnaire):
+    def test_questionnaire_json_snapshot_not_set_when_unsubmitted(self, questionnaire):
         r = Questionnaire.objects.create(
-            questionnaire_type=questionnaire, answers={"q1": "hello"}
+            questionnaire_type=questionnaire, answers_json={"q1": "hello"}
         )
         assert r.submitted_at is None
-        assert r.survey_json_snapshot == {}
+        assert r.questionnaire_json_snapshot == {}
 
     def test_ordering_newest_first(self, questionnaire):
         r1 = Questionnaire.objects.create(questionnaire_type=questionnaire)
@@ -133,17 +133,17 @@ class TestQuestionnaireResponseModel:
         assert questionnaire.title in str(r)
         assert str(r.share_token) in str(r)
 
-    def test_metrics_default_is_empty_dict(self, questionnaire):
+    def test_metrics_json_default_is_empty_dict(self, questionnaire):
         r = Questionnaire.objects.create(questionnaire_type=questionnaire)
-        assert r.metrics == {}
+        assert r.metrics_json == {}
 
-    def test_metrics_round_trips_non_empty_dict(self, questionnaire):
+    def test_metrics_json_round_trips_non_empty_dict(self, questionnaire):
         r = Questionnaire.objects.create(
             questionnaire_type=questionnaire,
-            metrics={"total_score": 42, "risk_level": "medium"},
+            metrics_json={"total_score": 42, "risk_level": "medium"},
         )
         r.refresh_from_db()
-        assert r.metrics == {"total_score": 42, "risk_level": "medium"}
+        assert r.metrics_json == {"total_score": 42, "risk_level": "medium"}
 
 
 @pytest.mark.django_db

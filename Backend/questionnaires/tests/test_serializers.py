@@ -132,7 +132,7 @@ class TestQuestionnaireResponseSerializer:
 
         r = Questionnaire.objects.create(
             questionnaire_type=questionnaire,
-            metrics={"total_score": 42},
+            metrics_json={"total_score": 42},
         )
         data = QuestionnaireSerializer(r).data
         assert data["metrics"] == {"total_score": 42}
@@ -148,7 +148,7 @@ class TestQuestionnaireResponseSerializer:
             partial=True,
         )
         assert serializer.is_valid(), serializer.errors
-        assert serializer.validated_data.get("metrics") == {"score": 99}
+        assert serializer.validated_data.get("metrics_json") == {"score": 99}
 
 
 # ── Battery Serializers ────────────────────────────────────────────────────────

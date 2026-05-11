@@ -75,7 +75,7 @@ class QuestionnaireViewSet(viewsets.ModelViewSet):
             .order_by("-submitted_at")
             .first()
         )
-        answers = prior.answers if prior else {}
+        answers = prior.answers_json if prior else {}
         return Response({"answers": answers})
 
     @action(
@@ -93,15 +93,17 @@ class QuestionnaireViewSet(viewsets.ModelViewSet):
                 {"detail": "Already submitted."},
                 status=status.HTTP_409_CONFLICT,
             )
-        instance.answers = request.data.get("answers", {})
-        instance.survey_json_snapshot = instance.questionnaire_type.survey_json or {}
-        instance.metrics = request.data.get("metrics", {})
+        instance.answers_json = request.data.get("answers", {})
+        instance.questionnaire_json_snapshot = (
+            instance.questionnaire_type.survey_json or {}
+        )
+        instance.metrics_json = request.data.get("metrics", {})
         instance.submitted_at = timezone.now()
         instance.save(
             update_fields=[
-                "answers",
-                "survey_json_snapshot",
-                "metrics",
+                "answers_json",
+                "questionnaire_json_snapshot",
+                "metrics_json",
                 "submitted_at",
                 "updated_at",
             ]

@@ -44,5 +44,5 @@ def questionnaire_with_owner(db, user):
 def response_for(questionnaire):
     return Questionnaire.objects.create(
         questionnaire_type=questionnaire,
-        answers={"q1": "Answer text"},
+        answers_json={"q1": "Answer text"},
     )

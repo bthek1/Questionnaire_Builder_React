@@ -12,7 +12,9 @@ class TestResponsePdfTemplate:
     def test_template_contains_questionnaire_title(self, questionnaire, response_for):
         questions = _resolve_questions(
             questionnaire.survey_json,
-            response_for.answers if isinstance(response_for.answers, dict) else {},
+            response_for.answers_json
+            if isinstance(response_for.answers_json, dict)
+            else {},
         )
         html = render_to_string(
             "questionnaires/response_pdf.html",
@@ -27,7 +29,9 @@ class TestResponsePdfTemplate:
     def test_template_contains_question_title(self, questionnaire, response_for):
         questions = _resolve_questions(
             questionnaire.survey_json,
-            response_for.answers if isinstance(response_for.answers, dict) else {},
+            response_for.answers_json
+            if isinstance(response_for.answers_json, dict)
+            else {},
         )
         html = render_to_string(
             "questionnaires/response_pdf.html",
@@ -46,7 +50,7 @@ class TestResponsePdfTemplate:
                 "pages": [{"elements": [{"type": "text", "name": "q1", "title": "Q1"}]}]
             },
         )
-        r = Questionnaire.objects.create(questionnaire_type=q, answers={})
+        r = Questionnaire.objects.create(questionnaire_type=q, answers_json={})
         questions = _resolve_questions(q.survey_json, {})
         html = render_to_string(
             "questionnaires/response_pdf.html",
@@ -67,7 +71,7 @@ class TestGenerateResponsePdf:
 
     def test_raises_on_empty_survey_json(self, db):
         q = QuestionnaireType.objects.create(title="Empty", survey_json={})
-        r = Questionnaire.objects.create(questionnaire_type=q, answers={})
+        r = Questionnaire.objects.create(questionnaire_type=q, answers_json={})
         with pytest.raises(ValueError, match="survey_json is empty"):
             generate_response_pdf(q, r)
 
@@ -78,7 +82,7 @@ class TestGenerateResponsePdf:
                 "pages": [{"elements": [{"type": "text", "name": "q1", "title": "Q1"}]}]
             },
         )
-        r = Questionnaire.objects.create(questionnaire_type=q, answers={})
+        r = Questionnaire.objects.create(questionnaire_type=q, answers_json={})
         result = generate_response_pdf(q, r)
         assert isinstance(result, bytes)
 
