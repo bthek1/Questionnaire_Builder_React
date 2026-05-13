@@ -615,45 +615,9 @@ describe('JsonEditorPage', () => {
     expect(screen.queryByTestId('unknown-props-badge')).not.toBeInTheDocument()
   })
 
-  // ---- Recipient JSON section ----
-
-  it('shows recipient json editor section', async () => {
+  it('does not render recipient json section', async () => {
     renderAt('/questionnaire-types/q1/json')
-    expect(await screen.findByTestId('recipient-json-section')).toBeInTheDocument()
-  })
-
-  it('save recipient json calls patch with recipientJson', async () => {
-    renderAt('/questionnaire-types/q1/json')
-
-    // Expand the recipient section
-    const toggle = await screen.findByTestId('recipient-json-section')
-    fireEvent.click(toggle.querySelector('button')!)
-
-    const textarea = screen.getByTestId('recipient-json-textarea') as HTMLTextAreaElement
-    const recipientPage = {
-      name: 'recipient_page',
-      elements: [{ type: 'radiogroup', name: 'recipient__respondent_type', choices: ['Self'] }],
-    }
-    fireEvent.change(textarea, { target: { value: JSON.stringify(recipientPage) } })
-
-    fireEvent.click(screen.getByTestId('save-recipient-btn'))
-    expect(mockMutate).toHaveBeenCalledWith(
-      expect.objectContaining({ recipientJson: recipientPage }),
-      expect.any(Object),
-    )
-  })
-
-  it('clear recipient json patches null', async () => {
-    renderAt('/questionnaire-types/q1/json')
-
-    // Expand the recipient section
-    const toggle = await screen.findByTestId('recipient-json-section')
-    fireEvent.click(toggle.querySelector('button')!)
-
-    fireEvent.click(screen.getByTestId('clear-recipient-btn'))
-    expect(mockMutate).toHaveBeenCalledWith(
-      expect.objectContaining({ recipientJson: null }),
-      expect.any(Object),
-    )
+    await screen.findByTestId('survey-preview')
+    expect(screen.queryByTestId('recipient-json-section')).not.toBeInTheDocument()
   })
 })

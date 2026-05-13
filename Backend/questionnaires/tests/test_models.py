@@ -151,32 +151,6 @@ class TestQuestionnaireTypeRelatedName:
 
 
 @pytest.mark.django_db
-class TestQuestionnaireTypeRecipientJson:
-    def test_recipient_json_defaults_to_none(self, db):
-        q = QuestionnaireType.objects.create(title="Test")
-        assert q.recipient_json is None
-
-    def test_recipient_json_stores_and_retrieves_dict(self, db):
-        page_descriptor = {
-            "name": "recipient_page",
-            "elements": [
-                {
-                    "type": "radiogroup",
-                    "name": "recipient__respondent_type",
-                    "title": "Who is completing this questionnaire?",
-                    "isRequired": True,
-                    "choices": [{"value": "myself", "text": "Myself"}],
-                }
-            ],
-        }
-        q = QuestionnaireType.objects.create(
-            title="Test", recipient_json=page_descriptor
-        )
-        q.refresh_from_db()
-        assert q.recipient_json == page_descriptor
-
-
-@pytest.mark.django_db
 class TestBatteryModels:
     def _make_battery_type(self, qt_ids=None):
         if qt_ids is None:

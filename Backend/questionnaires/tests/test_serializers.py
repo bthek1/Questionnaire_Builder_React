@@ -14,7 +14,6 @@ class TestQuestionnaireSerializer:
             "id",
             "title",
             "questionnaireJson",
-            "recipientJson",
             "createdAt",
             "updatedAt",
         }

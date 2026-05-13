@@ -72,8 +72,9 @@ class TestQuestionnaireTypeListCreate:
         assert "questionnaireJson" in response.data
         assert "createdAt" in response.data
         assert "updatedAt" in response.data
+        assert "recipientJson" not in response.data
 
-    def test_create_with_recipient_json(self, api_client):
+    def test_create_with_recipient_page_in_questionnaire_json(self, api_client):
         page = {
             "name": "recipient_page",
             "elements": [
@@ -86,12 +87,14 @@ class TestQuestionnaireTypeListCreate:
                 }
             ],
         }
-        payload = {"title": "Survey With Recipient", "recipientJson": page}
+        payload = {
+            "title": "Survey With Recipient",
+            "questionnaireJson": {"pages": [page]},
+        }
         response = api_client.post(TYPES_LIST_URL, payload, format="json")
         assert response.status_code == 201
-        assert response.data["recipientJson"] == page
         q = QuestionnaireType.objects.get(id=response.data["id"])
-        assert q.recipient_json == page
+        assert q.questionnaire_json["pages"][0]["name"] == "recipient_page"
 
 
 @pytest.mark.django_db
@@ -137,29 +140,24 @@ class TestQuestionnaireTypeRetrieveUpdateDelete:
         )
         assert response.status_code == 405
 
-    def test_recipient_json_null_by_default(self, api_client, questionnaire):
+    def test_recipient_json_not_in_response(self, api_client, questionnaire):
         response = api_client.get(type_detail_url(questionnaire.id))
         assert response.status_code == 200
-        assert response.data["recipientJson"] is None
+        assert "recipientJson" not in response.data
 
-    def test_patch_recipient_json(self, api_client, questionnaire):
+    def test_patch_recipient_page_via_questionnaire_json(
+        self, api_client, questionnaire
+    ):
         page = {"name": "recipient_page", "elements": []}
+        new_json = {"pages": [page, {"name": "page1", "elements": []}]}
         response = api_client.patch(
-            type_detail_url(questionnaire.id), {"recipientJson": page}, format="json"
+            type_detail_url(questionnaire.id),
+            {"questionnaireJson": new_json},
+            format="json",
         )
         assert response.status_code == 200
         questionnaire.refresh_from_db()
-        assert questionnaire.recipient_json == page
-
-    def test_patch_recipient_json_null_clears_field(self, api_client, questionnaire):
-        questionnaire.recipient_json = {"name": "recipient_page", "elements": []}
-        questionnaire.save()
-        response = api_client.patch(
-            type_detail_url(questionnaire.id), {"recipientJson": None}, format="json"
-        )
-        assert response.status_code == 200
-        questionnaire.refresh_from_db()
-        assert questionnaire.recipient_json is None
+        assert questionnaire.questionnaire_json["pages"][0]["name"] == "recipient_page"
 
 
 # ── Questionnaire instance endpoints ──────────────────────────────────────────

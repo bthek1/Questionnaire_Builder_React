@@ -95,9 +95,6 @@ class QuestionnaireTypeSerializer(serializers.ModelSerializer):
     questionnaireJson = serializers.JSONField(
         source="questionnaire_json", required=False
     )  # noqa: N815
-    recipientJson = serializers.JSONField(
-        source="recipient_json", required=False, allow_null=True
-    )  # noqa: N815
 
     class Meta:
         model = QuestionnaireType
@@ -105,7 +102,6 @@ class QuestionnaireTypeSerializer(serializers.ModelSerializer):
             "id",
             "title",
             "questionnaireJson",
-            "recipientJson",
             "createdAt",
             "updatedAt",
         ]

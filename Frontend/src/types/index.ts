@@ -2,7 +2,6 @@ export interface QuestionnaireType {
   id: string
   title: string
   questionnaireJson?: object
-  recipientJson?: Record<string, unknown> | null
   createdAt: string
   updatedAt: string
 }

@@ -39,7 +39,6 @@ class QuestionnaireType(models.Model):
     )
     title = models.CharField(max_length=255)
     questionnaire_json = models.JSONField(default=dict, blank=True)
-    recipient_json = models.JSONField(default=None, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
